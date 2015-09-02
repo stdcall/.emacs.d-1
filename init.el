@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-08-30>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-09-02>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -784,7 +784,7 @@
 (global-set-key (kbd "M-z") 'undo-tree-undo) ; use C-x u to show tree
 (global-set-key (kbd "M-r") 'undo-tree-redo)
 (global-set-key (kbd "M-c") 'kill-ring-save)
-(global-set-key (kbd "M-m") 'capitalize-word) ; Maiúsculo
+(global-set-key (kbd "M-m") 'capitalize-word)
 (global-set-key (kbd "M-v") 'yank)
 (global-set-key (kbd "M-s") 'save-buffer)
 (global-set-key (kbd "C-x c") 'calendar)
@@ -1962,6 +1962,12 @@ With argument, do this that many times."
 (global-undo-tree-mode)
 (setq undo-tree-mode-lighter "")
 
+;; browse kill-ring list
+
+(global-set-key "\C-cy" 'browse-kill-ring)
+(setq browse-kill-ring-highlight-current-entry t
+      browse-kill-ring-display-duplicates nil)
+
 ;; move line or region using M-up M-down
 
 (move-text-default-bindings)
@@ -2201,7 +2207,7 @@ and append a date to it using date2name."
                    path (or desc "")))
      (latex (format "\href{%s}{%s}" path (or desc "video"))))))
 
-;; upcase (M-u), lowercase (m-l) and capitalize (M-C) word or region
+;; upcase (M-u), lowercase (m-l) and capitalize (M-m) word or region
 ;; https://github.com/snosov1/dot-emacs
 
 (defmacro action-dispatch (action)
