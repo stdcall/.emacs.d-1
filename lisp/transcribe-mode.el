@@ -86,7 +86,7 @@
                         '(("Jonathan:" . font-lock-constant-face)))
 
 (font-lock-add-keywords 'org-mode
-                        '(("Interviewee:" . font-lock-constant-face)))
+                        '(("Interviewee:" . font-lock-variable-name-face)))
 
 (defun transcribe-new-name ()
   "Prompt user for a new name, replacing all occurances of
