@@ -57,10 +57,14 @@
 (setq mu4e-compose-signature "Jonathan")
 (setq mu4e-compose-signature-auto-include t)
 
-;; `message-goto-body' above the signature
-
-(fset 'jag/message-goto-body
-      (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([19 45 45 116 101 120 116 32 102 111 108 108 111 119 115 32 116 104 105 115 32 108 105 110 101 45 45 return return] 0 "%d")) arg)))
+(defun jag/message-goto-body ()
+  "Similar to `message-goto-body' but moves point above the
+signature line."
+  (interactive)
+  (goto-char (point-max))
+  (when (re-search-backward "--"))
+  (newline)
+  (previous-line))
 
 (define-key mu4e-compose-mode-map (kbd "C-c C-b") 'jag/message-goto-body)
 
