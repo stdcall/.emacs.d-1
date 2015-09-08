@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-09-02>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-09-08>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -160,7 +160,6 @@
 ;; helm for managing open files
 
 (require 'helm-config)
-(global-set-key (kbd "C-c h") 'helm-mini)
 (global-set-key (kbd "C-c s") 'helm-swoop)
 (define-key org-mode-map (kbd "C-;") 'helm-org-in-buffer-headings)
 (define-key isearch-mode-map (kbd "C-c S") 'helm-swoop-from-isearch)
@@ -609,6 +608,8 @@
         ("DEFERRED"  . (:foreground "#E0CF9F" :weight bold))
         ))
 
+(require 'config-mu4e)
+
 ;; org-capture templates
 
 (setq org-capture-templates
@@ -634,7 +635,7 @@
 #+name: expenses
 #+begin_src ledger
 %(org-read-date) * %^{Payed to}
-    expenses:%^{Spent on|cash:|donation:|entertainment:|food:|groceries:|other:|personal:|rent:|transportation:|utilities:internet:|utilities:phone}%?  £%^{Amount}
+    expenses:%^{Spent on|cash:|donation:|entertainment:|food:|groceries:|home:|other:|personal:|rent:|transportation:|utilities:internet:|utilities:phone}%?  £%^{Amount}
     assets:%^{Debited from|bank:checking|bank:savings|cash}
 #+end_src\n
 " :prepend t)
@@ -670,18 +671,28 @@
          "** TODO %?\n:SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
 
 	("&" "Email" entry (file+headline "~/Documents/org/todo.org" "Tasks")
-	 "** TODO reply to %a :mail:\n%t\n" :prepend t :immediate-finish t) ;requires org-mu4e
-	 
+	 "** TODO reply to %a %(jag/set-mail-tag):\n%t\n" :prepend t :immediate-finish t) ;requires org-mu4e
+
+	("#" "Hold" entry (file+headline "~/Documents/org/todo.org" "Tickler")
+	 "** TODO delete %a %(jag/set-mail-tag)\n   SCHEDULED: %^t\n" :prepend t :immediate-finish t)
+
         ("F" "Fiona" entry (file+headline "~/Documents/org/orientation.org" "2015")
          "** Fiona %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)
 
         ("S" "Suzel" entry (file+headline "~/Documents/org/orientation.org" "2015")
          "** Suzel %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)))
 
+;; fix tag alignment
+
+(defun jag/set-mail-tag ()
+  (interactive "P")
+  (org-set-tags-to "mail"))
+
 ;; capture context
 
 (setq org-capture-templates-contexts
-      '(("&" ((in-mode . "mu4e-view-mode")))
+      '(("#" ((in-mode . "mu4e-view-mode")))
+	("&" ((in-mode . "mu4e-view-mode")))
 	("F" ((in-file . "orientation.org")))
 	("S" ((in-file . "orientation.org")))
 	))
@@ -909,14 +920,15 @@
 
 ;; help commands
 
-(global-set-key (kbd "M-?") 'help-command) ; [i]nfo; [k]ey;
+(global-set-key (kbd "C-c h") 'help-command) ; [i]nfo; [k]ey;
 					   ; [v]ariable; [f]unction;
 					   ; [d]ocumentation;
 					   ; [b]inding; [r]manual;
 					   ; [K]Info-goto-emacs-key-command-node
+					   ; [h] helm-apropos
 					   ; M-x find-library
 					   ; M-x bug-hunter-file RET e
-(global-set-key (kbd "M-? h") 'helm-apropos)
+(global-set-key (kbd "C-c h h") 'helm-apropos)
 
 ;; avoid arrow keys when promoting and demoting lists
 
@@ -1047,6 +1059,7 @@
 (setq guide-key/popup-window-position (quote bottom))
 (setq guide-key/guide-key-sequence '("M-p"   ; mplayer/emms
                                      "M-i"
+				     "C-c h"
                                      "C-c p"
                                      "C-c i"
                                      "C-x r"
@@ -1298,8 +1311,7 @@
       '(
 	("a" "agenda"
 	 ((agenda ""
-		  ((org-agenda-overriding-header (random-quote-show))
-		   (org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")))
+		  ((org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")))
 	  (tags-todo "+PRIORITY=\"A\"|TODO=\"STARTED\"")
 	  ))
 
@@ -1886,7 +1898,7 @@ possible date string replacements."
   (insert (format-time-string "%d %b %Y")))
 
 (global-set-key (kbd "C-c i i") 'jag/insert-iso-date)
-(global-set-key (kbd "C-c i d") 'jag/insert-current-date)
+(global-set-key (kbd "C-c i d") 'jag/insert-date)
 
 ;; unlink org mode link
 
