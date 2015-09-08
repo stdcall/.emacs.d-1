@@ -108,7 +108,9 @@ signature line."
 	("untagHold" . mu4e-action-untag-hold)))
 
 (defun mu4e-action-tag-hold (msg)
-  "Add a `hold' tag to the current message."
+  "Add a `hold' tag to the current message and prompt for a
+'tickler' date."
+  (org-capture nil "#")
   (mu4e-action-retag-message msg "+hold"))
 
 (defun mu4e-action-untag-hold (msg)
