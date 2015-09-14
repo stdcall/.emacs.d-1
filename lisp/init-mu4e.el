@@ -259,15 +259,14 @@ parameters."
 ;; bookmarks
 
 (setq mu4e-bookmarks
-      '(("flag:unread AND NOT flag:trashed OR flag:flagged OR tag:hold" "Unread or flagged messages" ?u)
+      '(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
 	("NOT flag:trashed AND NOT maildir:/archive AND NOT maildir:/sent" "Unprocessed messages" ?i) ;inbox
 	("maildir:/archive" "Archived messages" ?a)
 	("list:*" "Mailing lists" ?l)
-	("from:xxxx@autistici.org OR from:xxxx@autistici.org" "Sent messages" ?s) ;try from:jgr*
 	("date:2d..now AND NOT flag:trashed AND NOT list:*" "Last 2 days" ?d)
 	("date:7d..now AND NOT flag:trashed AND NOT list:*" "Last 7 days" ?w)
 	("date:30d..now AND NOT flag:trashed AND NOT list:*" "Last 30 days" ?m)
-	("tag:hold" "Messages on hold" ?h) ;tag
+	("tag:hold OR flag:flagged" "Messages on hold" ?h) ;tag
 	("flag:attach AND NOT list:*" "Messages with attachment" ?A)
 	("maildir:/uni" "Messages from Queen's" ?q)
 	))
