@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-09-08>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-09-20>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -200,6 +200,7 @@
 (add-to-list 'ido-ignore-files "\\.log" "\\.out")
 (add-to-list 'ido-ignore-files "\\.DS_Store")
 (add-to-list 'ido-ignore-files "\\.backups")
+(add-to-list 'ido-ignore-files "\\.Rhistory")
 (add-to-list 'ido-ignore-buffers "*Completions*")
 
 ;; sort ido filelist by modification time instead of alphabetically
@@ -665,13 +666,13 @@
 :END:" :prepend t)
 
         ("a" "Appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
-         "** %^{Description}\n:PROPERTIES:\n:On: %^t\n:At: %^{At}\n:END:" :prepend t :immediate-finish t)
+         "** %^{Description}\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n" :prepend t :immediate-finish t)
        	
         ("h" "Habit" entry (file+headline "~/Documents/org/todo.org" "Habits")
-         "** TODO %?\n:SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
+         "** TODO %?\n   SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
 
 	("&" "Email" entry (file+headline "~/Documents/org/todo.org" "Tasks")
-	 "** TODO reply to %a %(jag/set-mail-tag):\n%t\n" :prepend t :immediate-finish t) ;requires org-mu4e
+	 "** TODO reply to %a %(jag/set-mail-tag)\n" :prepend t :immediate-finish t) ;requires org-mu4e
 
 	("#" "Hold" entry (file+headline "~/Documents/org/todo.org" "Tickler")
 	 "** TODO delete %a %(jag/set-mail-tag)\n   SCHEDULED: %^t\n" :prepend t :immediate-finish t)
@@ -932,16 +933,13 @@
 
 ;; avoid arrow keys when promoting and demoting lists
 
-(define-key org-mode-map (kbd "∆") 'org-metaup)	   ; alt-j
-(define-key org-mode-map (kbd "˚") 'org-metadown)  ; alt-k
-(define-key org-mode-map (kbd "¯") 'org-metaleft)  ; S-alt-,
-(define-key org-mode-map (kbd "˘") 'org-metaright) ; S-alt.
+(define-key org-mode-map (kbd "∆") 'org-metaup)		; alt-j
+(define-key org-mode-map (kbd "˚") 'org-metadown)	; alt-k
+(define-key org-mode-map (kbd "˙") 'org-shiftmetaleft)	; alt-h
+(define-key org-mode-map (kbd "¬") 'org-shiftmetaright) ; alt-l
 
 (define-key org-mode-map (kbd "≤") 'org-shiftleft)	; alt-,
 (define-key org-mode-map (kbd "≥") 'org-shiftright)	; alt-.
-(define-key org-mode-map (kbd "Ô") 'org-shiftmetaleft)	; S-alt-j
-(define-key org-mode-map (kbd "") 'org-shiftmetaright) ; S-alt-k
-(define-key org-mode-map (kbd "¬") 'org-shiftmetaright) ; alt-l
 
 ;;; transpose words, sentences and paragraphs
 ;; use M-t to transpose-words and C-x C-t to transpose-sentences; use
@@ -1201,7 +1199,7 @@
       'create-if-interactive-and-no-custom-id) ; C-c l/C-c C-l
 (setq org-habit-graph-column 55)
 (setq org-habit-preceding-days 14)
-;; (setq org-highlight-latex-and-related '(latex))
+(setq org-clock-out-remove-zero-time-clocks t)
 
 (setq org-columns-default-format "%50ITEM(Task) %6Effort(Effort Estimate){:} %6CLOCKSUM(Actual Time)")
 (setq org-global-properties (quote (("Effort_ALL" . "0:02 0:05 0:10 0:15 0:20 0:25 1:00 2:00 4:00")
@@ -1244,7 +1242,7 @@
 (setq org-agenda-files (quote ("~/Documents/org/todo.org"
                                "~/Documents/org/notes.org"
                                "~/Documents/org/fieldwork.org"
-			       "~/Documents/org/transcription.org"
+			       "~/Documents/org/analysis.org"
                                ;;"~/Documents/org/annotation.org"
                                ;;"~/Documents/org/qda.org"
                                ;;"~/Documents/org/draft.org"
@@ -1294,221 +1292,9 @@
 
 (advice-add 'org-clocktable-indent-string :override #'my-org-clocktable-indent-string)
 
-;; display random quotes in the agenda
+;; custom agenda views
 
-(require 'random-quotes)
-
-;; display weather forecast in the agenda
-
-;; (require 'weather-metno)
-;; (require 'org-weather-metno)
-;; (setq org-weather-metno-format "{symbol|:symbol} {temperature-min}-{temperature-max}")
-;; (run-with-timer 0 (* 120 60) 'weather-metno-update) ;update every 2 hours
-
-;; agenda custom commands
-
-(setq org-agenda-custom-commands
-      '(
-	("a" "agenda"
-	 ((agenda ""
-		  ((org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")))
-	  (tags-todo "+PRIORITY=\"A\"|TODO=\"STARTED\"")
-	  ))
-
-        ("x" "next action"
-         ((tags-todo "LEVEL=2-SCHEDULED=\"<today>\"/NEXT"
-                     ((org-agenda-overriding-header "Next action")
-                      (org-agenda-sorting-strategy
-                       '(priority-down effort-up))))
-	  (tags-todo "LEVEL<=2+Effort<=\"0:20\"+Effort=>\"0:02\"-CATEGORY={someday\\|practice\\|habit}/TODO"
-                     ((org-agenda-overriding-header "Low energy")
-                      (org-agenda-sorting-strategy
-                       '(effort-up))))
-          (tags-todo "LEVEL>=3-CATEGORY={someday\\|practice}-SCHEDULED=\"<today>\"-errands/TODO"
-                     ((org-agenda-overriding-header "Sub-tasks")
-                      (org-agenda-sorting-strategy
-                       '(priority-down todo-state-up)))))
-         ((org-agenda-remove-tags nil)
-          (org-agenda-show-inherited-tags nil)
-          (org-agenda-tags-column -110)
-          (org-agenda-prefix-format "  %-40b %-6e ")))
-
-        ("i" "inbox"                    ; weekly review
-         ((tags "LEVEL=2+CATEGORY=\"task\"/!"
-                ((org-agenda-overriding-header "Unscheduled Tasks")
-                 (org-agenda-skip-function '(org-agenda-skip-entry-if
-                                             'todo '("NEXT" "WAITING" "CANCELED" "DEFERRED")
-                                             'deadline 'scheduled 'timestamp))))
-          (todo "WAITING"
-                ((org-agenda-overriding-header "Waiting for")))
-          (tags-todo "LEVEL=2+CATEGORY=\"stuck\"-TODO=\"WAITING\""
-                     ((org-agenda-overriding-header "Stuck Tasks")))
-          (tags "+SCHEDULED<\"<today>\"-CATEGORY=\"habit\"|+DEADLINE<\"<today>\"|+TIMESTAMP<\"<today>\"-CATEGORY=\"appt\""
-                ((org-agenda-overriding-header "Past due")))
-          (tags "LEVEL=2+CATEGORY=\"appt\"+TIMESTAMP<\"<today>\"-repeat"
-                ((org-agenda-overriding-header "Past appointments")
-                 (org-agenda-skip-function nil)))
-          (tags "TODO=\"DONE\"-exclude-CATEGORY=\"practice\"|+TODO=\"CANCELED\""
-                ((org-agenda-overriding-header "Tasks to Refile") ;to archive, press m B $
-                 (org-agenda-skip-function nil))))
-         ((org-agenda-remove-tags nil)
-          (org-agenda-tags-column -110)
-          (org-agenda-show-inherited-tags nil)))
-
-        ("o" "someday"
-         ((tags "LEVEL=2+CATEGORY=\"someday\""
-                ((org-agenda-overriding-header "Someday/Maybe")
-                 (org-agenda-sorting-strategy 
-                  '(todo-state-up))))
-          (tags "LEVEL>=3+CATEGORY=\"someday\""
-                ((org-agenda-sorting-strategy 
-                  '(todo-state-up))))))
-                
-        ("n" "notes"
-         ((tags-todo "LEVEL=2+CATEGORY=\"notes\""
-                     ((org-agenda-overriding-header "Notes")))
-          (tags-todo "LEVEL=2+CATEGORY=\"meeting\""
-                     ((org-agenda-overriding-header "Meetings tasks"))))
-         ((org-agenda-remove-tags nil)
-          (org-agenda-show-inherited-tags nil)
-          (org-agenda-tags-column -112)
-          (org-agenda-prefix-format "  ")))
-
-        ("c" . "context")
-	;; physical context
-	("cc" "physical context (@errands, @phone, @mail, @home)"
-         ((tags-todo "errands-CATEGORY=\"tickler\""
-                     ((org-agenda-overriding-header "@errands")))
-          (tags-todo "phone"
-                     ((org-agenda-overriding-header "@phone")))
-	  (tags-todo "mail"
-		     ((org-agenda-overriding-header "@mail")))
-	  (tags-todo "home"
-		     ((org-agenda-overriding-header "@home")))
-	  ))
-	;; perceptual context
-	("cr" "read" tags "read"
-	 ((org-agenda-overriding-header "To Read")))
-	("cw" "watch" tags "watch"
-	 ((org-agenda-overriding-header "To Watch")))
-        ("cs" "see" tags "see"
-	 ((org-agenda-overriding-header "To See")))
-	("ci" "listen" tags "listen"
-	 ((org-agenda-overriding-header "To Listen")))
-        ("cl" "learn" tags "learn"
-	 ((org-agenda-overriding-header "To Learn")))
-        ("ct" "think" tags "think"
-	 ((org-agenda-overriding-header "To Think")))
-	("ch" "hold"
-	 tags "+hold|+CATEGORY=\"reference\"|+CATEGORY=\"bookmark\"")
-
-        ("ca" "contacts"
-         ((tags-todo "LEVEL=2+CATEGORY=\"contacts\"+TODO=\"MEET\""
-                     ((org-agenda-overriding-header "Unscheduled")
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled))))
-          (tags-todo "LEVEL=2+CATEGORY=\"contacts\""
-                     ((org-agenda-overriding-header "Scheduled")
-                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))))
-          (tags-todo "LEVEL=2+CATEGORY=\"contacts\"+TODO=\"WAITING\""
-                     ((org-agenda-overriding-header "Waiting")
-                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled))))
-          (tags-todo "LEVEL=2+CATEGORY=\"contacts\"+TODO=\"EMAIL\""
-                     ((org-agenda-overriding-header "Email")
-                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled))))
-          (tags-todo "LEVEL=2+CATEGORY=\"contacts\"+TODO=\"CALL\""
-                     ((org-agenda-overriding-header "Call")
-                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled))))
-          (tags "LEVEL=2+CATEGORY=\"contacts\"+TODO=\"FOLLOW-UP\""
-                ((org-agenda-overriding-header "Follow-up")))
-          (tags "LEVEL=2+CATEGORY=\"contacts\"+TODO=\"DONE\""
-                ((org-agenda-overriding-header "DONE")
-                 (org-agenda-skip-function nil)))
-          (tags "LEVEL=2+CATEGORY=\"contacts\""
-                ((org-agenda-overriding-header "Contacts")
-                 (org-agenda-skip-function '(org-agenda-skip-entry-if
-                                             'todo '("MEET" "WAITING" "EMAIL" "CALL" "FOLLOW-UP" "DONE")))))
-          ))
-
-        ("p" . "print")			;press C-a a e to export
-        ("pa" "agenda"
-         ((agenda "" ((org-agenda-ndays 2)))
-          (tags-todo "errands-CATEGORY=\"tickler\""
-                     ((org-agenda-prefix-format "  [ ]")
-                      (org-agenda-todo-keyword-format "")
-                      (org-agenda-overriding-header "\n@errands:")))
-          (tags-todo "phone"
-                     ((org-agenda-prefix-format "  [ ]")
-                      (org-agenda-todo-keyword-format "")
-                      (org-agenda-overriding-header "\n@phone:"))))
-         ((org-agenda-with-colors nil)
-          (org-habit-show-habits nil)
-	  (org-agenda-compact-blocks t)
-          (org-agenda-remove-tags t))
-         ("~/ownCloud/agenda.txt"))
-
-        ("pg" "groceries"
-          ((tags "LEVEL=3+CATEGORY=\"vegetables\""
-		 ((org-agenda-prefix-format "  [ ] ")
-		  (org-agenda-overriding-header
-		   (concat (format-time-string "%A    %d %B %Y%n" (current-time))
-			   "\nFruits & Vegetables:"))))
-          (tags "LEVEL=3+CATEGORY=\"seeds\""
-                ((org-agenda-prefix-format "  [ ] ")
-                 (org-agenda-overriding-header "\nSeeds & nuts:")))
-          (tags "LEVEL=3+CATEGORY=\"general\""
-                ((org-agenda-prefix-format "  [ ] ")
-                 (org-agenda-overriding-header "\nGeneral:")))
-          (tags "LEVEL=3+CATEGORY=\"other\""
-                ((org-agenda-prefix-format "  [ ] ")
-                 (org-agenda-overriding-header "\nOther:"))))
-	  ((org-agenda-with-colors nil)
-	  (org-agenda-compact-blocks t))
-	  ("~/ownCloud/groceries.txt"))
-
-        ;; ("pi" "interview"
-        ;;  ((tags-todo "LEVEL=3+CATEGORY=\"query\"+next-exclude"
-        ;;              ((org-agenda-overriding-header "Interview:")))
-        ;;   (tags-todo "query-exclude"
-        ;;              ((org-agenda-overriding-header "Queries:\n"))))
-        ;;  ((org-agenda-with-colors nil)
-        ;;   (org-agenda-prefix-format "\n-")
-        ;;   (org-agenda-todo-keyword-format ""))
-        ;;  ("~/ownCloud/interview.txt"))
-
-        ("P" "practice"
-         ((tags "LEVEL>=3+CATEGORY=\"practice\"-exclude+next"
-                ((org-agenda-overriding-header "Practice!")
-                 (org-agenda-prefix-format "  %-10:c %-8e")))))
-        ))
-
-;; generate reports
-
-(add-to-list 'org-agenda-custom-commands
-             '("d" "daily report" ;TODO: make timestamp inactive when
-				  ;item is closed
-               ((agenda ""))
-               ((org-agenda-overriding-header "Daily report\n------------")
-                (org-agenda-skip-function '(org-agenda-skip-entry-if 'timestamp
-                                                                     'regexp ":exclude:"))
-                (org-agenda-span 1)
-                (org-agenda-show-log t)
-                (org-agenda-log-mode-items '(closed))
-                (org-agenda-archives-mode t)
-                (org-agenda-start-with-clockreport-mode t)
-                (org-agenda-time-grid nil))) t)
-
-(add-to-list 'org-agenda-custom-commands
-             '("w" "weekly report"
-               ((agenda ""))
-               ((org-agenda-overriding-header "Weekly report\n-------------")
-                (org-agenda-skip-function '(org-agenda-skip-entry-if 'timestamp))
-                (org-agenda-span 8)
-                (org-agenda-start-day "-7d")
-                (org-agenda-show-log t)
-                (org-agenda-log-mode-items '(closed))
-                (org-agenda-archives-mode t)
-                (org-agenda-start-with-clockreport-mode t)
-                (org-agenda-time-grid nil))) t)
+(require 'config-agenda)
 
 ;; speed commands
 
@@ -1751,7 +1537,7 @@ The app is chosen from your OS's preference."
 ;; timer
 
 (require 'tea-time)
-(setq tea-time-sound "~/Documents/archive/backups/bell.wav")
+(setq tea-time-sound "~/Documents/archive/audio/bell.wav")
 (setq tea-time-sound-command "mplayer -volume 0.5 %s")
 (add-to-list 'org-speed-commands-user '("I" call-interactively 'tea-time))
 (global-set-key (kbd "C-c C-x t") 'tea-time)
@@ -1874,7 +1660,8 @@ to a unique value for this to work properly."
   (interactive "sEnter backend: ")
   (let ((fn (cond ((equal backend "html") 'org-html-export-to-html)
                   ((equal backend "latex") 'org-latex-export-to-latex)
-                  ((equal backend "pdf") 'org-latex-export-to-pdf))))
+                  ((equal backend "pdf") 'org-latex-export-to-pdf)
+		  ((equal backend "ascii") 'org-ascii-export-to-ascii))))
     (org-map-entries (lambda () (funcall fn nil t)) "-noexport")))
 
 ;; add table of contents in org-mode
