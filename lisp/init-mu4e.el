@@ -253,6 +253,8 @@ parameters."
 (define-key mu4e-compose-mode-map (kbd "C-c C-x f") 'Footnote-add-footnote) ;sames as `org-footnote-action'
 (define-key mu4e-compose-mode-map (kbd "C-c .") 'jag/mu4e-trim-posting)
 (define-key mu4e-compose-mode-map (kbd "C-c u") 'jag/mu4e-shorten-url)
+(define-key mu4e-main-mode-map (kbd "q") 'bury-buffer)
+(define-key mu4e-main-mode-map (kbd "x") 'mu4e-quit)
 (define-key mu4e-main-mode-map (kbd "k") 'hydra-mail/body)
 (define-key mu4e-view-mode-map (kbd "l") 'hydra-scroll/body)
 
