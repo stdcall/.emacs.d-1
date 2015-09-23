@@ -59,7 +59,6 @@
 (setq emms-playing-time-display-format "%s")
 (setq emms-tag-editor-rename-format "%t")
 (setq emms-show-format "%s")
-(setq emms-source-file-default-directory 'emms-music-directory)
 (setq emms-player-list '(emms-player-mplayer-playlist
 			 emms-player-mplayer
 			 emms-player-mpg321))
@@ -85,13 +84,9 @@ positive number."
   (interactive)
   (emms-seek emms-seconds-to-fast-forward))
 
-(defun emms-open-home-directory ()
-  (interactive)
-  (dired "~/"))
-
 (defun emms-open-music-directory ()
   (interactive)
-  (dired emms-music-directory))
+  (dired emms-source-file-default-directory))
 
 (defun emms-player-mplayer-speed-up ()
   "Depends on mplayer's -slave mode."
@@ -105,6 +100,12 @@ positive number."
   (interactive)
   (process-send-string emms-player-simple-process-name
 		       (format "speed_incr %f\n" (- 0 emms-player-mplayer-speed-increment))))
+
+(defun emms-default-playlist ()
+  "Add music library to the playlist and go to it."
+  (interactive)
+  (emms-add-directory-tree emms-source-file-default-directory)
+  (emms))
 
 ;; add tracks from dired
 
@@ -237,7 +238,7 @@ window and return to the playlist buffer."
 (global-set-key (kbd "M-p j") 'emms-rewind)
 (global-set-key (kbd "M-p k") 'emms-fast-forward)
 (global-set-key (kbd "M-p m") 'emms-open-music-directory)
-(global-set-key (kbd "M-p d") 'emms-open-home-directory)
+(global-set-key (kbd "M-p l") 'emms-default-playlist)
 
 (global-set-key (kbd "M-p v") 'emms-player-mplayer-slow-down)
 (global-set-key (kbd "M-p ^") 'emms-player-mplayer-speed-up)
