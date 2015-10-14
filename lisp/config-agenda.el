@@ -13,29 +13,22 @@
 
 	("x" "next action"
          ((tags-todo "LEVEL=2-SCHEDULED=\"<today>\"/NEXT"
-                     ((org-agenda-overriding-header "Next action")
-                      (org-agenda-sorting-strategy
-                       '(priority-down effort-up))))
-	  (tags-todo "LEVEL<=2+Effort<=\"0:20\"+Effort=>\"0:02\"-CATEGORY={someday\\|practice\\|habit}/TODO"
-                     ((org-agenda-overriding-header "Low energy")
-                      (org-agenda-sorting-strategy
-                       '(effort-up))))
-          (tags-todo "LEVEL>=3-CATEGORY={someday\\|practice}-SCHEDULED=\"<today>\"-errands/TODO"
-                     ((org-agenda-overriding-header "Sub-tasks")
-                      (org-agenda-sorting-strategy
-                       '(priority-down todo-state-up)))))
-         ((org-agenda-remove-tags nil)
-          (org-agenda-show-inherited-tags nil)
-          (org-agenda-tags-column -110)
-          (org-agenda-prefix-format "  %-40b %-6e ")))
+                     ((org-agenda-overriding-header "Next action")))
+	  (tags "LEVEL=2+CATEGORY=\"task\"/!"
+		((org-agenda-overriding-header "Unscheduled Tasks")
+		 (org-agenda-skip-function '(org-agenda-skip-entry-if
+					     'todo '("NEXT" "WAITING" "CANCELED" "DEFERRED")
+					     'deadline 'scheduled 'timestamp)))))
+	   ((org-agenda-remove-tags nil)
+	    (org-agenda-sorting-strategy
+	     '(priority-down effort-up))
+	    (org-agenda-show-inherited-tags nil)
+	    (org-agenda-tags-column -113)
+	    (org-agenda-compact-blocks t)
+	    (org-agenda-prefix-format " %i %-10:c %-4e ")))
 
-        ("i" "inbox"                    ; weekly review
-         ((tags "LEVEL=2+CATEGORY=\"task\"/!"
-                ((org-agenda-overriding-header "Unscheduled Tasks")
-                 (org-agenda-skip-function '(org-agenda-skip-entry-if
-                                             'todo '("NEXT" "WAITING" "CANCELED" "DEFERRED")
-                                             'deadline 'scheduled 'timestamp))))
-          (todo "WAITING"
+	("i" "inbox"                    ; weekly review
+          ((todo "WAITING"
                 ((org-agenda-overriding-header "Waiting for")))
           (tags-todo "LEVEL=2+CATEGORY=\"stuck\"-TODO=\"WAITING\""
                      ((org-agenda-overriding-header "Stuck Tasks")))
@@ -44,11 +37,12 @@
           (tags "LEVEL=2+CATEGORY=\"appt\"+TIMESTAMP<\"<today>\"-repeat"
                 ((org-agenda-overriding-header "Past appointments")
                  (org-agenda-skip-function nil)))
-          (tags "TODO=\"DONE\"-exclude-CATEGORY={appt\\|practice}|+TODO=\"CANCELED\""
+          (tags "TODO=\"DONE\"-exclude-CATEGORY=\"practice\"|+TODO=\"CANCELED\""
                 ((org-agenda-overriding-header "Tasks to Refile") ;to archive, press m B $
                  (org-agenda-skip-function nil))))
          ((org-agenda-remove-tags nil)
           (org-agenda-tags-column -110)
+	  (org-agenda-files '("~/Documents/org/todo.org"))
           (org-agenda-show-inherited-tags nil)))
 
         ("o" "someday"
@@ -171,7 +165,7 @@
         ;;   (org-agenda-todo-keyword-format ""))
         ;;  ("~/ownCloud/interview.txt"))
 
-        ("P" "practice"
+        ("r" "practice"
          ((tags "LEVEL>=3+CATEGORY=\"practice\"-exclude+next"
                 ((org-agenda-overriding-header "Practice!")
                  (org-agenda-prefix-format "  %-10:c %-8e")))))
@@ -205,5 +199,27 @@
                 (org-agenda-archives-mode t)
                 (org-agenda-start-with-clockreport-mode t)
                 (org-agenda-time-grid nil))) t)
+
+(add-to-list 'org-agenda-custom-commands
+	     '("z" "meditation"
+	       ((agenda ""))
+	       ((org-agenda-overriding-header "Meditation monthly report")
+		(org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")
+		(org-agenda-ndays 1)
+		(org-habit-show-all-today t)
+		(org-habit-graph-column 40)
+		(org-habit-preceding-days 30)
+		(org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp ":meditation:")))))
+
+(add-to-list 'org-agenda-custom-commands
+	     '("h" "habit"
+	       ((agenda ""))
+	       ((org-agenda-overriding-header "Habit report")
+		(org-agenda-prefix-format " %i %-2:c%?-12t% s %e ")
+		(org-agenda-ndays 1)
+		(org-habit-show-all-today t)
+		(org-habit-graph-column 45)
+		(org-habit-preceding-days 60)
+		(org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp "habit")))))
 
 (provide 'config-agenda)
