@@ -199,7 +199,7 @@ function uses`org-capture' and adds the task to the agenda."
 
 ;; email selected region
 
-(defun mu4-email-region (start end)
+(defun mu4e-email-region (start end)
   "Send region as the body of an email."
   (interactive "r")
   (let ((content (buffer-substring start end)))
@@ -405,4 +405,3 @@ another after the header."
 
 ;; TODO: change dictionary automatically based on the `to:' address
 ;; TODO: add contacts only of messages I send
-;; FIXME: thread-subject not supported by helm-mu
