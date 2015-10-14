@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-09-20>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-10-14>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -652,10 +652,10 @@
 " :prepend t)
 	
         ("d" "Diary" entry (file+headline "~/Documents/org/fieldwork.org" "Diary")
-         "** %(format-time-string \"%Y-%m-%d %b %H:%M\")\n\n%? %^{Effort}p" :clock-in t :prepend t)
+         "** %(format-time-string \"%Y-%m-%d %b %H:%M\")\n\n%? %^{Effort}p" :clock-in t)
 
         ("f" "Fieldnote" entry (file+headline "~/Documents/org/fieldwork.org" "Fieldnotes")
-	 "** %(format-time-string \"%d %b %Y\")\n%? %^{Effort}p" :clock-in t :prepend t)
+	 "** %(format-time-string \"%d %b %Y\")\n%? %^{Effort}p" :clock-in t)
       
         ("c" "Contact" entry (file+headline "~/Documents/org/contacts.org" "Contacts")
 	 "** %(org-contacts-template-name)
@@ -802,7 +802,7 @@
 (global-set-key (kbd "C-x c") 'calendar)
 (global-set-key (kbd "C-c C") 'org-contacts)
 (global-set-key (kbd "C-c f") 'reveal-in-finder)
-(global-set-key (kbd "C-c m") (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
+(global-set-key (kbd "C-c m") (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 
 ;; evaluate buffer and region
 
@@ -841,7 +841,8 @@
 
 ;; move cursor to any position in the current view
 
-(global-set-key (kbd "C-x SPC") #'ace-jump-mode)
+(global-set-key (kbd "C-x SPC") #'avy-goto-word-1)
+(global-set-key (kbd "M-g g") #'avy-goto-line)
 
 ;; move between windows
 
@@ -854,9 +855,6 @@
 
 (require 'ivy)
 (global-set-key (kbd "C-s") 'swiper) ; C-l recenter; M-q query-replace
-(define-key ivy-minibuffer-map (kbd "C-j") 'ivy-next-line-or-history)
-(define-key ivy-minibuffer-map (kbd "C-k") 'ivy-previous-line-or-history)
-(define-key ivy-minibuffer-map (kbd "C-SPC") 'ivy-done)
 
 ;; use hippie-expand instead of dabbrev
 
@@ -910,7 +908,7 @@
 
 ;; avoid backspace and return keys; use C-m or C-j instead
 
-(global-set-key (kbd "C-h") 'delete-backward-char)
+;; (global-set-key (kbd "C-h") 'delete-backward-char)
 (global-set-key (kbd "M-h") 'backward-delete-word) ; use C-DEL to backward-kill-word
 (global-set-key (kbd "M-d") 'delete-word)          ; instead of kill-word
 (global-set-key (kbd "M-DEL") 'backward-delete-word)
@@ -921,15 +919,7 @@
 
 ;; help commands
 
-(global-set-key (kbd "C-c h") 'help-command) ; [i]nfo; [k]ey;
-					   ; [v]ariable; [f]unction;
-					   ; [d]ocumentation;
-					   ; [b]inding; [r]manual;
-					   ; [K]Info-goto-emacs-key-command-node
-					   ; [h] helm-apropos
-					   ; M-x find-library
-					   ; M-x bug-hunter-file RET e
-(global-set-key (kbd "C-c h h") 'helm-apropos)
+(global-set-key (kbd "C-h h") 'helm-apropos)
 
 ;; avoid arrow keys when promoting and demoting lists
 
@@ -1057,7 +1047,8 @@
 (setq guide-key/popup-window-position (quote bottom))
 (setq guide-key/guide-key-sequence '("M-p"   ; mplayer/emms
                                      "M-i"
-				     "C-c h"
+				     "M-g"
+				     "C-h"
                                      "C-c p"
                                      "C-c i"
                                      "C-x r"
@@ -1202,7 +1193,7 @@
 (setq org-clock-out-remove-zero-time-clocks t)
 
 (setq org-columns-default-format "%50ITEM(Task) %6Effort(Effort Estimate){:} %6CLOCKSUM(Actual Time)")
-(setq org-global-properties (quote (("Effort_ALL" . "0:02 0:05 0:10 0:15 0:20 0:25 1:00 2:00 4:00")
+(setq org-global-properties (quote (("Effort_ALL" . "0:25 0:02 0:05 0:10 0:15 0:20 0:40 1:00 2:00 4:00")
                                     ("STYLE_ALL" . "habit"))))
 
 ;; archive and refile entries
@@ -2028,3 +2019,11 @@ and append a date to it using date2name."
 (add-hook 'yaml-mode-hook
 	  '(lambda ()
 	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
+
+(require 'test)
+
+;; meditation timer
+
+(add-to-list 'load-path "~/Documents/git/org-meditation")
+(require 'org-meditation)
+(define-key org-agenda-mode-map "1" 'org-meditation)
