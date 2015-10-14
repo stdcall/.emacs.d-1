@@ -9,7 +9,7 @@
 ;; | C-k   | stop                         |
 ;; | C-M-j | decrease playback speed (5%) |
 ;; | C-M-k | resent playback speed (100%) |
-;; | M-i   | copy time                    |
+;; | C-i   | copy time                    |
 ;; | M-j   | play slow speed              |
 ;; | M-k   | play real speed              |
 
