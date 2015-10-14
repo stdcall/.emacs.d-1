@@ -1547,13 +1547,24 @@ The app is chosen from your OS's preference."
 
 ;; mark task as done in the agenda buffer
 
-(defun sacha/org-agenda-done (&optional arg)
-  "Mark current TODO as done. This changes the line at point, all
-other lines in the agenda referring to the same tree node, and
-the headline of the tree node in the Org-mode file."
-  (interactive "P")
-  (org-agenda-todo "DONE"))
-(define-key org-agenda-mode-map "d" 'sacha/org-agenda-done)
+(defun jag/org-agenda-done ()
+  "Mark item at point as done only if it is not scheduled to
+repeat."
+  (interactive)
+  (save-excursion
+      (org-agenda-switch-to)
+      (org-narrow-to-subtree)
+      (goto-char (point-min))
+      (if (re-search-forward ":repeat:" nil 'noerror)
+	  (message "This item repeats. Press \"E\" to check or \":\" to remove restriction.")
+	(progn
+	    (switch-to-buffer "*Org Agenda*")
+	    (org-agenda-todo "DONE"))
+	)
+      (widen)
+      (switch-to-buffer "*Org Agenda*")))
+
+(define-key org-agenda-mode-map "d" 'jag/org-agenda-done)
 
 (defun sacha/org-agenda-next (&optional arg)
   "Mark current TODO as NEXT. This changes the line at point, all
