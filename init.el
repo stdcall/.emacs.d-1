@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-10-14>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-10-30>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -57,7 +57,7 @@
 ;; cycle through this set of themes
 
 (setq my-themes
-      '(stekene-dark ir-black)) ;wombat, darkburn
+      '(badger noctilux))
 
 (setq my-cur-theme nil)
 (defun cycle-my-theme ()
@@ -192,6 +192,34 @@
 (setq org-completion-use-ido t)
 (setq org-outline-path-complete-in-steps nil)
 (setq-default read-buffer-completion-ignore-case t)
+
+;; flex matching
+
+(require 'flx-ido)
+(flx-ido-mode 1)
+
+;; disable ido faces to see flx highlights
+
+(setq ido-use-faces nil)
+
+;; display ido prospects in a grid
+
+(require 'ido-grid-mode)
+(ido-grid-mode 1)
+(setq ido-grid-mode-keys nil)
+
+;; grid navigation
+
+(add-hook 'ido-setup-hook
+	  (lambda ()
+	    (define-key ido-completion-map (kbd "C-k") 'ido-grid-mode-down)  ;;    i/p
+	    (define-key ido-completion-map (kbd "C-i") 'ido-grid-mode-up)    ;;     |
+	    (define-key ido-completion-map (kbd "C-p") 'ido-grid-mode-up)    ;; j <-+-> l
+	    (define-key ido-completion-map (kbd "C-n") 'ido-grid-mode-down)  ;;     |
+	    (define-key ido-completion-map (kbd "C-j") 'ido-grid-mode-left)  ;;    k/n
+	    (define-key ido-completion-map (kbd "C-l") 'ido-grid-mode-right)
+	    (define-key ido-completion-map (kbd "C-M-k") 'ido-kill-buffer-at-head)
+	    ))
 
 ;; ignore buffers, files and directories, press C-a to toggle
 
@@ -383,7 +411,7 @@
 			 (?d . ",%l")	            ;-->  append
 			 (?k . "%l")	            ;-->  insert key
 			 (?i . "%t")		    ;-->  insert title
-			 (?n . "** TODO $%A (%y) %t\n:PROPERTIES:\n:Custom_ID: %l\n:END:\n[[cite:%l]]\n\n")
+			 (?n . "** $%A (%y) %t\n:PROPERTIES:\n:Custom_ID: %l\n:END:\n[[citep:%l]]\n\n")
 			 )))))
 
 (defun org-reftex-maps ()
@@ -447,7 +475,7 @@
 ;; BibTeX database manager
 
 (autoload 'ebib "ebib" t)
-(setq ebib-preload-bib-files (quote ("~/Documents/org/refs.bib")))
+(setq ebib-preload-bib-files (quote ("~/documents/org/refs.bib")))
 (setq ebib-index-display-fields '(title))
 (setq ebib-field-separator ", ")
 
@@ -671,8 +699,11 @@
         ("h" "Habit" entry (file+headline "~/Documents/org/todo.org" "Habits")
          "** TODO %?\n   SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
 
-	("&" "Email" entry (file+headline "~/Documents/org/todo.org" "Tasks")
-	 "** TODO reply to %a %(jag/set-mail-tag)\n" :prepend t :immediate-finish t) ;requires org-mu4e
+	("&" "E-mail" entry (file+headline "~/Documents/org/todo.org" "Tasks")
+	 "** TODO %? %a %(jag/set-mail-tag)\n" :prepend t) ;requires org-mu4e
+
+	("^" "E-mail appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
+	 "** %?\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%a" :prepend t)
 
 	("#" "Hold" entry (file+headline "~/Documents/org/todo.org" "Tickler")
 	 "** TODO delete %a %(jag/set-mail-tag)\n   SCHEDULED: %^t\n" :prepend t :immediate-finish t)
@@ -694,6 +725,7 @@
 (setq org-capture-templates-contexts
       '(("#" ((in-mode . "mu4e-view-mode")))
 	("&" ((in-mode . "mu4e-view-mode")))
+	("^" ((in-mode . "mu4e-view-mode")))
 	("F" ((in-file . "orientation.org")))
 	("S" ((in-file . "orientation.org")))
 	))
@@ -1292,6 +1324,7 @@
 (setq org-use-speed-commands t)
 (add-to-list 'org-speed-commands-user '("d" org-todo "DONE"))
 (add-to-list 'org-speed-commands-user '("x" org-todo "NEXT"))
+(add-to-list 'org-speed-commands-user '("k" org-todo ""))
 (add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
 (add-to-list 'org-speed-commands-user '("r" call-interactively 'org-refile))
 (add-to-list 'org-speed-commands-user '("A" call-interactively 'org-archive-subtree-default))
@@ -1341,9 +1374,11 @@ asynchronously, in another process."
 
 ;; statistical programming
 
+(require 'ess-site)
 (setq ess-eval-visibly-p nil)
 (setq ess-ask-for-ess-directory nil)
 (show-paren-mode 1)
+(add-to-list 'auto-mode-alist '("\\.R$" . R-mode))
 
 ;; LilyPond for writing music scores
 
@@ -2031,10 +2066,10 @@ and append a date to it using date2name."
 	  '(lambda ()
 	     (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
 
-(require 'test)
-
 ;; meditation timer
 
 (add-to-list 'load-path "~/Documents/git/org-meditation")
 (require 'org-meditation)
 (define-key org-agenda-mode-map "1" 'org-meditation)
+
+(require 'test)
