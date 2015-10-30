@@ -94,6 +94,7 @@ signature line."
 
 (setq mu4e-view-actions			;press a
       '(("capture action" . jag/mu4e-capture-message)
+	("appt" . jag/mu4e-capture-appt)
 	;; ("capture message" . mu4e-action-capture-message)
 	;; ("view as pdf" . mu4e-action-view-as-pdf) ;TODO: install msg2pdf
 	("tag" . mu4e-action-retag-message)
@@ -127,6 +128,11 @@ point."
   "Capture an action and link it to the original message. The
 function uses`org-capture' and adds the task to the agenda."
   (org-capture nil "&"))
+
+(defun jag/mu4e-capture-appt (msg)
+  "Capture an appointment and link it to the original message. The
+function uses`org-capture' and adds the task to the agenda."
+  (org-capture nil "^"))
 
 ;; enable spell checking when composing a message
 
@@ -391,12 +397,12 @@ another after the header."
 (define-key mu4e-view-mode-map (kbd "<backspace>") 'jag/mu4e-scroll-down)
 
 (defun jag/mu4e-scroll-up ()
-  "Scroll text of selected window up one line."
+  "Scroll text of selected window up 4 line."
   (interactive)
   (scroll-up-1 4))
 
 (defun jag/mu4e-scroll-down ()
-  "Scroll text of selected window down one line."
+  "Scroll text of selected window down 4 line."
   (interactive)
   (scroll-down-1 4))
 
