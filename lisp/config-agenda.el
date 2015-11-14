@@ -37,7 +37,7 @@
           (tags "LEVEL=2+CATEGORY=\"appt\"+TIMESTAMP<\"<today>\"-repeat"
                 ((org-agenda-overriding-header "Past appointments")
                  (org-agenda-skip-function nil)))
-          (tags "TODO=\"DONE\"-exclude-CATEGORY=\"practice\"|+TODO=\"CANCELED\""
+          (tags "TODO=\"DONE\"-exclude-CATEGORY={practice\\|garden}|+TODO=\"CANCELED\""
                 ((org-agenda-overriding-header "Tasks to Refile") ;to archive, press m B $
                  (org-agenda-skip-function nil))))
          ((org-agenda-remove-tags nil)
@@ -154,16 +154,6 @@
 	  ((org-agenda-with-colors nil)
 	  (org-agenda-compact-blocks t))
 	  ("~/ownCloud/groceries.txt"))
-
-        ;; ("pi" "interview"
-        ;;  ((tags-todo "LEVEL=3+CATEGORY=\"query\"+next-exclude"
-        ;;              ((org-agenda-overriding-header "Interview:")))
-        ;;   (tags-todo "query-exclude"
-        ;;              ((org-agenda-overriding-header "Queries:\n"))))
-        ;;  ((org-agenda-with-colors nil)
-        ;;   (org-agenda-prefix-format "\n-")
-        ;;   (org-agenda-todo-keyword-format ""))
-        ;;  ("~/ownCloud/interview.txt"))
 
         ("r" "practice"
          ((tags "LEVEL>=3+CATEGORY=\"practice\"-exclude+next"
