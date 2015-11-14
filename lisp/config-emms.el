@@ -210,7 +210,7 @@ window and return to the playlist buffer."
 (global-set-key (kbd "M-p p") 'emms-start)
 (global-set-key (kbd "M-p s") 'emms-stop)
 (global-set-key (kbd "M-p SPC") 'emms-pause)
-(global-set-key (kbd "M-p ]") 'emms-next-noerror)
+(global-set-key (kbd "M-p ]") 'emms-next)
 (global-set-key (kbd "M-p [") 'emms-previous)
 
 (global-set-key (kbd "M-p a") 'emms-bookmarks-add)
