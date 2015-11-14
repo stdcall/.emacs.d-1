@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-10-30>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-11-14>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -130,16 +130,6 @@
 (setq version-control t)
 (setq vc-make-backup-files t)
 
-;; deft for browsing org files
-
-(setq deft-extension "org")
-(setq deft-directory "~/Documents/org/")
-(setq deft-text-mode 'org-mode)
-(setq deft-use-filename-as-title t)
-(setq deft-use-filter-string-for-filename t)
-(global-set-key (kbd "\C-cd") 'deft)
-(add-hook 'deft-mode-hook 'hl-line-mode)
-
 ;; org-mode for managing notes, tasks and documents
 
 (require 'org)
@@ -157,9 +147,20 @@
 (setq initial-scratch-message
       (concat "# GNU Emacs " emacs-version " (Org mode " org-version")\n\n"))
 
+;; deft for browsing org files
+
+(setq deft-extension "org")
+(setq deft-directory "~/Documents/org/")
+(setq deft-text-mode 'org-mode)
+(setq deft-use-filename-as-title t)
+(setq deft-use-filter-string-for-filename t)
+(global-set-key (kbd "\C-cd") 'deft)
+(add-hook 'deft-mode-hook 'hl-line-mode)
+
 ;; helm for managing open files
 
 (require 'helm-config)
+(global-set-key (kbd "C-r") 'helm-resume)
 (global-set-key (kbd "C-c s") 'helm-swoop)
 (define-key org-mode-map (kbd "C-;") 'helm-org-in-buffer-headings)
 (define-key isearch-mode-map (kbd "C-c S") 'helm-swoop-from-isearch)
@@ -171,6 +172,12 @@
 
 (setq helm-swoop-pre-input-function
       (lambda () ""))
+
+;; the silver searcher
+
+(require 'helm-ag)
+(global-set-key (kbd "C-c F") 'helm-ag)
+(setq helm-ag-fuzzy-match t)
 
 ;; projectile for managing large projects
 
@@ -212,13 +219,15 @@
 
 (add-hook 'ido-setup-hook
 	  (lambda ()
-	    (define-key ido-completion-map (kbd "C-k") 'ido-grid-mode-down)  ;;    i/p
-	    (define-key ido-completion-map (kbd "C-i") 'ido-grid-mode-up)    ;;     |
-	    (define-key ido-completion-map (kbd "C-p") 'ido-grid-mode-up)    ;; j <-+-> l
-	    (define-key ido-completion-map (kbd "C-n") 'ido-grid-mode-down)  ;;     |
-	    (define-key ido-completion-map (kbd "C-j") 'ido-grid-mode-left)  ;;    k/n
-	    (define-key ido-completion-map (kbd "C-l") 'ido-grid-mode-right)
-	    (define-key ido-completion-map (kbd "C-M-k") 'ido-kill-buffer-at-head)
+	    (define-key ido-completion-map (kbd "C-k") #'ido-grid-mode-down)  ;;   i/p/r
+	    (define-key ido-completion-map (kbd "C-i") #'ido-grid-mode-up)    ;;     |
+	    (define-key ido-completion-map (kbd "C-p") #'ido-grid-mode-up)    ;; j <-+-> l
+	    (define-key ido-completion-map (kbd "C-n") #'ido-grid-mode-down)  ;;     |
+	    (define-key ido-completion-map (kbd "C-j") #'ido-grid-mode-left)  ;;   k/n/s
+	    (define-key ido-completion-map (kbd "C-l") #'ido-grid-mode-right)
+	    (define-key ido-completion-map (kbd "C-M-k") #'ido-kill-buffer-at-head)
+	    (define-key ido-completion-map (kbd "C-s") #'ido-grid-mode-next)
+	    (define-key ido-completion-map (kbd "C-r") #'ido-grid-mode-previous)
 	    ))
 
 ;; ignore buffers, files and directories, press C-a to toggle
@@ -475,7 +484,7 @@
 ;; BibTeX database manager
 
 (autoload 'ebib "ebib" t)
-(setq ebib-preload-bib-files (quote ("~/documents/org/refs.bib")))
+(setq ebib-preload-bib-files (quote ("~/Documents/org/refs.bib")))
 (setq ebib-index-display-fields '(title))
 (setq ebib-field-separator ", ")
 
@@ -487,11 +496,15 @@
 (setq helm-bibtex-bibliography "~/Documents/org/refs.bib")
 (setq helm-bibtex-library-path "~/Documents/papers/")
 (setq helm-bibtex-notes-path "~/Documents/org/annotation.org")
+(setq helm-bibtex-full-frame nil)
+(setq helm-bibtex-number-of-optional-arguments 1)
+(setq helm-bibtex-cite-default-as-initial-input t)
 (setq helm-bibtex-additional-search-fields '(keywords tags))
 (setq helm-bibtex-notes-template
       "* $${author} (${year}) ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n")
 
-(global-set-key (kbd "C-c j") 'helm-bibtex)
+(global-set-key (kbd "C-c C-j") 'helm-bibtex)
+(define-key org-mode-map (kbd "C-c C-j") nil) ; org-goto
 
 ;; default action
 
@@ -507,7 +520,10 @@
 ;; add org-ref support
 
 (setq helm-bibtex-format-citation-functions
-      '((org-mode . helm-bibtex-format-citation-org-ref)))
+      '(
+	;; (org-mode . helm-bibtex-format-citation-org-ref)
+	(org-mode . helm-bibtex-format-citation-cite)
+	(latex-mode . helm-bibtex-format-citation-cite)))
 
 (defun helm-bibtex-format-citation-org-ref (keys)
   "Formatter for ebib references."
@@ -609,6 +625,7 @@
 (font-lock-add-keywords 'org-mode
                         '(("\\(\\\\cite\\)" . font-lock-keyword-face)
                           ("\\[\\([0-9]+\\)\\]" . font-lock-variable-name-face)
+                          ("\\[\\([0-9]+-[0-9]+\\)\\]" . font-lock-variable-name-face) ;ie [34-35]
                           ("\\s-*[[:upper:]]+[a-zA-Z-]+[0-9]+[a-z]" . font-lock-constant-face)))
 (font-lock-add-keywords 'org-mode
                         '(("\\(\\\\citep\\)" . font-lock-keyword-face)))
@@ -664,7 +681,7 @@
 #+name: expenses
 #+begin_src ledger
 %(org-read-date) * %^{Payed to}
-    expenses:%^{Spent on|cash:|donation:|entertainment:|food:|groceries:|home:|other:|personal:|rent:|transportation:|utilities:internet:|utilities:phone}%?  £%^{Amount}
+    expenses:%^{Spent on|donation:|entertainment:|food:|groceries:|home:|other:|personal:|rent:|transportation:|utilities:internet:|utilities:phone}%?  £%^{Amount}
     assets:%^{Debited from|bank:checking|bank:savings|cash}
 #+end_src\n
 " :prepend t)
@@ -700,7 +717,7 @@
          "** TODO %?\n   SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
 
 	("&" "E-mail" entry (file+headline "~/Documents/org/todo.org" "Tasks")
-	 "** TODO %? %a %(jag/set-mail-tag)\n" :prepend t) ;requires org-mu4e
+	 "** TODO %? %a %(jag/set-mail-tag)\n%^{Effort}p" :prepend t) ;requires org-mu4e
 
 	("^" "E-mail appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
 	 "** %?\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%a" :prepend t)
@@ -766,6 +783,7 @@
 	 (ledger . t)
          (lilypond . t)
          (plantuml . t)
+	 (clojure . t)
          (latex . t))))
 
 ;; make babel results block lowercase
@@ -1167,8 +1185,8 @@
 
 (require 'smooth-scroll)
 (smooth-scroll-mode t)
-(global-set-key (kbd "C-M-j") (lambda () (interactive) (scroll-up-1 4)))
-(global-set-key (kbd "C-M-k") (lambda () (interactive) (scroll-down-1 4)))
+(global-set-key (kbd "C-M-k") (lambda () (interactive) (scroll-up-1 4)))
+(global-set-key (kbd "C-M-j") (lambda () (interactive) (scroll-down-1 4)))
 
 (defhydra hydra-scroll (:hint nil
                               :pre (smooth-scroll-mode 0)
@@ -1379,6 +1397,7 @@ asynchronously, in another process."
 (setq ess-ask-for-ess-directory nil)
 (show-paren-mode 1)
 (add-to-list 'auto-mode-alist '("\\.R$" . R-mode))
+(add-to-list 'auto-mode-alist '("\\.r$" . R-mode))
 
 ;; LilyPond for writing music scores
 
@@ -1397,6 +1416,16 @@ asynchronously, in another process."
 ;; press C-c C-s to view pdf
 
 (setq LilyPond-pdf-command "open -a 'Skim'")
+
+;; music programming with overtone
+
+(add-to-list 'load-path "~/.emacs.d/scel/el")
+(require 'sclang)
+(require 'cider)
+(add-hook 'cider-mode-hook #'eldoc-mode)
+
+(setenv "PATH" (concat (getenv "PATH") ":/Applications/SuperCollider:/Applications/SuperCollider/SuperCollider.app/Contents/Resources"))
+(setq exec-path (append exec-path '("/Applications/SuperCollider"  "/Applications/SuperCollider/SuperCollider.app/Contents/Resources" )))
 
 ;; insert random uuid
 
@@ -1620,15 +1649,7 @@ the headline of the tree node in the Org-mode file."
 (setq org-tree-slide-slide-in-effect nil)
 (setq org-tree-slide-cursor-init nil)
 
-;; keyboard macro
-
-(fset 'jag/practice
-      (lambda (&optional arg) "Keyboard macro."
-	(interactive "p")
-	(kmacro-exec-ring-item
-	 (quote ([down 134217830 134217830 134217830 67108896 left left 134217827 1 3 24 116 25 return] 0 "%d")) arg)))
-
-(key-chord-define-global ",." 'jag/practice)
+;; frame and window
 
 (defun kill-buffer-and-its-frame ()
   "Kill the current buffer as well as its frame."
@@ -1756,6 +1777,36 @@ With argument, do this that many times."
 With argument, do this that many times."
   (interactive "p")
   (delete-word (- arg)))
+
+;; adjust space when killing or deleting words
+;; https://github.com/kaushalmodi/.emacs.d/blob/master/setup-files/setup-editing.el
+
+(defun modi/just-one-space-post-kill-word (&rest _)
+  "Function to manage white space after `kill-word' or `delete-word' operations.
+1. If point is at the beginning of the line after possibly some white space,
+   remove that white space and re-indent that line.
+2. If there is space before or after the point, ensure that there is only
+   one white space around the point.
+3. Otherwise, do nothing.
+During the whole operation do not change the point position with respect to the
+surrounding white space.
+abc|   def  ghi <-- point on the left of white space after 'abc'
+abc| ghi        <-- point still before white space after calling this function
+abc   |def  ghi <-- point on the right of white space before 'def'
+abc |ghi        <-- point still after white space after calling this function."
+  (save-excursion ; maintain the initial position of the pt with respect to space
+    (cond ((looking-back "^ *") ; remove extra space at beginning of line
+           (just-one-space 0)
+           (indent-according-to-mode))
+          ((or (looking-at   " ")
+               (looking-back " ")) ; adjust space only if it exists
+           (just-one-space 1))
+          (t ; do nothing otherwise, includes case where the point is at EOL
+           ))))
+;; Delete extra horizontal white space after `kill-word' and `backward-kill-word'
+(advice-add 'kill-word :after #'modi/just-one-space-post-kill-word)
+(advice-add 'delete-word :after #'modi/just-one-space-post-kill-word)
+(advice-add 'backward-delete-word :after #'modi/just-one-space-post-kill-word)
 
 ;; wrap text with punctation
 
@@ -2073,3 +2124,4 @@ and append a date to it using date2name."
 (define-key org-agenda-mode-map "1" 'org-meditation)
 
 (require 'test)
+
