@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-11-14>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-11-24>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -187,6 +187,10 @@
       '(:eval
         (format " Proj[%s]"
                 (projectile-project-name))))
+(setq projectile-completion-system 'helm)
+(setq projectile-switch-project-action 'helm-projectile)
+(setq helm-projectile-sources-list
+      '(helm-source-projectile-files-list helm-source-projectile-projects))
 
 ;;; switch between buffers, files and directories
 ;; M-n / M-p cycles through directories
@@ -214,6 +218,8 @@
 (require 'ido-grid-mode)
 (ido-grid-mode 1)
 (setq ido-grid-mode-keys nil)
+(setq ido-grid-mode-prefix-scrolls t)
+(setq ido-grid-mode-prefix ">> ")
 
 ;; grid navigation
 
@@ -379,15 +385,14 @@
 
 ;; RefTeX for managing citations
 
-(setq reftex-cite-format 'natbib)
-(setq reftex-cite-prompt-optional-args t)
 (setq reftex-default-bibliography '("~/Documents/org/refs.bib"))
+(setq org-link-abbrev-alist
+      '(("bib" . "~/Documents/org/refs.bib::%s")
+        ("annotation" . "~/Documents/org/annotation.org::#%s")
+        ("papers" . "~/Documents/papers/%s.pdf")))
 
-;; RefTeX and org-mode integration
-;; inspired by http://is.gd/Wjq0sg
-
-(defadvice reftex-format-citation (before eval-citation-format)
-  (setq format (eval format)))
+(add-hook 'org-mode-hook 'org-mode-reftex-setup)
+(add-hook 'org-mode-hook 'org-reftex-maps)
 
 (defun org-mode-reftex-setup ()
   (load-library "reftex")
@@ -398,37 +403,6 @@
          (reftex-parse-all)
 	 )))
 
-(add-hook 'org-mode-hook 'org-mode-reftex-setup)
-
-(eval-after-load 'reftex-vars		;see http://merkel.zoneo.net/Latex/natbib.php
-  '(progn
-     (add-to-list 'reftex-cite-format-builtin
-		  '(org "Org-mode citation"
-			((?c . "cite:%l")           ;-->  default
-			 (?t . "citet:%l")          ;-->  Jones et al. (1990)
-			 (?T . "[[citet:%l][]]")    ;-->  Jones et al. (1990, chap. 2)
-			 (?p . "citep:%l")	    ;-->  (Jones et al., 1990)
-			 (?P . "[[citep:%l][]]")    ;-->  (Jones et al., 1990, chap. 2)
-			 (?y . "citeyear:%l")	    ;-->  1990
-			 (?Y . "\\citeyearpar{%l}") ;-->  (1990)
-			 (?A . "citeauthor:%l")	    ;-->  Della Robbia
-			 (?a . "citealp:%l")	    ;-->  Jones et al., 1990
-			 (?o . "nocite:%l")         ;-->  include ref not cited, see \nocite{*}
-			 (?s . "\\citet[][]{%l}")   ;-->  (see Jones et al., 1990, chap. 2)
-			 (?m . "citet*:%l")         ;-->  Jones, Baker, and Williams (1990)
-			 (?M . "citep*:%l")         ;-->  (Jones, Baker, and Williams, 1990)
-			 (?d . ",%l")	            ;-->  append
-			 (?k . "%l")	            ;-->  insert key
-			 (?i . "%t")		    ;-->  insert title
-			 (?n . "** $%A (%y) %t\n:PROPERTIES:\n:Custom_ID: %l\n:END:\n[[citep:%l]]\n\n")
-			 )))))
-
-(defun org-reftex-maps ()
-  (define-key org-mode-map (kbd "C-c [") 'reftex-citation)
-  (define-key org-mode-map (kbd "C-c ]") 'org-mode-reftex-search))
-
-(add-hook 'org-mode-hook 'org-reftex-maps)
-
 ;; jump to entry
 
 (defun org-mode-reftex-search ()
@@ -437,12 +411,9 @@
   (org-open-link-from-string (format "[[annotation:%s]]" (first (reftex-citation t))))
   )
 
-;; abbreviations
-
-(setq org-link-abbrev-alist
-      '(("bib" . "~/Documents/org/refs.bib::%s")
-        ("annotation" . "~/Documents/org/annotation.org::#%s")
-        ("papers" . "~/Documents/papers/%s.pdf")))
+(defun org-reftex-maps ()
+  ;; (define-key org-mode-map (kbd "C-c [") 'reftex-citation)
+  (define-key org-mode-map (kbd "C-c ]") 'org-mode-reftex-search))
 
 ;; org-ref compatibility issue
 
@@ -452,41 +423,31 @@
 
 ;; org-ref for managing citations
 
-(add-to-list 'load-path "~/.emacs.d/org-ref")
-(require 'org-ref)
-
-(setq org-ref-cite-onclick-function 'org-ref-cite-onclick-minibuffer-menu)
-(setq org-ref-insert-cite-function 'org-ref-insert-cite-link)
-(setq org-ref-show-citation-on-enter nil)
-
 (setq org-ref-bibliography-notes "~/Documents/org/annotation.org"
       org-ref-default-bibliography '("~/Documents/org/refs.bib")
       org-ref-pdf-directory "~/Documents/papers/")
-
-(setq org-ref-default-citation-link "citep")
+(setq org-ref-cite-onclick-function 'org-ref-cite-onclick-minibuffer-menu)
+(setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
+(setq org-ref-show-citation-on-enter nil)
 (setq org-ref-colorize-links nil)
+(setq org-ref-note-title-format
+      "** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\ncite:%k\n\n")
 
 (define-key org-mode-map (kbd "C-M-p") 'org-toggle-link-display)
 
 ;; custom open notes function
-;; keep properties drawer folded and narrow to subtree
 
 (setq org-ref-open-notes-function
-      (lambda ()
-        (org-show-entry)
-        (org-narrow-to-subtree)
-        (show-children)
-        (outline-previous-visible-heading 1)
-	(recenter-top-bottom 0)
+      (lambda nil
+	(org-show-entry)
+	(org-narrow-to-subtree)
 	(show-children)
-        ))
+	(outline-previous-visible-heading 1)
+	(recenter-top-bottom 0)
+	(show-children)))
 
-;; BibTeX database manager
-
-(autoload 'ebib "ebib" t)
-(setq ebib-preload-bib-files (quote ("~/Documents/org/refs.bib")))
-(setq ebib-index-display-fields '(title))
-(setq ebib-field-separator ", ")
+(add-to-list 'load-path "~/Documents/git/org-ref")
+(require 'org-ref)
 
 ;; helm-bibtex for managing bibliographies
 ;; press M-a to select all entries or C-SPC to mark entries individually
@@ -500,11 +461,11 @@
 (setq helm-bibtex-number-of-optional-arguments 1)
 (setq helm-bibtex-cite-default-as-initial-input t)
 (setq helm-bibtex-additional-search-fields '(keywords tags))
-(setq helm-bibtex-notes-template
-      "* $${author} (${year}) ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n")
+(setq helm-bibtex-notes-template-one-file
+      "** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\n\n")
 
 (global-set-key (kbd "C-c C-j") 'helm-bibtex)
-(define-key org-mode-map (kbd "C-c C-j") nil) ; org-goto
+(define-key org-mode-map (kbd "C-c C-j") nil) ; was org-goto
 
 ;; default action
 
@@ -517,18 +478,42 @@
       (lambda (fpath)
         (start-process "open" "*open*" "open" fpath)))
 
-;; add org-ref support
+;; format citation style
 
 (setq helm-bibtex-format-citation-functions
-      '(
-	;; (org-mode . helm-bibtex-format-citation-org-ref)
-	(org-mode . helm-bibtex-format-citation-cite)
+      '((org-mode . jag/helm-bibtex-format-citation-cite)
 	(latex-mode . helm-bibtex-format-citation-cite)))
 
-(defun helm-bibtex-format-citation-org-ref (keys)
-  "Formatter for ebib references."
-  (s-join ", "
-          (--map (format "citep:%s" it) keys)))
+;; prompt once and use org-ref syntax
+
+(defun jag/helm-bibtex-format-citation-cite (keys)
+  "Formatter for LaTeX citation commands.  Prompts for the command and
+for arguments if the commands can take any."
+  (let* ((initial (when helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
+         (default (unless helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
+         (default-info (if default (format " (default \"%s\")" default) ""))
+         (cite-command (ido-completing-read
+                        (format "Cite command%s: " default-info)
+                        helm-bibtex-cite-commands nil nil initial
+                        'helm-bibtex-cite-command-history default nil)))
+    (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
+        (format "%s:%s" cite-command (s-join ", " keys))
+      (if (= helm-bibtex-number-of-optional-arguments 0)
+          (format "%s:%s" cite-command (s-join ", " keys))
+        (if (= helm-bibtex-number-of-optional-arguments 1)
+            (let ((pos (if (= helm-bibtex-number-of-optional-arguments 1)
+                           (read-from-minibuffer "Postnote[1]: ") "")))
+              (if (and (= helm-bibtex-number-of-optional-arguments 1) (string= "" pos))
+                  (format "%s:%s" cite-command (s-join ", " keys))
+                (format "[[%s:%s][%s]]"  cite-command (s-join ", " keys) pos)))
+          (let ((pre (if (= helm-bibtex-number-of-optional-arguments 2)
+                         (read-from-minibuffer "Prenote[1]: ") ""))
+                (pos (if (= helm-bibtex-number-of-optional-arguments 2)
+                         (read-from-minibuffer "Postnote[2]: ") "")))
+            (if (and (= helm-bibtex-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
+                (format "%s:%s" cite-command (s-join ", " keys))
+              (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join ", " keys)))
+            ))))))
 
 (setq helm-bibtex-fallback-options 
       (quote (("Google Scholar" . "http://scholar.google.co.uk/scholar?q=%s")
@@ -906,10 +891,6 @@
 (require 'ivy)
 (global-set-key (kbd "C-s") 'swiper) ; C-l recenter; M-q query-replace
 
-;; use hippie-expand instead of dabbrev
-
-(global-set-key (kbd "M-/") 'hippie-expand)
-
 ;; increase selected region by semantic units
 
 (global-set-key (kbd "C-M-3") 'er/expand-region)
@@ -1012,6 +993,7 @@
 (define-key org-mode-map (kbd "C-'") nil) ; org-cycle-agenda-files
 (define-key org-mode-map (kbd "C-,") nil) ; org-cycle-agenda-files
 (define-key org-mode-map (kbd "M-p") nil) ; org-shiftup
+(define-key org-mode-map (kbd "C-c [") nil) ; org-agenda-file-to-front
 
 ;; another option for moving to the previous line
 
@@ -1160,9 +1142,9 @@
 (require 'org-habit)
 (require 'org-id)
 (require 'ox-org)
-(require 'ox-bibtex)
 (require 'ox-beamer)
 (require 'org-mouse)
+;; (require 'ox-bibtex)
 ;; (require 'org-contacts)
 ;; (require 'ox-odt)
 
@@ -1233,7 +1215,7 @@
 (setq org-src-tab-acts-natively t)
 (setq org-src-preserve-indentation t)
 (setq org-log-into-drawer t)
-(setq org-return-follows-link t)
+(setq org-return-follows-link nil) 	;FIXME:
 (setq org-cycle-global-at-bob t)
 (setq org-id-method (quote uuidgen))
 (setq org-id-link-to-org-use-id
@@ -2124,4 +2106,3 @@ and append a date to it using date2name."
 (define-key org-agenda-mode-map "1" 'org-meditation)
 
 (require 'test)
-
