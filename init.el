@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-11-24>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-11-25>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -431,7 +431,7 @@
 (setq org-ref-show-citation-on-enter nil)
 (setq org-ref-colorize-links nil)
 (setq org-ref-note-title-format
-      "** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\ncite:%k\n\n")
+      "** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
 
 (define-key org-mode-map (kbd "C-M-p") 'org-toggle-link-display)
 
@@ -448,6 +448,7 @@
 
 (add-to-list 'load-path "~/Documents/git/org-ref")
 (require 'org-ref)
+(require 'jmax-bibtex)
 
 ;; helm-bibtex for managing bibliographies
 ;; press M-a to select all entries or C-SPC to mark entries individually
@@ -492,27 +493,27 @@ for arguments if the commands can take any."
   (let* ((initial (when helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
          (default (unless helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
          (default-info (if default (format " (default \"%s\")" default) ""))
-         (cite-command (ido-completing-read
+         (cite-command (completing-read
                         (format "Cite command%s: " default-info)
                         helm-bibtex-cite-commands nil nil initial
                         'helm-bibtex-cite-command-history default nil)))
     (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
-        (format "%s:%s" cite-command (s-join ", " keys))
+        (format "%s:%s" cite-command (s-join "," keys))
       (if (= helm-bibtex-number-of-optional-arguments 0)
-          (format "%s:%s" cite-command (s-join ", " keys))
+          (format "%s:%s" cite-command (s-join "," keys))
         (if (= helm-bibtex-number-of-optional-arguments 1)
             (let ((pos (if (= helm-bibtex-number-of-optional-arguments 1)
                            (read-from-minibuffer "Postnote[1]: ") "")))
               (if (and (= helm-bibtex-number-of-optional-arguments 1) (string= "" pos))
-                  (format "%s:%s" cite-command (s-join ", " keys))
-                (format "[[%s:%s][%s]]"  cite-command (s-join ", " keys) pos)))
+                  (format "%s:%s" cite-command (s-join "," keys))
+                (format "[[%s:%s][%s]]"  cite-command (s-join "," keys) pos)))
           (let ((pre (if (= helm-bibtex-number-of-optional-arguments 2)
                          (read-from-minibuffer "Prenote[1]: ") ""))
                 (pos (if (= helm-bibtex-number-of-optional-arguments 2)
                          (read-from-minibuffer "Postnote[2]: ") "")))
             (if (and (= helm-bibtex-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
-                (format "%s:%s" cite-command (s-join ", " keys))
-              (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join ", " keys)))
+                (format "%s:%s" cite-command (s-join "," keys))
+              (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join "," keys)))
             ))))))
 
 (setq helm-bibtex-fallback-options 
@@ -654,10 +655,7 @@ for arguments if the commands can take any."
          "- %?" :prepend t)
 
 	("n" "Note" entry (file+headline "~/Documents/org/todo.org" "Notes")
-         "** %?%i" :prepend t)
-		
-        ("m" "Meeting" entry (file+headline "~/Documents/org/todo.org" "Meeting")
-         "** TODO %?%i\n%a" :prepend t)
+         "** %?%i\n%U" :prepend t)
 
 	("l" "Ledger")
 			
@@ -1279,6 +1277,7 @@ for arguments if the commands can take any."
 (setq org-tags-exclude-from-inheritance '("project"))
 (setq org-log-done 'time)
 (setq org-agenda-dim-blocked-tasks nil)
+(setq org-agenda-use-time-grid nil)
 (add-hook 'org-agenda-mode-hook 'hl-line-mode)
 
 ;; extend current day to 1 hour after midnight
@@ -2106,3 +2105,4 @@ and append a date to it using date2name."
 (define-key org-agenda-mode-map "1" 'org-meditation)
 
 (require 'test)
+
