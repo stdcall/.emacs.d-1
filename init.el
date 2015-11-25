@@ -482,13 +482,13 @@
 ;; format citation style
 
 (setq helm-bibtex-format-citation-functions
-      '((org-mode . jag/helm-bibtex-format-citation-cite)
+      '((org-mode . jag/helm-bibtex-format-citation-org-ref)
 	(latex-mode . helm-bibtex-format-citation-cite)))
 
 ;; prompt once and use org-ref syntax
 
-(defun jag/helm-bibtex-format-citation-cite (keys)
-  "Formatter for LaTeX citation commands.  Prompts for the command and
+(defun jag/helm-bibtex-format-citation-org-ref (keys)
+  "Formatter for org-ref citation commands.  Prompts for the command and
 for arguments if the commands can take any."
   (let* ((initial (when helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
          (default (unless helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
