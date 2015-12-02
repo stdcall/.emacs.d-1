@@ -76,10 +76,19 @@ signature line."
 (setq mu4e-headers-skip-duplicates t)
 (setq mu4e-compose-dont-reply-to-self t)
 (setq mu4e-view-show-addresses t)
-(setq mu4e-view-show-images nil)
 (setq mu4e-date-format-long "%Y-%m-%d %H:%M")
 (setq mu4e-headers-date-format "%Y-%m-%d %H:%M")
 (setq mu4e-html2text-command "w3m -I utf8 -O utf8 -T text/html")
+
+;; enable inline images
+
+(setq mu4e-view-show-images t
+      mu4e-view-image-max-width 500)
+
+;; use imagemagick, if available
+
+(when (fboundp 'imagemagick-register-types)
+  (imagemagick-register-types))
 
 ;; define actions
 
