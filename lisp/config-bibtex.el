@@ -17,15 +17,15 @@
 
 ;;; See also:
 ;; https://github.com/jkitchin/org-ref/blob/master/jmax-bibtex.el
+;; http://www.brl.ntt.co.jp/people/leroux/bibtex-mode.html
 
-(defcustom bib-config (when load-file-name
-			(concat (file-name-directory load-file-name) "config-bibtex.el"))
-  "The path to the bibtex configuration file.")
-
-;; generate key automatically
+;;; generate key automatically
+;; ie. Smith2015s (author's last name / year / first letter of the
+;; title). Increasing the value of bibtex-autokey-titleword-length
+;; should increase the key's entropy and avoid yielding duplicate
+;; keys.
 
 (setq bibtex-autokey-name-year-separator ""
-      bibtex-autokey-name-case-convert 'identity
       bibtex-autokey-year-title-separator ""
       bibtex-autokey-year-length 4
       bibtex-autokey-titleword-separator ""
@@ -36,44 +36,42 @@
 
 ;; cleanup entries
 
-(setq bibtex-autokey-before-presentation-function #'bibtex-capitalize-key)
+(defun bibtex-cleanup-entry ()
+  "Cleanup bibtex entry."
+  (interactive)
+  (bibtex-beginning-of-entry)
+  (save-excursion
+    (bibtex-delete-key)
+    (bibtex-replace-nonascii)
+    (bibtex-replace-naked-ampersand)
+    (bibtex-last-comma)
+    (bibtex-clean-entry)
+    (let ((key (bibtex-key-in-head)))
+      (when (bibtex-key-in-head)
+	(message "Formatting %s (done)" key)))))
+
+(add-hook 'bibtex-mode-hook
+     (lambda ()
+      (define-key bibtex-mode-map (kbd "C-c C-c") #'bibtex-cleanup-entry)))
+
+(setq bibtex-autokey-before-presentation-function 'bibtex-capitalize-key)
 
 (defun bibtex-capitalize-key (key)
-  "Capitalize BibTeX key before generated key is presented. See
+  "Capitalize bibtex key before generated key is presented. See
 `bibtex-autokey-before-presentation-function'."
   (save-excursion
-    (bibtex-search-entry key)
-    (capitalize key))
-  (message "%s" key))
+    (let ((cap-key (capitalize key)))
+      (bibtex-search-entry cap-key)
+      (message "%s" cap-key))))
 
 (defun bibtex-delete-key ()
-  "Delete BibTeX key of the entry at point."
-  (interactive)
+  "Delete bibtex key of the entry at point."
   (save-excursion
     (bibtex-beginning-of-entry)
     (re-search-forward bibtex-entry-maybe-empty-head)
     (if (match-beginning bibtex-key-in-head)
 	(delete-region (match-beginning bibtex-key-in-head)
 		       (match-end bibtex-key-in-head)))))
-
-(defun bibtex-cleanup-entry ()
-  "Delete old key before generating a new one and cleanup entry.
-See `bibtex-clean-entry', `bibtex-replace-nonascii' and
-`bibtex-replace-naked-ampersand' for more information."
-  (interactive)
-  (let ((buf (current-buffer)))
-    (with-temp-buffer
-      (insert-file-contents bib-config)
-      (eval-buffer)
-      (switch-to-buffer buf))
-    (bibtex-delete-key)
-    (bibtex-replace-nonascii)
-    (bibtex-replace-naked-ampersand)
-    (bibtex-clean-entry)))
-
-(add-hook 'bibtex-mode-hook
-     (lambda ()
-      (define-key bibtex-mode-map (kbd "C-c C-c") #'bibtex-cleanup-entry)))
 
 ;; replace non-ascii characters
 
@@ -120,8 +118,24 @@ equivalent."
     (replace-regexp " & " " \\\\& ")
     (widen)))
 
-;; press C-c C-q to format individual entries, or M-x bibtex-reformat
-;; to format all entries in the buffer
+(defun bibtex-last-comma ()
+  "Insert or delete comma after last field according to
+`bibtex-comma-after-last-field'."
+  ;; the variable had no effect on the original function. I think
+  ;; because looking-at was used instead of looking-back.
+  (interactive)
+  (save-excursion
+    (bibtex-end-of-entry)
+    (previous-line)
+    (end-of-line)
+    (if (and bibtex-comma-after-last-field (not (looking-back ",")))
+	(insert ","))
+    (if (and (not bibtex-comma-after-last-field)
+	     (looking-back ","))
+	(delete-backward-char 1))))
+
+;; press C-c C-q to reformat individual entries, or M-x
+;; bibtex-reformat to reformat all entries
 
 (setq bibtex-align-at-equal-sign t)
 (setq bibtex-entry-offset 0)
@@ -170,16 +184,17 @@ non-nil move point to end of field."
 
 ;; keep file updated everytime it is saved
 
-(add-hook 'bibtex-mode-hook 
-          (lambda () 
+(add-hook 'bibtex-mode-hook
+          (lambda ()
 	    (add-hook 'after-save-hook #'bibtex-last-update nil 'make-it-local)))
 
 (defun bibtex-last-update ()
-  "Append timestamp and total number of entries. See
-`time-stamp-format' for possible string replacements."
+  "Append timestamp and total number of entries as a comment on
+the first line of the file. See `time-stamp-format' for possible
+string replacements."
   (save-excursion
     (let ((time-stamp-format "%%%% %f. Last modified on %:y-%02m-%02d %02H:%02M,"))
-      (beginning-of-buffer)
+      (goto-char (point-min))
       (delete-region
        (point)
        (save-excursion
@@ -199,6 +214,41 @@ original function."
       (if mark-active (narrow-to-region (region-beginning) (region-end)))
       (bibtex-map-entries (lambda (_key _beg _end) (setq number (1+ number)))))
     (insert (format " with %d entries." number))))
+
+(defun bibtex-set-field (field value &optional nodelim)
+  "Set FIELD to VALUE in bibtex file. Create field if it does not exist.
+Optional argument NODELIM see `bibtex-make-field'."
+  (interactive "sField: \nsValue: ")
+  (bibtex-beginning-of-entry)
+  (let ((found))
+    (if (setq found (bibtex-search-forward-field field t))
+	;; we found a field
+	(progn
+	  (goto-char (car (cdr found)))
+	  (when value
+	    (bibtex-kill-field)
+	    (bibtex-make-field field nil nil nodelim)
+	    (backward-char)
+	    (insert value)))
+      ;; make a new field
+      (message "new field being made")
+      (bibtex-beginning-of-entry)
+      (forward-line) (beginning-of-line)
+      (bibtex-next-field nil)
+      (forward-char)
+      (bibtex-make-field field nil nil nodelim)
+      (backward-char)
+      (insert value))))
+
+(defun bibtex-get-doi ()
+  "Search doi online."
+  (interactive)
+  (save-excursion
+    (bibtex-beginning-of-entry)
+    (let ((author (bibtex-autokey-get-field "author"))
+	  (title (bibtex-autokey-get-field "title")))
+      	(browse-url
+	 (format "http://search.crossref.org/?q=%s %s" author title)))))
 
 (provide 'config-bibtex)
 ;;; config-bibtex.el ends here
