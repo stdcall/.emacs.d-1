@@ -21,14 +21,13 @@
 ;;       '((".*"	     
 ;; 	 )))
 
-(when window-system
-  (setq gnus-sum-thread-tree-indent "  ")
-  (setq gnus-sum-thread-tree-root "") ;; "● ")
-  (setq gnus-sum-thread-tree-false-root "") ;; "◯ ")
-  (setq gnus-sum-thread-tree-single-indent "") ;; "◎ ")
-  (setq gnus-sum-thread-tree-vertical        "│")
-  (setq gnus-sum-thread-tree-leaf-with-other "├─► ")
-  (setq gnus-sum-thread-tree-single-leaf     "└─► "))
+(setq gnus-sum-thread-tree-indent "  ")
+(setq gnus-sum-thread-tree-root "")
+(setq gnus-sum-thread-tree-false-root "")
+(setq gnus-sum-thread-tree-single-indent "")
+(setq gnus-sum-thread-tree-vertical        "│")
+(setq gnus-sum-thread-tree-leaf-with-other "├─► ")
+(setq gnus-sum-thread-tree-single-leaf     "└─► ")
 
 (setq gnus-summary-line-format
       (concat
@@ -44,23 +43,28 @@
 
 (add-hook 'gnus-summary-mode-hook 'hl-line-mode)
 
-;; scroll by 4 lines
-
 (defun my-gnus-maps ()
   (define-key gnus-summary-mode-map (kbd "RET") 'jag/gnus-summary-scroll-other-window)
-  (define-key gnus-summary-mode-map (kbd "M-RET") 'jag/gnus-summary-scroll-other-window-down))
+  (define-key gnus-summary-mode-map (kbd "DEL") 'jag/gnus-summary-scroll-other-window-down)
+  (define-key gnus-article-mode-map (kbd "q") 'jag/gnus-move-to-summary-window-and-exit))
 
 (add-hook 'gnus-summary-mode-hook 'my-gnus-maps)
 
 (defun jag/gnus-summary-scroll-other-window ()
   "Scroll text of the other window up four lines."
   (interactive)
-  (smooth-scroll/scroll-other-window 4))
+  (smooth-scroll/scroll-other-window 5))
 
 (defun jag/gnus-summary-scroll-other-window-down ()
   "Scroll text of the other window down four lines."
   (interactive)
-  (smooth-scroll/scroll-other-window-down 4))
+  (smooth-scroll/scroll-other-window-down 5))
+
+(defun jag/gnus-move-to-summary-window-and-exit ()
+  "Move to the summary window and exit."
+  (interactive)
+  (other-window 1)
+  (gnus-summary-exit))
 
 (provide 'config-gnus)
 ;;; config-gnus.el ends here
