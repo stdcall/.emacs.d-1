@@ -13,6 +13,7 @@
 ;; General Public License for more details.
 
 ;;; Commentary:
+
 ;; This is a verbatim copy of my GNU Emacs configuration file. If you
 ;; have comments, please send them to <jgrg at autistici dot org>.
 
@@ -46,6 +47,8 @@
 ;; font settings
 
 (set-face-attribute 'default nil :font "Courier New" :height 180)
+
+;; frame settings
 
 (let ((frame (selected-frame)))
   (set-frame-size frame 1254 747 t))
@@ -507,12 +510,12 @@ The app is chosen from your OS's preference."
 ;; avoid arrow keys when promoting and demoting lists
 
 (bind-keys :map org-mode-map
-	   ("∆" . org-metaup)			  ; alt-j
-	   ("˚" . org-metadown)       ; alt-k
-	   ("˙" . org-shiftmetaleft)  ; alt-h
-	   ("¬" . org-shiftmetaright) ; alt-l
-	   ("≤" . org-shiftleft)      ; alt-,
-	   ("≥" . org-shiftright))     ; alt-.
+	   ("∆" . org-metaup)		; alt-j
+	   ("˚" . org-metadown)		; alt-k
+	   ("˙" . org-shiftmetaleft)	; alt-h
+	   ("¬" . org-shiftmetaright)	; alt-l
+	   ("≤" . org-shiftleft)	; alt-,
+	   ("≥" . org-shiftright))	; alt-.
 
 ;;; transpose words, sentences and paragraphs
 ;; use M-t to transpose-words and C-x C-t to transpose-sentences; use
