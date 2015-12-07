@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-12-06>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-12-07>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -27,8 +27,7 @@
 (require 'package)
 (setq package-archives
       '(("gnu" . "https://elpa.gnu.org/packages/")
-        ("melpa" . "https://melpa.org/packages/")
-        ))
+        ("melpa" . "https://melpa.org/packages/")))
 
 (package-initialize)
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
@@ -163,7 +162,7 @@
 (use-package helm
   :bind ("C-r" . helm-resume)
   :config
-  (use-package helm-config)
+  (require 'helm-config)
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
   (bind-key "C-;" 'helm-org-in-buffer-headings org-mode-map)
@@ -197,7 +196,8 @@
 
 (use-package swiper
   :ensure t
-  :bind ("C-s" . swiper))
+  :bind (("C-s" . swiper)
+	 ("C-c C-r" . ivy-resume)))
 
 ;; search online
 
@@ -690,14 +690,14 @@ The app is chosen from your OS's preference."
         (lambda (fpath)
           (start-process "open" "*open*" "open" fpath)))
 
+  ;; default action
+  ;; (helm-delete-action-from-source "Open PDF file (if present)" helm-source-bibtex)
+  ;; (helm-add-action-to-source "Open PDF file (if present)" 'helm-bibtex-open-pdf helm-source-bibtex 0)
+
   ;; format citation style
   (setq helm-bibtex-format-citation-functions
         '((org-mode . jag/helm-bibtex-format-citation-org-ref)
-          (latex-mode . helm-bibtex-format-citation-cite)))
-
-  ;; default action
-  (helm-delete-action-from-source "Open PDF file (if present)" helm-source-bibtex)
-  (helm-add-action-to-source "Open PDF file (if present)" 'helm-bibtex-open-pdf helm-source-bibtex 0))
+          (latex-mode . helm-bibtex-format-citation-cite))))
 
 ;; prompt once and use org-ref syntax
 
@@ -735,6 +735,7 @@ for arguments if the commands can take any."
 (use-package org-ref
   :load-path "~/Documents/git/org-ref"
   :init
+  (require 'doi-utils)
   (setq org-ref-bibliography-notes "~/Documents/org/annotation.org"
         org-ref-default-bibliography '("~/Documents/org/refs.bib")
         org-ref-pdf-directory "~/Documents/papers/")
@@ -753,11 +754,6 @@ for arguments if the commands can take any."
           (outline-previous-visible-heading 1)
           (recenter-top-bottom 0)
           (show-children))))
-
-(use-package org-ref
-  :load-path "~/Documents/git/org-ref")
-
-(use-package doi-utils)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ˚˚AUCTeX for managing (La)TeX files
@@ -1022,7 +1018,6 @@ for arguments if the commands can take any."
 ;; transcribe audio
 
 (use-package transcribe-mode
-  :defer t
   :config
   (setq transcribe-interviewer "Jonathan")
   (setq transcribe-interviewee "Interviewee"))
@@ -1994,10 +1989,9 @@ kill the buffer in it also."
   (if (frame-parameter nil 'fullscreen)
       (progn
 	(display-time-mode 1)
-	(display-battery-mode 1)))
-  (if (not (frame-parameter nil 'fullscreen))
-      (progn
-	(display-time-mode 0)
-	(display-battery-mode 0))))
+	(display-battery-mode 1))
+    (progn
+      (display-time-mode 0)
+      (display-battery-mode 0))))
 
 (use-package test)
