@@ -664,6 +664,32 @@ The app is chosen from your OS's preference."
 
 (use-package config-bibtex)
 
+;; org-ref for managing citations
+
+(use-package org-ref
+  :load-path "~/Documents/git/org-ref"
+  :load-path "~/Documents/git/helm-bibtex"
+  :init
+  (require 'doi-utils)
+  (setq org-ref-bibliography-notes "~/Documents/org/annotation.org"
+        org-ref-default-bibliography '("~/Documents/org/refs.bib")
+        org-ref-pdf-directory "~/Documents/papers/")
+  (setq org-ref-cite-onclick-function 'org-ref-cite-onclick-minibuffer-menu)
+  (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
+  (setq org-ref-show-citation-on-enter nil)
+  (setq org-ref-colorize-links nil)
+  (setq org-ref-note-title-format
+        "** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
+  ;; custom open notes function
+  (setq org-ref-open-notes-function
+        (lambda nil
+          (org-show-entry)
+          (org-narrow-to-subtree)
+          (show-children)
+          (outline-previous-visible-heading 1)
+          (recenter-top-bottom 0)
+          (show-children))))
+
 ;;; helm-bibtex for managing bibliographies
 ;; press M-a to select all entries or C-SPC to mark entries
 ;; individually
@@ -691,8 +717,8 @@ The app is chosen from your OS's preference."
           (start-process "open" "*open*" "open" fpath)))
 
   ;; default action
-  ;; (helm-delete-action-from-source "Open PDF file (if present)" helm-source-bibtex)
-  ;; (helm-add-action-to-source "Open PDF file (if present)" 'helm-bibtex-open-pdf helm-source-bibtex 0)
+  (helm-delete-action-from-source "Open PDF file (if present)" helm-source-bibtex)
+  (helm-add-action-to-source "Open PDF file (if present)" 'helm-bibtex-open-pdf helm-source-bibtex 0)
 
   ;; format citation style
   (setq helm-bibtex-format-citation-functions
@@ -729,31 +755,6 @@ for arguments if the commands can take any."
                 (format "%s:%s" cite-command (s-join "," keys))
               (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join "," keys)))
             ))))))
-
-;; org-ref for managing citations
-
-(use-package org-ref
-  :load-path "~/Documents/git/org-ref"
-  :init
-  (require 'doi-utils)
-  (setq org-ref-bibliography-notes "~/Documents/org/annotation.org"
-        org-ref-default-bibliography '("~/Documents/org/refs.bib")
-        org-ref-pdf-directory "~/Documents/papers/")
-  (setq org-ref-cite-onclick-function 'org-ref-cite-onclick-minibuffer-menu)
-  (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
-  (setq org-ref-show-citation-on-enter nil)
-  (setq org-ref-colorize-links nil)
-  (setq org-ref-note-title-format
-        "** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
-  ;; custom open notes function
-  (setq org-ref-open-notes-function
-        (lambda nil
-          (org-show-entry)
-          (org-narrow-to-subtree)
-          (show-children)
-          (outline-previous-visible-heading 1)
-          (recenter-top-bottom 0)
-          (show-children))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ˚˚AUCTeX for managing (La)TeX files
