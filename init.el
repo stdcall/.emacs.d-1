@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-12-07>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-12-08>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -34,8 +34,9 @@
 
 (require 'use-package)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚appearance
+;; ==================================================================
+;; ˚˚ appearance
+;; ==================================================================
 
 ;; disable tool bar, scroll bar and tool tip
 
@@ -80,8 +81,9 @@
 
 (bind-key "C-c t" 'load-theme)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚directory and load paths
+;; ==================================================================
+;; ˚˚ directory and load paths
+;; ==================================================================
 
 (setq user-emacs-directory (file-truename "~/.emacs.d/"))
 (setq default-directory "~/Documents/org/")
@@ -103,8 +105,9 @@
 
 (use-package private)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚default settings
+;; ==================================================================
+;; ˚˚ default settings
+;; ==================================================================
 
 (setq debug-on-error t)
 (setq inhibit-startup-message t)
@@ -154,8 +157,9 @@
 (setq initial-scratch-message
       (concat ";; GNU Emacs " emacs-version " (Org mode " org-version")\n\n"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚files, projects, searches and commands
+;; ==================================================================
+;; ˚˚ files, projects, searches and commands
+;; ==================================================================
 
 ;; helm for managing open files
 
@@ -196,8 +200,7 @@
 
 (use-package swiper
   :ensure t
-  :bind (("C-s" . swiper)
-	 ("C-c C-r" . ivy-resume)))
+  :bind (("C-s" . swiper)))
 
 ;; search online
 
@@ -301,8 +304,9 @@
    ("M-g g"   . avy-goto-line)
    ("C-x C-o" . ace-window)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚buffer settings
+;; ==================================================================
+;; ˚˚ buffer settings
+;; ==================================================================
 
 ;; manage open buffers
 
@@ -368,8 +372,9 @@
 	  (set-visited-file-name new-name)
           (set-buffer-modified-p nil))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚dired for managing directories
+;; ==================================================================
+;; ˚˚ dired for managing directories
+;; ==================================================================
 
 (use-package dired-x
   :config
@@ -428,8 +433,9 @@ The app is chosen from your OS's preference."
        ((string-equal system-type "gnu/linux")
         (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) ) ) )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚key bindings
+;; ==================================================================
+;; ˚˚ key bindings
+;; ==================================================================
 
 (bind-key "C-o" 'ido-find-file)
 (bind-key "C-M-o" 'helm-find-files)
@@ -657,8 +663,9 @@ The app is chosen from your OS's preference."
   (interactive)
   (smooth-scroll/scroll-other-window-down 1))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚citation, bibliography and cross-reference
+;; ==================================================================
+;; ˚˚ citation, bibliography and cross-reference
+;; ==================================================================
 
 ;; edit and validate BibTeX entries
 
@@ -756,8 +763,9 @@ for arguments if the commands can take any."
               (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join "," keys)))
             ))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚AUCTeX for managing (La)TeX files
+;; ==================================================================
+;; ˚˚ AUCTeX for managing (La)TeX files
+;; ==================================================================
 
 (use-package tex-site
   :ensure auctex)
@@ -850,8 +858,9 @@ for arguments if the commands can take any."
 (font-lock-add-keywords 'org-mode
                         '(("\\(\\\\citet\\)" . font-lock-keyword-face)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚useful packages and modes
+;; ==================================================================
+;; ˚˚ useful packages and modes
+;; ==================================================================
 
 ;; smartparens
 
@@ -974,8 +983,9 @@ for arguments if the commands can take any."
   (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
   (multi-web-global-mode 1))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚news and mail
+;; ==================================================================
+;; ˚˚ news and mail
+;; ==================================================================
 
 ;; newsreader client
 
@@ -995,8 +1005,9 @@ for arguments if the commands can take any."
   :defer t
   :config (epa-file-enable))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚music and audio
+;; ==================================================================
+;; ˚˚ music and audio
+;; ==================================================================
 
 ;; enable multimedia support
 
@@ -1055,8 +1066,9 @@ for arguments if the commands can take any."
   :commands (cider-mode)
   :config (add-hook 'cider-mode-hook #'eldoc-mode))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚org-mode for managing notes, tasks and documents
+;; ==================================================================
+;; ˚˚ org-mode for managing notes, tasks and documents
+;; ==================================================================
 
 (use-package org)
 
@@ -1166,8 +1178,9 @@ for arguments if the commands can take any."
 (bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)
 (bind-key "o" 'org-agenda-clock-out org-agenda-mode-map)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚agenda settings
+;; ==================================================================
+;; ˚˚ agenda settings
+;; ==================================================================
 
 (setq org-agenda-files (quote ("~/Documents/org/todo.org"
                                "~/Documents/org/notes.org"
@@ -1276,8 +1289,9 @@ repeat."
 
 (add-hook 'org-agenda-finalize-hook #'org-agenda-delete-empty-blocks)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚GTD settings
+;; ==================================================================
+;; ˚˚ GTD settings
+;; ==================================================================
 
 (setq org-todo-keywords
       '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)" "CANCELED(c)")))
@@ -1369,8 +1383,9 @@ repeat."
         ("F" ((in-file . "orientation.org")))
         ("S" ((in-file . "orientation.org")))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚org mode extension
+;; ==================================================================
+;; ˚˚ org mode extension
+;; ==================================================================
 
 ;; deft for browsing org files
 
@@ -1496,8 +1511,9 @@ asynchronously, in another process."
 (add-hook 'org-babel-after-execute-hook
           (lambda () (org-display-inline-images nil t)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚writing, editing and version control
+;; ==================================================================
+;; ˚˚ writing, editing and version control
+;; ==================================================================
 
 ;; keep track of revisions
 
@@ -1694,8 +1710,9 @@ abc |ghi        <-- point still after white space after calling this function."
   (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
   (add-to-list 'ispell-skip-region-alist '("\\\\cite.*{" . "}")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚dictionary, thesaurus and translation tools
+;; ==================================================================
+;; ˚˚ dictionary, thesaurus and translation tools
+;; ==================================================================
 
 (key-chord-define-global
  "ww"
@@ -1761,8 +1778,6 @@ _M-s_: search online       ^ ^                     _P_: open browser         _q_
   (setq helm-dictionary-online-dicts
 	'(("linguee" . "http://www.linguee.com/english-portuguese/search?source=auto&query=%s")
 	  ("dicio.com.br" . "http://www.dicio.com.br/%s/")
-	  ("en.wiktionary.org" . "http://en.wiktionary.org/wiki/%s")
-	  ("pt.wiktionary.org" . "http://pt.wiktionary.org/wiki/%s")
 	  ("sinonimos.com.br" . "http://www.sinonimos.com.br/%s/"))))
 
 ;; thesaurus
@@ -1821,8 +1836,9 @@ point. If region is active, use that instead."
                             (region-end)))
       (thing-at-point 'word)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚useful functions
+;; ==================================================================
+;; ˚˚ useful functions
+;; ==================================================================
 
 ;;; download and watch youtube videos from emacs
 ;; http://oremacs.com/2015/01/05/youtube-dl/
@@ -1902,8 +1918,9 @@ possible date string replacements."
   (interactive)
   (insert (format-time-string "%d %b %Y")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ˚˚frame and window
+;; ==================================================================
+;; ˚˚ frame and window
+;; ==================================================================
 
 (defun kill-buffer-and-its-frame ()
   "Kill the current buffer as well as its frame."
