@@ -1708,7 +1708,8 @@ abc |ghi        <-- point still after white space after calling this function."
   (add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
   (add-to-list 'ispell-skip-region-alist '("^#\\+begin_example " . "#\\+end_example$"))
   (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
-  (add-to-list 'ispell-skip-region-alist '("\\\\cite.*{" . "}")))
+  (add-to-list 'ispell-skip-region-alist '("\\\\cite.*{" . "}"))
+  (add-to-list 'ispell-skip-region-alist '("\\(cite.:[[:upper:]]+[0-9]+[a-z]\\)")))
 
 ;; ==================================================================
 ;; ˚˚ dictionary, thesaurus and translation tools
