@@ -726,7 +726,7 @@ The app is chosen from your OS's preference."
   (setq helm-bibtex-notes-template-one-file
         "** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\n\n")
   (setq helm-bibtex-fallback-options
-        (quote (("Google Scholar" . "http://scholar.google.co.uk/scholar?q=%s")
+        (quote (("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
   (defun helm-bibtex-search-notes-fallback ()
