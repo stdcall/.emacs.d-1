@@ -16,14 +16,13 @@
 ;; M-x bibtex-reformat to reformat entries
 
 ;;; See also:
-;; https://github.com/jkitchin/org-ref/blob/master/jmax-bibtex.el
+;; https://github.com/jkitchin/org-ref/blob/master/org-ref-bibtex.el
 ;; http://www.brl.ntt.co.jp/people/leroux/bibtex-mode.html
 
 ;;; generate key automatically
 ;; ie. Smith2015s (author's last name / year / first letter of the
 ;; title). Increasing the value of bibtex-autokey-titleword-length
-;; should increase the key's entropy and avoid yielding duplicate
-;; keys.
+;; increases the key's entropy and avoid yielding duplicate keys.
 
 (setq bibtex-autokey-name-year-separator ""
       bibtex-autokey-year-title-separator ""
@@ -121,8 +120,6 @@ equivalent."
 (defun bibtex-last-comma ()
   "Insert or delete comma after last field according to
 `bibtex-comma-after-last-field'."
-  ;; the variable had no effect on the original function. I think
-  ;; because looking-at was used instead of looking-back.
   (interactive)
   (save-excursion
     (bibtex-end-of-entry)
