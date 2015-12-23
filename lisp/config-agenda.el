@@ -5,7 +5,8 @@
 	("a" "agenda"
 	 ((agenda ""
 		  ((org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")))
-	  (tags-todo "+PRIORITY=\"A\"|TODO=\"STARTED\"")
+	  (tags-todo "+PRIORITY=\"A\"|TODO=\"STARTED\""
+		     ((org-agenda-overriding-header "Priority")))
 	  (tags-todo "mail/TODO"
 	  	     ((org-agenda-skip-function '(org-agenda-skip-entry-if
 						  'deadline 'scheduled 'timestamp))))
@@ -55,10 +56,8 @@
                   '(todo-state-up))))))
                 
         ("n" "notes"
-         ((tags-todo "LEVEL=2+CATEGORY=\"notes\""
-                     ((org-agenda-overriding-header "Notes")))
-          (tags-todo "LEVEL=2+CATEGORY=\"meeting\""
-                     ((org-agenda-overriding-header "Meetings tasks"))))
+         ((tags "LEVEL=2+CATEGORY=\"notes\""
+		((org-agenda-overriding-header "Notes"))))
          ((org-agenda-remove-tags nil)
           (org-agenda-show-inherited-tags nil)
           (org-agenda-tags-column -112)
