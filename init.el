@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-12-08>
+;;; init.el --- Emacs configuration file. Time-stamp: <2015-12-23>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -20,7 +20,7 @@
 ;;; Epigraph:
 
 ;; The keyboard is the weapon of an Emacs guru. Not as clumsy or as
-;; random as a mouse. An elegant weapon for a more civilized age.
+;; random as a mouse. An elegant weapon for a more civilized age. --?
 
 ;; package archive
 
@@ -42,7 +42,7 @@
 
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-(if (fboundp 'tool-tip-mode) (tool-tip-mode -1))
+(if (fboundp 'tooltip-mode) (tooltip-mode -1))
 
 ;; font settings
 
@@ -61,7 +61,7 @@
 
 ;; cycle through this set of themes
 
-(setq my-themes '(badger stekene-dark))
+(setq my-themes '(gotham stekene-dark))
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme ()
@@ -137,6 +137,13 @@
 (setq mark-ring-max 4)
 (setq set-mark-command-repeat-pop t)
 
+;; when popping the mark, continue popping until the cursor moves
+
+(defadvice pop-to-mark-command (around ensure-new-position activate)
+  (let ((p (point)))
+    (dotimes (i 10)
+      (when (= p (point)) ad-do-it))))
+
 ;; update timestamp when file is saved
 
 (add-hook 'before-save-hook 'time-stamp)
@@ -176,12 +183,14 @@
   (defun helm-select-2nd-action ()
     "Select the 2nd action for the currently selected candidate."
     (interactive)
-    (helm-select-nth-action 1))
+    (let ((n 2))
+      (helm-select-nth-action (- n 1))))
 
   (defun helm-select-8th-action ()
     "Select the 8th action for the currently selected candidate."
     (interactive)
-    (helm-select-nth-action 7)))
+    (let ((n 8))
+      (helm-select-nth-action (- n 1)))))
 
 (use-package helm-swoop
   :bind ("C-c s" . helm-swoop)
@@ -296,13 +305,14 @@
 
 (use-package avy
   :config
-  (setq avi-keys
-        '(?a ?s ?d ?e ?f ?h ?j ?k ?l ?n ?m ?v ?r ?u))
-  (setq aw-keys '(?a ?s ?d ?j))
+  (setq avy-keys-alist
+	`((avy-goto-word-1 . (?j ?k ?l ?\; ?a ?s))
+	  (avy-goto-line   . (?j ?k ?l ?\;))))
+  (setq aw-keys '(?j ?o ?k ?\;))
   :bind
   (("C-x SPC" . avy-goto-word-1)
    ("M-g g"   . avy-goto-line)
-   ("C-x C-o" . ace-window)))
+   ("M-o"     . ace-window)))
 
 ;; ==================================================================
 ;; ˚˚ buffer settings
@@ -339,8 +349,7 @@
 			   (name . "\*Completions\*")
 			   (name . "\*Messages\*")
 			   (name . "\*Backtrace\*")
-			   (name . "\*Warnings\*")))
-		 ))))
+			   (name . "\*Warnings\*")))))))
 
   (add-hook 'ibuffer-mode-hook
             '(lambda ()
@@ -446,7 +455,7 @@ The app is chosen from your OS's preference."
 (bind-key "M-m" 'capitalize-word)
 (bind-key "M-v" 'yank)
 (bind-key "M-s" 'save-buffer)
-(bind-key "C-x c" 'calendar)
+(bind-key "C-c x" 'calendar)
 (bind-key "C-c f" 'reveal-in-finder)
 (bind-key "C-c <C-return>" 'xah-open-in-external-app)
 (bind-key "C-c m" (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
@@ -468,7 +477,7 @@ The app is chosen from your OS's preference."
 (bind-keys
  ("C-1" . bmkp-bookmark-set-confirm-overwrite)
  ("C-2" . bookmark-bmenu-list)
- ("C-3" . bookmark-jump)
+ ("C-3" . helm-bookmarks)
  ("C-4" . headlong-bookmark-jump))
 
 ;; frame and window
@@ -478,7 +487,7 @@ The app is chosen from your OS's preference."
  ("M-1" . delete-other-windows)
  ("M-2" . vsplit-last-buffer)
  ("M-3" . hsplit-last-buffer)
- ("M-o" . other-window)
+ ("M-o" . ace-window)
  ("C-c C-x r" . rotate-windows)
  ("C-c 0" . kill-buffer-and-its-frame)
  ("C-c k" . close-and-kill-next-pane)
@@ -533,8 +542,7 @@ The app is chosen from your OS's preference."
 
 (bind-keys
  ("C-c i i" . insert-iso-date)
- ("C-c i d" . insert-date)
- ("C-c C-z" . display-time-world))
+ ("C-c i d" . insert-date))
 
 ;; unbind
 
@@ -567,7 +575,7 @@ The app is chosen from your OS's preference."
   (key-chord-mode 1)
   (key-chord-define-global "jk" "Cape Town")
   (key-chord-define-global "jl" "South Africa")
-  (key-chord-define-global "jj" (lambda() (interactive)(find-file "~/Documents/org/todo.org")))
+  (key-chord-define-global "jj" (lambda() (interactive) (find-file "~/Documents/org/todo.org")))
   ;; avoid using the shift key
   (key-chord-define-global "1q" "!")
   (key-chord-define-global "2w" "@")
@@ -589,10 +597,11 @@ The app is chosen from your OS's preference."
 
 (bind-keys :prefix-map jag-prefix-map
 	   :prefix "M-i"
-	   ("c" . calculator)
-	   ("a" . bbdb)
-	   ("b" . boxquote-region)
-	   ("u" . boxquote-unbox)
+	   ("c"   . calculator)
+	   ("a"   . bbdb)
+	   ("b"   . boxquote-region)
+	   ("u"   . boxquote-unbox)
+	   ("w"   . display-time-world-and-focus)
 	   ("M-q" . unfill-paragraph))
 
 ;; quickly switch between dictionaries
@@ -643,8 +652,8 @@ The app is chosen from your OS's preference."
  "C-M-SPC"
  (defhydra hydra-scroll (:pre (smooth-scroll-mode 0)
 			      :post (smooth-scroll-mode t))
-   ("k"   (lambda () (interactive) (scroll-down-1 5)) "down")
-   ("SPC" (lambda () (interactive) (scroll-up-1 5)) "up")
+   ("k"   (lambda () (interactive) (scroll-down-1 10)) "down")
+   ("SPC" (lambda () (interactive) (scroll-up-1 10)) "up")
    (","   beginning-of-buffer "top")
    ("."   end-of-buffer "bottom")
    ("C-l" recenter-top-bottom "recenter")
@@ -705,9 +714,10 @@ The app is chosen from your OS's preference."
   :load-path "~/Documents/git/helm-bibtex"
   :bind ("C-c C-j" . helm-bibtex)
   :config
+  (require 'helm-bibtex-ext)
   (autoload 'helm-bibtex "helm-bibtex" "" t)
   (setq helm-bibtex-bibliography "~/Documents/org/refs.bib"
-        helm-bibtex-library-path "~/Documents/papers/"
+        helm-bibtex-library-path "~/Documents/papers"
         helm-bibtex-notes-path "~/Documents/org/annotation.org")
   (setq helm-bibtex-full-frame nil)
   (setq helm-bibtex-number-of-optional-arguments 1)
@@ -716,7 +726,20 @@ The app is chosen from your OS's preference."
   (setq helm-bibtex-notes-template-one-file
         "** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\n\n")
   (setq helm-bibtex-fallback-options
-        (quote (("Google Scholar" . "http://scholar.google.co.uk/scholar?q=%s"))))
+        (quote (("Google Scholar" . "http://scholar.google.co.uk/scholar?q=%s")
+		("Search notes" . helm-bibtex-search-notes-fallback))))
+
+  (defun helm-bibtex-search-notes-fallback ()
+    "Search notes file."
+    (let ((input (format "%s" helm-pattern)))
+      (if (f-file? helm-bibtex-notes-path)
+	  (progn
+	    (find-file helm-bibtex-notes-path)
+	    (goto-char (point-min))
+	    (swiper input)))))
+
+  (helm-delete-action-from-source "Search my notes" helm-source-bibtex)
+  (helm-add-action-to-source "Search my notes" 'helm-bibtex-search-notes helm-source-bibtex 10)
 
   ;; open with deafult pdf viewer
   (setq helm-bibtex-pdf-open-function
@@ -931,6 +954,7 @@ for arguments if the commands can take any."
 ;; emacs lisp
 
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+(add-hook 'lisp-interaction-mode-hook 'eldoc-mode)
 (eval-after-load "eldoc" '(diminish 'eldoc-mode))
 
 ;; learn emacs the hard way
@@ -1392,9 +1416,9 @@ repeat."
 (use-package deft
   :bind ("C-c d" . deft)
   :config
-  (setq deft-extension "org")
+  (setq deft-extensions '("org"))
   (setq deft-directory "~/Documents/org")
-  (setq deft-text-mode 'org-mode)
+  (setq deft-recursive t)
   (setq deft-use-filename-as-title t)
   (setq deft-use-filter-string-for-filename t)
   (add-hook 'deft-mode-hook 'hl-line-mode))
@@ -1919,6 +1943,12 @@ possible date string replacements."
   (interactive)
   (insert (format-time-string "%d %b %Y")))
 
+(defun display-time-world-and-focus ()
+  "Display of times in various time zones."
+  (interactive)
+  (display-time-world)
+  (other-window 1))
+
 ;; ==================================================================
 ;; ˚˚ frame and window
 ;; ==================================================================
@@ -1990,7 +2020,7 @@ kill the buffer in it also."
     (set-frame-size frame 1254 747 t)))
 
 (defun jag/maximize-frame ()
-  "Toggle maximization state of the selected frame."
+  "Maximize frame."
   (interactive)
   (let ((frame (selected-frame)))
     (set-frame-size frame 1254 747 t)))
@@ -2014,3 +2044,4 @@ kill the buffer in it also."
       (display-battery-mode 0))))
 
 (use-package test)
+
