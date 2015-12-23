@@ -7,8 +7,9 @@
 		  ((org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")))
 	  (tags-todo "+PRIORITY=\"A\"|TODO=\"STARTED\""
 		     ((org-agenda-overriding-header "Priority")))
-	  (tags-todo "mail/TODO"
-	  	     ((org-agenda-skip-function '(org-agenda-skip-entry-if
+	  (tags-todo "-PRIORITY=\"A\"mail/TODO"
+		     ((org-agenda-overriding-header "Mail tasks")
+		      (org-agenda-skip-function '(org-agenda-skip-entry-if
 						  'deadline 'scheduled 'timestamp))))
 	  ))
 
