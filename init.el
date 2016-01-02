@@ -44,14 +44,39 @@
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tooltip-mode) (tooltip-mode -1))
 
-;; font settings
+;; font and frame settings
 
 (set-face-attribute 'default nil :font "Courier New" :height 180)
 
-;; frame settings
-
 (let ((frame (selected-frame)))
   (set-frame-size frame 1254 747 t))
+
+(defvar my-default-font nil "Initial font setting.")
+(setq my-fonts '((set-face-attribute 'default nil :font "Courier New" :height 180)
+		 (set-face-attribute 'default nil :font "Inconsolata" :height 190)))
+
+(defun my-first-font ()
+  (let ((font-one (car my-fonts))
+	(frame (selected-frame)))
+    (setq my-default-font t)
+    (eval-expression font-one)
+    (set-frame-size frame 1254 747 t)
+    (setq my-default-font nil)))
+
+(defun my-second-font ()
+  (let ((font-two (car (last my-fonts)))
+	(frame (selected-frame)))
+    (setq my-default-font nil)
+    (eval-expression font-two)
+    (set-frame-size frame 1257 747 t)
+    (setq my-default-font t)))
+
+(defun my-toggle-font ()
+  "Toggle between two fonts."
+  (interactive)
+  (if my-default-font
+      (my-first-font)
+    (my-second-font)))
 
 ;; disable current theme before new one is loaded
 
@@ -607,6 +632,7 @@ The app is chosen from your OS's preference."
 	   ("b"   . boxquote-region)
 	   ("u"   . boxquote-unbox)
 	   ("w"   . display-time-world-and-focus)
+	   ("f"   . my-toggle-font)
 	   ("M-q" . unfill-paragraph))
 
 ;; quickly switch between dictionaries
@@ -2029,7 +2055,9 @@ kill the buffer in it also."
   "Maximize frame."
   (interactive)
   (let ((frame (selected-frame)))
-    (set-frame-size frame 1254 747 t)))
+    (if my-default-font
+	(set-frame-size frame 1256 747 t)
+      (set-frame-size frame 1254 747 t))))
 
 (defun jag/shrink-frame ()
   "Shrink frame up."
