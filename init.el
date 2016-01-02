@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2015-12-23>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-02>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -174,8 +174,13 @@
   :bind ("C-r" . helm-resume)
   :config
   (require 'helm-config)
+  (helm-autoresize-mode 1)
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
+  (setq helm-org-headings-fontify t)
+  (setq helm-org-show-filename nil)
+  (setq helm-autoresize-max-height 50)
+  (setq helm-autoresize-min-height 25)
   (bind-key "C-;" 'helm-org-in-buffer-headings org-mode-map)
   (bind-key "C-e" 'helm-select-2nd-action helm-map)
   (bind-key "C-M-n" 'helm-select-8th-action helm-map)
@@ -1453,13 +1458,14 @@ repeat."
 ;; org tree slide for making presentations
 
 (use-package org-tree-slide
-  :defer t
   :bind
   (("<f8>" . org-tree-slide-mode)
    ("S-<f8>" . org-tree-slide-skip-done-toggle))
   :config
   (setq org-tree-slide-slide-in-effect nil)
   (setq org-tree-slide-cursor-init nil)
+  ;; (setq org-tree-slide-fold-subtrees-skipped nil)
+  ;; (setq org-tree-slide-skip-outline-level 4)
   (bind-keys :map org-tree-slide-mode-map
 	     ("<right>" . org-tree-slide-move-next-tree)
 	     ("<left>" . org-tree-slide-move-previous-tree)))
@@ -2044,4 +2050,3 @@ kill the buffer in it also."
       (display-battery-mode 0))))
 
 (use-package test)
-
