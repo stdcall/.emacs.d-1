@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-02>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-04>
 
 ;; Copyright (c) 2012-2015 Jonathan Gregory
 
@@ -391,7 +391,8 @@
 
 (use-package uniquify
   :config
-  (setq uniquify-buffer-name-style 'post-forward))
+  (setq uniquify-buffer-name-style 'post-forward)
+  (setq uniquify-separator " | "))
 
 ;; rename files and buffers
 ;; https://stackoverflow.com/questions/384284/how-do-i-rename-an-open-file-in-emacs
@@ -431,6 +432,8 @@
   (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
   (add-hook 'dired-mode-hook (lambda()
                                (bind-key "j" 'swiper dired-mode-map))))
+
+(use-package dired+)
 
 ;; reload dired buffer after making changes
 
@@ -585,6 +588,7 @@ The app is chosen from your OS's preference."
 (unbind-key "C-c [" org-mode-map)	; org-agenda-file-to-front
 (unbind-key "C-c C-j" org-mode-map)	; was org-goto
 (unbind-key "C-o" dired-mode-map)	; use C-m instead
+(unbind-key "M-p" dired-mode-map)
 
 ;; avoid arrow keys when switching buffers
 
@@ -1004,7 +1008,9 @@ for arguments if the commands can take any."
 (use-package ledger-mode
   :config
   (setq ledger-reconcile-default-commodity "£")
-  (setq ledger-use-iso-dates t))
+  (setq ledger-use-iso-dates t)
+  ;; avoid error when exporting to html
+  (setq max-specpdl-size 5200))
 
 ;; statistical programming
 
@@ -1297,17 +1303,19 @@ for arguments if the commands can take any."
   "Mark item at point as done only if it is not scheduled to
 repeat."
   (interactive)
-  (save-excursion
-    (org-agenda-switch-to)
-    (org-narrow-to-subtree)
-    (goto-char (point-min))
-    (if (re-search-forward ":repeat:" nil 'noerror)
-        (message "This item repeats. Press \"E\" to check or \":\" to remove restriction.")
-      (progn
-        (switch-to-buffer "*Org Agenda*")
-        (org-agenda-todo "DONE")))
-    (widen)
-    (switch-to-buffer "*Org Agenda*")))
+  (when (eq major-mode 'org-agenda-mode)
+    (let ((agenda-buf (current-buffer)))
+      (save-excursion
+	(org-agenda-switch-to)
+	(org-narrow-to-subtree)
+	(goto-char (point-min))
+	(if (re-search-forward ":repeat:" nil 'noerror)
+	    (message "This item repeats. Press \"E\" to check or \":\" to remove restriction.")
+	  (progn
+	    (switch-to-buffer agenda-buf)
+	    (org-agenda-todo "DONE")))
+	(widen)
+	(switch-to-buffer agenda-buf)))))
 
 (bind-key "d" 'jag/org-agenda-done org-agenda-mode-map)
 
@@ -1409,7 +1417,7 @@ repeat."
 :END:" :prepend t)
 
         ("a" "Appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
-         "** %^{Description}\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n" :prepend t :immediate-finish t)
+         "** %^{Description}\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%?" :prepend t)
 
         ("h" "Habit" entry (file+headline "~/Documents/org/todo.org" "Habits")
          "** TODO %?\n   SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
@@ -1484,17 +1492,13 @@ repeat."
 ;; org tree slide for making presentations
 
 (use-package org-tree-slide
-  :bind
-  (("<f8>" . org-tree-slide-mode)
-   ("S-<f8>" . org-tree-slide-skip-done-toggle))
   :config
-  (setq org-tree-slide-slide-in-effect nil)
-  (setq org-tree-slide-cursor-init nil)
-  ;; (setq org-tree-slide-fold-subtrees-skipped nil)
-  ;; (setq org-tree-slide-skip-outline-level 4)
+  (bind-key "<f8>" 'org-tree-slide-mode org-mode-map)
   (bind-keys :map org-tree-slide-mode-map
 	     ("<right>" . org-tree-slide-move-next-tree)
-	     ("<left>" . org-tree-slide-move-previous-tree)))
+	     ("<left>" . org-tree-slide-move-previous-tree))
+  (setq org-tree-slide-slide-in-effect nil)
+  (setq org-tree-slide-fold-subtrees-skipped nil))
 
 ;; yank clipboard url as org-mode link
 
@@ -2078,3 +2082,4 @@ kill the buffer in it also."
       (display-battery-mode 0))))
 
 (use-package test)
+
