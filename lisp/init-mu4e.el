@@ -9,6 +9,7 @@
 (require 'org-mu4e)
 (require 'gnus-dired)
 (require 'smtpmail-async)
+(require 'supercite)
 
 (setq mu4e-maildir "~/Maildir")
 (setq mu4e-sent-folder   "/sent"
@@ -323,6 +324,7 @@ With prefix N move backwards N records."
 ;; use supercite for citation
 
 (add-hook 'mail-citation-hook 'sc-cite-original)
+(add-hook 'mu4e-compose-mode-hook 'sc-minor-mode)
 
 (setq sc-nested-citation-p t)
 (setq sc-citation-leader "")
