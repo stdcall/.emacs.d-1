@@ -57,17 +57,6 @@
 (setq mu4e-compose-signature "Jonathan")
 (setq mu4e-compose-signature-auto-include t)
 
-(defun jag/message-goto-body ()
-  "Similar to `message-goto-body' but moves point above the
-signature line."
-  (interactive)
-  (goto-char (point-max))
-  (when (re-search-backward "--"))
-  (newline)
-  (previous-line))
-
-(define-key mu4e-compose-mode-map (kbd "C-c C-b") 'jag/message-goto-body)
-
 ;; general settings
 
 (setq message-kill-buffer-on-exit t)
@@ -329,8 +318,7 @@ With prefix N move backwards N records."
 (add-hook
  'mu4e-view-mode-hook
  (lambda ()
-   (define-key mu4e-view-mode-map (kbd ";") 'bbdb-mua-edit-field)
-   ))
+   (define-key mu4e-view-mode-map (kbd ";") 'bbdb-mua-edit-field)))
 
 ;; use supercite for citation
 
