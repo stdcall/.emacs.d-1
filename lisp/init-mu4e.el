@@ -1,6 +1,6 @@
 ;;; config-mu4e.el --- mail client for emacs
 
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+(add-to-list 'load-path "/usr/local/Cellar/mu/HEAD/share/emacs/site-lisp/mu/mu4e")
 (add-to-list 'load-path "~/.emacs.d/emacs-async")
 
 (require 'mu4e)
@@ -95,16 +95,16 @@ signature line."
 (setq mu4e-view-actions			;press a
       '(("capture action" . jag/mu4e-capture-message)
 	("appt" . jag/mu4e-capture-appt)
-	;; ("capture message" . mu4e-action-capture-message)
-	;; ("view as pdf" . mu4e-action-view-as-pdf) ;TODO: install msg2pdf
 	("tag" . mu4e-action-retag-message)
+	("showThread" . mu4e-action-show-thread)
 	("hold" . mu4e-action-tag-hold)
 	("untagHold" . mu4e-action-untag-hold)
 	("search sender" . search-for-sender)
-	("view in browser" . mu4e-action-view-in-browser))) ;FIXME: export encoding
+	("view in browser" . mu4e-action-view-in-browser)))
 
 (setq mu4e-headers-actions
       '(("tag" . mu4e-action-retag-message)
+	("showThread" . mu4e-action-show-thread)
 	("hold" . mu4e-action-tag-hold)
 	("untagHold" . mu4e-action-untag-hold)))
 
@@ -171,7 +171,7 @@ function uses`org-capture' and adds the task to the agenda."
               (unless (string-equal ": " msg)
                 (shell-command (concat "terminal-notifier -title \"New message\" -sender \"org.gnu.Emacs\" -sound 'default' -message \"" msg "\"")))) ))
 
-(defun newest-subject ()		;TODO: display number of unread messages
+(defun newest-subject ()
   (let* ((mu-res (concat "(list "
 			 (shell-command-to-string "mu find maildir:'/ai' flag:unread OR maildir:'/uni' flag:unread --format=sexp")
                          ")"))
