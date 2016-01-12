@@ -1,7 +1,6 @@
 ;;; config-mu4e.el --- mail client for emacs
 
 (add-to-list 'load-path "/usr/local/Cellar/mu/HEAD/share/emacs/site-lisp/mu/mu4e")
-(add-to-list 'load-path "~/.emacs.d/emacs-async")
 
 (require 'mu4e)
 (require 'smtpmail)
@@ -89,7 +88,7 @@
 	("showThread" . mu4e-action-show-thread)
 	("hold" . mu4e-action-tag-hold)
 	("untagHold" . mu4e-action-untag-hold)
-	("search sender" . search-for-sender)
+	("Search sender" . search-for-sender)
 	("view in browser" . mu4e-action-view-in-browser)))
 
 (setq mu4e-headers-actions
@@ -321,7 +320,7 @@ With prefix N move backwards N records."
  (lambda ()
    (define-key mu4e-view-mode-map (kbd ";") 'bbdb-mua-edit-field)))
 
-;; use supercite for citation
+;; use Supercite for citation
 
 (add-hook 'mail-citation-hook 'sc-cite-original)
 (add-hook 'mu4e-compose-mode-hook 'sc-minor-mode)
