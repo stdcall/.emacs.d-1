@@ -1,6 +1,6 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-04>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-16>
 
-;; Copyright (c) 2012-2015 Jonathan Gregory
+;; Copyright (c) 2012-2016 Jonathan Gregory
 
 ;; Code in this document is free software; you can redistribute it
 ;; and/or modify it under the terms of the GNU General Public License
@@ -46,30 +46,43 @@
 
 ;; font and frame settings
 
-(set-face-attribute 'default nil :font "Courier New" :height 180)
+(defvar my-default-font t "Initial font setting.")
 
-(let ((frame (selected-frame)))
-  (set-frame-size frame 1254 747 t))
+(setq my-fonts '((1 "Courier New" . ((set-face-attribute 'default nil :font "Courier New" :height 180)
+				     (set-frame-size (selected-frame) 1256 747 t)))
+		 (2 "Inconsolata" . ((set-face-attribute 'default nil :font "Inconsolata" :height 190)
+				     (set-frame-size (selected-frame) 1258 747 t)))))
 
-(defvar my-default-font nil "Initial font setting.")
-(setq my-fonts '((set-face-attribute 'default nil :font "Courier New" :height 180)
-		 (set-face-attribute 'default nil :font "Inconsolata" :height 190)))
+(when window-system
+  (if my-default-font
+      (let ((font (nth 2 (assoc 2 my-fonts)))
+	    (frame-size (nth 3 (assoc 2 my-fonts))))
+	(eval-expression font)
+	(eval-expression frame-size)
+	(setq my-default-font t))
+    (let ((font (nth 2 (assoc 1 my-fonts)))
+	  (frame-size (nth 3 (assoc 1 my-fonts))))
+      (eval-expression font)
+      (eval-expression frame-size)
+      (setq my-default-font nil))))
 
 (defun my-first-font ()
-  (let ((font-one (car my-fonts))
-	(frame (selected-frame)))
-    (setq my-default-font t)
+  (let ((font-one   (nth 2 (assoc 1 my-fonts)))
+	(fontname   (nth 1 (assoc 1 my-fonts)))
+	(frame-size (nth 3 (assoc 1 my-fonts))))
     (eval-expression font-one)
-    (set-frame-size frame 1254 747 t)
-    (setq my-default-font nil)))
+    (eval-expression frame-size)
+    (setq my-default-font nil)
+    (message "%s (done)" fontname)))
 
 (defun my-second-font ()
-  (let ((font-two (car (last my-fonts)))
-	(frame (selected-frame)))
-    (setq my-default-font nil)
+  (let ((font-two   (nth 2 (assoc 2 my-fonts)))
+	(fontname   (nth 1 (assoc 2 my-fonts)))
+	(frame-size (nth 3 (assoc 2 my-fonts))))
     (eval-expression font-two)
-    (set-frame-size frame 1257 747 t)
-    (setq my-default-font t)))
+    (eval-expression frame-size)
+    (setq my-default-font t)
+    (message "%s (done)" fontname)))
 
 (defun my-toggle-font ()
   "Toggle between two fonts."
@@ -433,7 +446,9 @@
   (add-hook 'dired-mode-hook (lambda()
                                (bind-key "j" 'swiper dired-mode-map))))
 
-(use-package dired+)
+(use-package dired+
+  :config
+  (setq diredp-wrap-around-flag nil))
 
 ;; reload dired buffer after making changes
 
@@ -679,9 +694,13 @@ The app is chosen from your OS's preference."
   :config
   (smooth-scroll-mode t))
 
-(bind-keys
+(bind-keys*
  ("C-M-k" . (lambda () (interactive) (scroll-up-1 5)))
  ("C-M-j" . (lambda () (interactive) (scroll-down-1 5))))
+
+(bind-keys*
+ ("C-M-q" . beginning-of-buffer)
+ ("C-M-w" . end-of-buffer))
 
 (bind-key
  "C-M-SPC"
@@ -749,7 +768,6 @@ The app is chosen from your OS's preference."
   :load-path "~/Documents/git/helm-bibtex"
   :bind ("C-c C-j" . helm-bibtex)
   :config
-  (require 'helm-bibtex-ext)
   (autoload 'helm-bibtex "helm-bibtex" "" t)
   (setq helm-bibtex-bibliography "~/Documents/org/refs.bib"
         helm-bibtex-library-path "~/Documents/papers"
@@ -789,6 +807,12 @@ The app is chosen from your OS's preference."
   (setq helm-bibtex-format-citation-functions
         '((org-mode . jag/helm-bibtex-format-citation-org-ref)
           (latex-mode . helm-bibtex-format-citation-cite))))
+
+(use-package helm-bibtex-ext
+  :bind ("C-c h" . helm-bibtex-show-notes)
+  :config
+  (setq helm-bibtex-notes-headline-level 2
+	helm-bibtex-search-with "swiper"))
 
 ;; prompt once and use org-ref syntax
 
@@ -1299,7 +1323,7 @@ for arguments if the commands can take any."
 
 ;; mark task as done in the agenda buffer
 
-(defun jag/org-agenda-done ()
+(defun jag/org-agenda-mark-as-done ()
   "Mark item at point as done only if it is not scheduled to
 repeat."
   (interactive)
@@ -1317,7 +1341,7 @@ repeat."
 	(widen)
 	(switch-to-buffer agenda-buf)))))
 
-(bind-key "d" 'jag/org-agenda-done org-agenda-mode-map)
+(bind-key "d" 'jag/org-agenda-mark-as-done org-agenda-mode-map)
 
 ;; remove empty agenda blocks
 ;; https://lists.gnu.org/archive/html/emacs-orgmode/2015-06/msg00266.html
@@ -2030,18 +2054,15 @@ kill the buffer in it also."
   (interactive)
   (cond ((not (> (count-windows)1))
          (message "You can't rotate a single window!"))
-        (t
-         (setq i 1)
+        (t (setq i 1)
          (setq numWindows (count-windows))
          (while (< i numWindows)
-           (let* (
-                  (w1 (elt (window-list) i))
+           (let* ((w1 (elt (window-list) i))
                   (w2 (elt (window-list) (+ (% i numWindows) 1)))
                   (b1 (window-buffer w1))
                   (b2 (window-buffer w2))
                   (s1 (window-start w1))
-                  (s2 (window-start w2))
-                  )
+                  (s2 (window-start w2)))
              (set-window-buffer w1 b2)
              (set-window-buffer w2 b1)
              (set-window-start w1 s2)
@@ -2058,16 +2079,19 @@ kill the buffer in it also."
 (defun jag/maximize-frame ()
   "Maximize frame."
   (interactive)
-  (let ((frame (selected-frame)))
-    (if my-default-font
-	(set-frame-size frame 1256 747 t)
-      (set-frame-size frame 1254 747 t))))
+  (if my-default-font
+      (let ((frame-size (nth 3 (assoc 2 my-fonts))))
+	(eval-expression frame-size))
+    (let ((frame-size (nth 3 (assoc 1 my-fonts))))
+      (eval-expression frame-size))))
 
 (defun jag/shrink-frame ()
   "Shrink frame up."
   (interactive)
   (let ((frame (selected-frame)))
-    (set-frame-size nil 114 10)))
+    (if my-default-font
+	(set-frame-size frame 1258 200 t)
+      (set-frame-size frame 1256 200 t))))
 
 (defun jag/toggle-fullscreen ()
   "Toggle full screen, time and battery mode."
@@ -2082,4 +2106,3 @@ kill the buffer in it also."
       (display-battery-mode 0))))
 
 (use-package test)
-
