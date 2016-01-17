@@ -84,11 +84,18 @@
     (setq my-default-font t)
     (message "%s (done)" fontname)))
 
-(defun my-toggle-font ()
-  "Toggle between two fonts."
-  (interactive)
+(defun font-switcher (&optional arg)
+  "Toggle between two fonts. With a prefix argument, prompt for a
+new font."
+  (interactive "P")
   (if my-default-font
-      (my-first-font)
+      (if arg
+	  (progn
+	    (let ((new-font (read-from-minibuffer "New font: ")))
+	      (set-default-font new-font)
+	      (jag/maximize-frame)
+	      (message "%s (done)" new-font)))
+	(my-first-font))
     (my-second-font)))
 
 ;; disable current theme before new one is loaded
@@ -667,7 +674,7 @@ The app is chosen from your OS's preference."
 	   ("b"   . boxquote-region)
 	   ("u"   . boxquote-unbox)
 	   ("w"   . display-time-world-and-focus)
-	   ("f"   . my-toggle-font)
+	   ("f"   . font-switcher)
 	   ("M-q" . unfill-paragraph))
 
 ;; quickly switch between dictionaries
