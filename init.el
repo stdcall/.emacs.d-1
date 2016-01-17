@@ -252,7 +252,23 @@
 
 (use-package swiper
   :ensure t
-  :bind (("C-s" . swiper)))
+  :bind (("C-s" . jag/swiper))
+  :config
+  (defun jag/swiper (arg)
+    "Search selected region using `swiper'. With a prefix argument,
+search word at point. If nothing is selected, prompt for a
+string."
+    (interactive "P")
+    (let ((str (buffer-substring
+		(region-beginning)
+		(region-end))))
+      (if arg
+	  (swiper (thing-at-point 'word))
+	(if (use-region-p)
+	    (progn
+	      (deactivate-mark)
+	      (swiper str))
+	  (swiper))))))
 
 ;; search online
 
@@ -668,7 +684,8 @@ The app is chosen from your OS's preference."
 (use-package which-key
   :diminish which-key-mode
   :config
-  (which-key-mode))
+  (which-key-mode)
+  (setq which-key-max-description-length 50))
 
 ;; make bindings that stick around
 
