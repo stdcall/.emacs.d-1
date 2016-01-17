@@ -252,23 +252,23 @@
 
 (use-package swiper
   :ensure t
-  :bind (("C-s" . jag/swiper))
+  :bind ("C-s" . jag/swiper)
   :config
   (defun jag/swiper (arg)
     "Search selected region using `swiper'. With a prefix argument,
 search word at point. If nothing is selected, prompt for a
 string."
     (interactive "P")
-    (let ((str (buffer-substring
-		(region-beginning)
-		(region-end))))
-      (if arg
-	  (swiper (thing-at-point 'word))
-	(if (use-region-p)
-	    (progn
+    (if arg
+	(swiper (thing-at-point 'word))
+      (if (use-region-p)
+	  (progn
+	    (let ((str (buffer-substring
+			(region-beginning)
+			(region-end))))
 	      (deactivate-mark)
-	      (swiper str))
-	  (swiper))))))
+	      (swiper str)))
+	(swiper)))))
 
 ;; search online
 
@@ -1107,10 +1107,10 @@ for arguments if the commands can take any."
 ;; timer
 
 (use-package tea-time
+  :bind ("C-c C-x t" . tea-time)
   :config
   (setq tea-time-sound "~/Documents/archive/audio/bell.wav")
-  (setq tea-time-sound-command "mplayer -volume 0.5 %s")
-  :bind ("C-c C-x t" . tea-time))
+  (setq tea-time-sound-command "mplayer -volume 0.5 %s"))
 
 ;; meditation timer
 
