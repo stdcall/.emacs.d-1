@@ -37,9 +37,9 @@
 (require 'emms-streams)
 (require 'emms-mark)
 (require 'helm-emms)
-(require 'guide-key)
-(guide-key-mode 1)
-(setq guide-key/popup-window-position (quote bottom))
+;; (require 'guide-key)
+;; (guide-key-mode 1)
+;; (setq guide-key/popup-window-position (quote bottom))
 
 (defgroup config-emms nil
   "Customization group for `config-emms'.")

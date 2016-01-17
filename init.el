@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-16>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-17>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -256,7 +256,7 @@
 
 ;; search online
 
-(use-package config-queries)
+(use-package config-search)
 
 ;; projectile for managing large projects
 
@@ -665,21 +665,10 @@ The app is chosen from your OS's preference."
 
 ;; guide the following key bindings
 
-(use-package guide-key
-  :diminish guide-key-mode
-  :init
-  (guide-key-mode 1)
+(use-package which-key
+  :diminish which-key-mode
   :config
-  (setq guide-key/recursive-key-sequence-flag t)
-  (setq guide-key/popup-window-position 'bottom)
-  (setq guide-key/guide-key-sequence '("M-p"
-                                       "M-i"
-                                       "M-g"
-                                       "C-h"
-                                       "C-c p"
-                                       "C-x r"
-                                       "C-x p"
-                                       "C-x j")))
+  (which-key-mode))
 
 ;; make bindings that stick around
 
