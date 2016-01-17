@@ -36,7 +36,7 @@ the minibuffer."
   (interactive)
   (browse-url
    (format
-    "https://github.com/search?l=emacs-lisp&q=%s&type=Code&utf8=✓&"
+    "https://github.com/search?l=emacs-lisp&q=%s&type=Code"
     (if (use-region-p)
 	(url-hexify-string (buffer-substring
 			    (region-beginning)
@@ -48,7 +48,7 @@ the minibuffer."
   (interactive)
   (browse-url
    (format
-    "https://gist.github.com/search?utf8=✓&q=language:emacs-lisp+%s"
+    "https://gist.github.com/search?q=language:emacs-lisp+%s"
     (if (use-region-p)
 	(url-hexify-string (buffer-substring
 			    (region-beginning)
