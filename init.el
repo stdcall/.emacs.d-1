@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-17>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-19>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -84,14 +84,15 @@
     (setq my-default-font t)
     (message "%s (done)" fontname)))
 
-(defun font-switcher (&optional arg)
+(defun switch-font (&optional arg)
   "Toggle between two fonts. With a prefix argument, prompt for a
 new font."
   (interactive "P")
   (if my-default-font
       (if arg
 	  (progn
-	    (let ((new-font (read-from-minibuffer "New font: ")))
+	    (let* ((font-list (font-family-list))
+		   (new-font (completing-read "New font: " font-list)))
 	      (set-default-font new-font)
 	      (jag/maximize-frame)
 	      (message "%s (done)" new-font)))
@@ -119,7 +120,9 @@ new font."
   (load-theme my-cur-theme t)
   (set-cursor-color "gold2"))
 
-(cycle-my-theme)
+(when window-system
+  (cycle-my-theme))
+
 (bind-key "C-t" 'cycle-my-theme)
 
 ;; select a different theme
@@ -163,6 +166,7 @@ new font."
 (setq sentence-end-double-space nil)
 (setq ad-redefinition-action 'accept)
 (fset 'yes-or-no-p #'y-or-n-p)
+(setq overflow-newline-into-fringe nil)
 
 ;; backup settings
 
@@ -674,7 +678,7 @@ The app is chosen from your OS's preference."
 	   ("b"   . boxquote-region)
 	   ("u"   . boxquote-unbox)
 	   ("w"   . display-time-world-and-focus)
-	   ("f"   . font-switcher)
+	   ("f"   . switch-font)
 	   ("M-q" . unfill-paragraph))
 
 ;; quickly switch between dictionaries
@@ -1424,7 +1428,7 @@ repeat."
 #+name: expenses
 #+begin_src ledger
 %(org-read-date) * %^{Payed to}
-    expenses:%^{Spent on|donation:|entertainment:|food:|groceries:|home:|other:|personal:|rent:|transportation:|utilities:internet:|utilities:phone}%?  £%^{Amount}
+    expenses:%^{Spent on|donation:|entertainment:|food:|groceries:|home:|other:|personal:|rent:|transportation:|utilities:electricity|utilities:gas|utilities:internet:|utilities:phone}%?  £%^{Amount}
     assets:%^{Debited from|bank:checking|bank:savings|cash}
 #+end_src\n
 " :prepend t)
