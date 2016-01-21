@@ -14,7 +14,7 @@
    ("l" search-gist)
    ("q" nil)))
 
-(defun search-duckduckgo (arg)
+(defun search-duckduckgo (&optional arg)
   "Search selected region online. With a prefix argument, enclose
 region in quotes. If nothing is selected, prompt for a string in
 the minibuffer."
@@ -56,4 +56,4 @@ the minibuffer."
       (read-from-minibuffer "Gist: ")))))
 
 (provide 'config-search)
-;;; config-queries.el end here
+;;; config-search.el end here

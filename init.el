@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-19>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-21>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -32,7 +32,8 @@
 (package-initialize)
 (add-hook 'package-menu-mode-hook 'hl-line-mode)
 
-(require 'use-package)
+(eval-when-compile
+  (require 'use-package))
 
 ;; ==================================================================
 ;; ˚˚ appearance
@@ -55,20 +56,20 @@
 
 (when window-system
   (if my-default-font
-      (let ((font (nth 2 (assoc 2 my-fonts)))
+      (let ((font-two (nth 2 (assoc 2 my-fonts)))
 	    (frame-size (nth 3 (assoc 2 my-fonts))))
-	(eval-expression font)
+	(eval-expression font-two)
 	(eval-expression frame-size)
 	(setq my-default-font t))
-    (let ((font (nth 2 (assoc 1 my-fonts)))
+    (let ((font-one (nth 2 (assoc 1 my-fonts)))
 	  (frame-size (nth 3 (assoc 1 my-fonts))))
-      (eval-expression font)
+      (eval-expression font-one)
       (eval-expression frame-size)
       (setq my-default-font nil))))
 
 (defun my-first-font ()
-  (let ((font-one   (nth 2 (assoc 1 my-fonts)))
-	(fontname   (nth 1 (assoc 1 my-fonts)))
+  (let ((fontname   (nth 1 (assoc 1 my-fonts)))
+	(font-one   (nth 2 (assoc 1 my-fonts)))
 	(frame-size (nth 3 (assoc 1 my-fonts))))
     (eval-expression font-one)
     (eval-expression frame-size)
@@ -76,8 +77,8 @@
     (message "%s (done)" fontname)))
 
 (defun my-second-font ()
-  (let ((font-two   (nth 2 (assoc 2 my-fonts)))
-	(fontname   (nth 1 (assoc 2 my-fonts)))
+  (let ((fontname   (nth 1 (assoc 2 my-fonts)))
+	(font-two   (nth 2 (assoc 2 my-fonts)))
 	(frame-size (nth 3 (assoc 2 my-fonts))))
     (eval-expression font-two)
     (eval-expression frame-size)
@@ -231,8 +232,9 @@ new font."
   (setq helm-autoresize-max-height 50)
   (setq helm-autoresize-min-height 25)
   (bind-key "C-;" 'helm-org-in-buffer-headings org-mode-map)
-  (bind-key "C-e" 'helm-select-2nd-action helm-map)
-  (bind-key "C-M-n" 'helm-select-8th-action helm-map)
+  (bind-keys :map helm-map
+	     ("C-e"   . helm-select-2nd-action)
+	     ("C-M-n" . helm-select-8th-action))
 
   (defun helm-select-2nd-action ()
     "Select the 2nd action for the currently selected candidate."
@@ -374,15 +376,15 @@ string."
 ;; move cursor to any position in the current view
 
 (use-package avy
+  :bind
+  (("C-x SPC" . avy-goto-word-1)
+   ("M-g g"   . avy-goto-line)
+   ("M-o"     . ace-window))
   :config
   (setq avy-keys-alist
 	`((avy-goto-word-1 . (?j ?k ?l ?\; ?a ?s))
 	  (avy-goto-line   . (?j ?k ?l ?\;))))
-  (setq aw-keys '(?j ?o ?k ?\;))
-  :bind
-  (("C-x SPC" . avy-goto-word-1)
-   ("M-g g"   . avy-goto-line)
-   ("M-o"     . ace-window)))
+  (setq aw-keys '(?j ?o ?k ?\;)))
 
 ;; ==================================================================
 ;; ˚˚ buffer settings
@@ -711,7 +713,7 @@ The app is chosen from your OS's preference."
   :config
   (smooth-scroll-mode t))
 
-(bind-keys*
+(bind-keys
  ("C-M-k" . (lambda () (interactive) (scroll-up-1 5)))
  ("C-M-j" . (lambda () (interactive) (scroll-down-1 5))))
 
@@ -802,11 +804,10 @@ The app is chosen from your OS's preference."
   (defun helm-bibtex-search-notes-fallback ()
     "Search notes file."
     (let ((input (format "%s" helm-pattern)))
-      (if (f-file? helm-bibtex-notes-path)
-	  (progn
-	    (find-file helm-bibtex-notes-path)
-	    (goto-char (point-min))
-	    (swiper input)))))
+      (when (f-file? helm-bibtex-notes-path)
+	(find-file helm-bibtex-notes-path)
+	(goto-char (point-min))
+	(swiper input))))
 
   (helm-delete-action-from-source "Search my notes" helm-source-bibtex)
   (helm-add-action-to-source "Search my notes" 'helm-bibtex-search-notes helm-source-bibtex 10)
@@ -859,8 +860,7 @@ for arguments if the commands can take any."
                          (read-from-minibuffer "Postnote[2]: ") "")))
             (if (and (= helm-bibtex-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
                 (format "%s:%s" cite-command (s-join "," keys))
-              (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join "," keys)))
-            ))))))
+              (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join "," keys)))))))))
 
 ;; ==================================================================
 ;; ˚˚ AUCTeX for managing (La)TeX files
@@ -1287,8 +1287,8 @@ for arguments if the commands can take any."
 (setq org-agenda-files (quote ("~/Documents/org/todo.org"
                                "~/Documents/org/notes.org"
                                "~/Documents/org/fieldwork.org"
-                               ;;"~/Documents/org/annotation.org"
-                               ;;"~/Documents/org/draft.org"
+                               "~/Documents/org/annotation.org"
+                               "~/Documents/org/draft.org"
                                ;; "~/Documents/org/contacts.org"
 			       "~/Documents/org/analysis.org")))
 (setq org-agenda-remove-tags t)
@@ -1621,7 +1621,9 @@ asynchronously, in another process."
 (use-package magit
   :ensure t
   :bind ("C-x g" . magit-status)
-  :config (setq magit-last-seen-setup-instructions "1.4.0"))
+  :config
+  (setq magit-last-seen-setup-instructions "1.4.0")
+  (add-hook 'git-commit-mode-hook 'turn-on-flyspell))
 
 ;; compare file differences and merge changes
 
@@ -2091,7 +2093,7 @@ kill the buffer in it also."
   (interactive)
   (make-frame)
   (let ((frame (selected-frame)))
-    (set-frame-size frame 1254 747 t)))
+    (set-frame-size frame 1256 747 t)))
 
 (defun jag/maximize-frame ()
   "Maximize frame."
