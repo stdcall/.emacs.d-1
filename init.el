@@ -111,18 +111,20 @@ new font."
 (setq my-themes '(gotham stekene-dark))
 (setq my-cur-theme nil)
 
-(defun cycle-my-theme ()
-  "Cycle through a list of themes defined by `my-themes'"
-  (interactive)
-  (when my-cur-theme
-    (disable-theme my-cur-theme)
-    (setq my-themes (append my-themes (list my-cur-theme))))
-  (setq my-cur-theme (pop my-themes))
-  (load-theme my-cur-theme t)
-  (set-cursor-color "gold2"))
-
-(when window-system
-  (cycle-my-theme))
+(defun cycle-my-theme (&optional arg)
+  "Cycle through a list of themes defined by `my-themes'. With a
+prefix ARG, cycle randomly through a list of available themes."
+  (interactive "P")
+  (if arg
+      (let* ((list (custom-available-themes))
+	     (theme (nth (random (length list)) list)))
+	(load-theme theme t)
+	(message "%s" theme))
+    (when my-cur-theme
+      (disable-theme my-cur-theme)
+      (setq my-themes (append my-themes (list my-cur-theme))))
+    (setq my-cur-theme (pop my-themes))
+    (load-theme my-cur-theme t)))
 
 (bind-key "C-t" 'cycle-my-theme)
 
