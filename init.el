@@ -86,7 +86,7 @@
     (message "%s (done)" fontname)))
 
 (defun switch-font (&optional arg)
-  "Toggle between two fonts. With a prefix argument, prompt for a
+  "Toggle between two fonts. With a prefix ARG, prompt for a
 new font."
   (interactive "P")
   (if my-default-font
@@ -94,7 +94,7 @@ new font."
 	  (progn
 	    (let* ((font-list (font-family-list))
 		   (new-font (completing-read "New font: " font-list)))
-	      (set-default-font new-font)
+	      (set-frame-font new-font)
 	      (jag/maximize-frame)
 	      (message "%s (done)" new-font)))
 	(my-first-font))
