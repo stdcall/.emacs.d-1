@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-21>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-24>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -93,6 +93,7 @@ new font."
       (if arg
 	  (progn
 	    (let* ((font-list (font-family-list))
+		   (completion-ignore-case t)
 		   (new-font (completing-read "New font: " font-list)))
 	      (set-frame-font new-font)
 	      (jag/maximize-frame)
@@ -125,6 +126,9 @@ prefix ARG, cycle randomly through a list of available themes."
       (setq my-themes (append my-themes (list my-cur-theme))))
     (setq my-cur-theme (pop my-themes))
     (load-theme my-cur-theme t)))
+
+(when window-system
+  (cycle-my-theme))
 
 (bind-key "C-t" 'cycle-my-theme)
 
@@ -1510,13 +1514,13 @@ repeat."
 (use-package org-pomodoro
   :bind ("∏" . org-pomodoro) ; S-alt-p
   :config
-  (setq org-pomodoro-long-break-frequency 4)
-  (setq org-pomodoro-long-break-length 20)
+  (setq org-pomodoro-long-break-frequency 4
+	org-pomodoro-long-break-length 20)
   (setq org-pomodoro-expiry-time 180)
   (setq org-pomodoro-audio-player "mplayer")
-  (setq org-pomodoro-finished-sound-args "-volume 0.3")
-  (setq org-pomodoro-long-break-sound-args "-volume 0.3")
-  (setq org-pomodoro-short-break-sound-args "-volume 0.3"))
+  (setq org-pomodoro-finished-sound-args "-volume 0.5"
+	org-pomodoro-long-break-sound-args "-volume 0.5"
+	org-pomodoro-short-break-sound-args "-volume 0.5"))
 
 ;; wrap text with punctation
 
@@ -2010,7 +2014,7 @@ to a unique value for this to work properly."
                         (buffer-substring contents-begin contents-end))))
         (setf (buffer-substring start end) (or desc path))))))
 
-;; insert date
+;; time and date
 
 (defun insert-iso-date ()
   "Insert the current date at point. See `format-time-string' for
