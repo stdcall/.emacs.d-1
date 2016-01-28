@@ -56,8 +56,8 @@
 (setq bibtex-autokey-before-presentation-function 'bibtex-capitalize-key)
 
 (defun bibtex-capitalize-key (key)
-  "Capitalize bibtex key before generated key is presented. See
-`bibtex-autokey-before-presentation-function'."
+  "Capitalize bibtex KEY before generated key is presented.
+See `bibtex-autokey-before-presentation-function'."
   (save-excursion
     (let ((cap-key (capitalize key)))
       (bibtex-search-entry cap-key)
@@ -75,8 +75,7 @@
 ;; replace non-ascii characters
 
 (defvar bibtex-nonascii-latex-replacements '()
-  "Cons list of common Portuguese non-ascii characters and their
-  LaTeX representations.")
+  "Cons list of common Portuguese non-ascii characters and their LaTeX representations.")
 
 (setq bibtex-nonascii-latex-replacements
       '(("á" . "{\\\\'a}")
@@ -108,8 +107,7 @@
       (goto-char (point-min)))))
 
 (defun bibtex-replace-naked-ampersand ()
-  "Replace naked ampersand with its corresponding LaTeX
-equivalent."
+  "Replace naked ampersand with its corresponding LaTeX equivalent."
   (interactive)
   (save-restriction
     (bibtex-narrow-to-entry)
@@ -118,8 +116,8 @@ equivalent."
     (widen)))
 
 (defun bibtex-last-comma ()
-  "Insert or delete comma after last field according to
-`bibtex-comma-after-last-field'."
+  "Insert or delete comma after the last field.
+See `bibtex-comma-after-last-field'."
   (interactive)
   (save-excursion
     (bibtex-end-of-entry)
@@ -154,8 +152,8 @@ equivalent."
 
 (defun jag/bibtex-fill-field-bounds (bibtex-fill-field-bounds bounds justify &optional move)
   "Format BibTeX field delimited by BOUNDS.
-If JUSTIFY is non-nil justify as well. If optional arg MOVE is
-non-nil move point to end of field."
+If JUSTIFY is non-nil justify as well. If optional arg MOVE is non-nil
+move point to end of field."
   (let ((end-field (copy-marker (bibtex-end-of-field bounds))))
     (if (not justify)
         (goto-char (bibtex-start-of-text-in-field bounds))
@@ -186,9 +184,9 @@ non-nil move point to end of field."
 	    (add-hook 'after-save-hook #'bibtex-last-update nil 'make-it-local)))
 
 (defun bibtex-last-update ()
-  "Append timestamp and total number of entries as a comment on
-the first line of the file. See `time-stamp-format' for possible
-string replacements."
+  "Append timestamp and total number of entries.
+Result is shown as a comment on the top of the file. See
+`time-stamp-format' for possible string replacements."
   (save-excursion
     (let ((time-stamp-format "%%%% %f. Last modified on %:y-%02m-%02d %02H:%02M,"))
       (goto-char (point-min))
@@ -201,9 +199,9 @@ string replacements."
       (set-buffer-modified-p nil))))
 
 (defun jag/bibtex-count-entries (&optional count-string-entries)
-  "Insert the total number of entries in the current buffer. See
-`bibtex-count-entries' for a more thorough explanation of the
-original function."
+  "Insert the total number of entries in the current buffer.
+See `bibtex-count-entries'. Optional argument COUNT-STRING-ENTRIES
+counts all entries."
   (interactive)
   (let ((number 0)
         (bibtex-sort-ignore-string-entries (not count-string-entries)))
@@ -238,7 +236,7 @@ Optional argument NODELIM see `bibtex-make-field'."
       (insert value))))
 
 (defun bibtex-get-doi ()
-  "Search doi online."
+  "Search DOI online."
   (interactive)
   (save-excursion
     (bibtex-beginning-of-entry)

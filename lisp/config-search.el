@@ -17,9 +17,9 @@
    ("q" nil)))
 
 (defun search-duckduckgo (&optional arg)
-  "Search selected region online. With a prefix argument, enclose
-region in quotes. If nothing is selected, prompt for a string in
-the minibuffer."
+  "Search selected region online.
+With a prefix ARG, enclose region in quotes. If nothing is selected,
+prompt for a string in the minibuffer."
   (interactive "P")
   (let ((str (url-hexify-string (buffer-substring
 				 (region-beginning)
@@ -58,9 +58,9 @@ the minibuffer."
       (read-from-minibuffer "Gist: ")))))
 
 (defun search-google-scholar (&optional arg)
-  "Search selected region online. With a prefix argument, enclose
-region in quotes. If nothing is selected, prompt for a string in
-the minibuffer."
+  "Search selected region online.
+With a prefix ARG, enclose region in quotes. If nothing is selected,
+prompt for a string in the minibuffer."
   (interactive "P")
   (let ((str (url-hexify-string (buffer-substring
 				 (region-beginning)

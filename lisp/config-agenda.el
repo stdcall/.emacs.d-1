@@ -50,12 +50,12 @@
         ("o" "someday"
          ((tags "LEVEL=2+CATEGORY=\"someday\""
                 ((org-agenda-overriding-header "Someday/Maybe")
-                 (org-agenda-sorting-strategy 
+                 (org-agenda-sorting-strategy
                   '(todo-state-up))))
           (tags "LEVEL>=3+CATEGORY=\"someday\""
-                ((org-agenda-sorting-strategy 
+                ((org-agenda-sorting-strategy
                   '(todo-state-up))))))
-                
+
         ("n" "notes"
          ((tags "LEVEL=2+CATEGORY=\"notes\""
 		((org-agenda-overriding-header "Notes"))))

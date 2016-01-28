@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-24>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-28>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -86,8 +86,8 @@
     (message "%s (done)" fontname)))
 
 (defun switch-font (&optional arg)
-  "Toggle between two fonts. With a prefix ARG, prompt for a
-new font."
+  "Toggle between two fonts.
+With a prefix ARG, prompt for a new font."
   (interactive "P")
   (if my-default-font
       (if arg
@@ -113,8 +113,8 @@ new font."
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme (&optional arg)
-  "Cycle through a list of themes defined by `my-themes'. With a
-prefix ARG, cycle randomly through a list of available themes."
+  "Cycle through a list of themes defined by `my-themes'.
+With a prefix ARG, cycle randomly through a list of available themes."
   (interactive "P")
   (if arg
       (let* ((list (custom-available-themes))
@@ -143,7 +143,6 @@ prefix ARG, cycle randomly through a list of available themes."
 (setq user-emacs-directory (file-truename "~/.emacs.d/"))
 (setq default-directory "~/Documents/org/")
 (add-to-list 'load-path "~/.emacs.d/lisp/")
-(setq backup-directory-alist '(("." . "~/Documents/org/.backups")))
 (setq delete-by-moving-to-trash t
       trash-directory "~/.Trash/emacs")
 
@@ -177,6 +176,7 @@ prefix ARG, cycle randomly through a list of available themes."
 
 ;; backup settings
 
+(setq backup-directory-alist '(("." . "~/Documents/org/.backups")))
 (setq delete-old-versions t)
 (setq delete-by-moving-to-trash t)
 (setq version-control t)
@@ -274,9 +274,9 @@ prefix ARG, cycle randomly through a list of available themes."
   :bind ("C-s" . jag/swiper)
   :config
   (defun jag/swiper (arg)
-    "Search selected region using `swiper'. With a prefix argument,
-search word at point. If nothing is selected, prompt for a
-string."
+    "Search selected region using `swiper'.
+With a prefix ARG, search word at point. If nothing is selected,
+prompt for a string."
     (interactive "P")
     (if arg
 	(swiper (thing-at-point 'word))
@@ -503,7 +503,7 @@ string."
 ;; open file using default application
 
 (defun xah-open-in-external-app (&optional file)
-  "Open the current file or dired marked files in external app.
+  "Open the current FILE or dired marked files in external app.
 
 The app is chosen from your OS's preference."
   (interactive)
@@ -807,6 +807,7 @@ The app is chosen from your OS's preference."
         (quote (("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
+  ;; press C-o to go to the next source
   (defun helm-bibtex-search-notes-fallback ()
     "Search notes file."
     (let ((input (format "%s" helm-pattern)))
@@ -841,8 +842,9 @@ The app is chosen from your OS's preference."
 ;; prompt once and use org-ref syntax
 
 (defun jag/helm-bibtex-format-citation-org-ref (keys)
-  "Formatter for org-ref citation commands. Prompts for the command and
-for arguments if the commands can take any."
+  "Formatter for `org-ref' citation commands.
+Prompt for the command and additional arguments if the commands can
+take any."
   (let* ((initial (when helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
          (default (unless helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
          (default-info (if default (format " (default \"%s\")" default) ""))
@@ -1097,13 +1099,14 @@ for arguments if the commands can take any."
 
 ;; newsreader client
 
-(use-package config-gnus
-  :config (bind-key "C-c g" 'gnus))
+(use-package gnus
+  :config (use-package config-gnus)
+  :bind ("C-c g" . gnus))
 
 ;; mail client
 
-(use-package config-mu4e
-  :load-path "/usr/local/share/emacs/site-lisp/mu4e"
+(use-package mu4e
+  :config (use-package config-mu4e)
   :bind (("M-M"   . mu4e)
          ("C-x m" . mu4e-compose-new)))
 
@@ -1119,7 +1122,9 @@ for arguments if the commands can take any."
 
 ;; enable multimedia support
 
-(use-package config-emms)
+(use-package emms
+  :defer t
+  :config (use-package config-emms))
 
 ;; timer
 
@@ -1347,8 +1352,7 @@ for arguments if the commands can take any."
 ;; mark task as done in the agenda buffer
 
 (defun jag/org-agenda-mark-as-done ()
-  "Mark item at point as done only if it is not scheduled to
-repeat."
+  "Mark item at point as done only if it is not scheduled to repeat."
   (interactive)
   (when (eq major-mode 'org-agenda-mode)
     (let ((agenda-buf (current-buffer)))
@@ -1370,9 +1374,10 @@ repeat."
 ;; https://lists.gnu.org/archive/html/emacs-orgmode/2015-06/msg00266.html
 
 (defun org-agenda-delete-empty-blocks ()
-  "Remove empty agenda blocks. A block is identified as empty if
-  there are fewer than 2 non-empty lines in the block (excluding
-  the line with `org-agenda-block-separator' characters)."
+  "Remove empty agenda blocks.
+A block is identified as empty if there are fewer than 2 non-empty
+lines in the block (excluding the line with
+`org-agenda-block-separator' characters)."
   (setq buffer-read-only nil)
   (save-excursion
     (goto-char (point-min))
@@ -1682,13 +1687,13 @@ asynchronously, in another process."
 
 (defun delete-word (arg)
   "Delete characters forward until encountering the end of a word.
-With argument, do this that many times."
+With ARG, do this that many times."
   (interactive "p")
   (delete-region (point) (progn (forward-word arg) (point))))
 
 (defun backward-delete-word (arg)
   "Delete characters backward until encountering the end of a word.
-With argument, do this that many times."
+With ARG, do this that many times."
   (interactive "p")
   (delete-word (- arg)))
 
@@ -1921,8 +1926,8 @@ _M-s_: search online       ^ ^                     _P_: open browser         _q_
         '(("pt" . "en") ("en" . "pt"))))
 
 (defun translate-to-pt ()
-  "Translate from English to Portuguese by querying word at
-point. If region is active, use that instead."
+  "Translate from English to Portuguese by querying word at point.
+If region is active, use that instead."
   (interactive)
   (browse-url
    (format
@@ -1934,8 +1939,8 @@ point. If region is active, use that instead."
       (thing-at-point 'word)))))
 
 (defun translate-to-en ()
-  "Translate from Portuguese to English by querying word at
-point. If region is active, use that instead."
+  "Translate from Portuguese to English by querying word at point.
+If region is active, use that instead."
   (interactive)
   (browse-url
    (format
@@ -1955,8 +1960,8 @@ point. If region is active, use that instead."
 ;; https://github.com/rg3/youtube-dl
 
 (defun youtube-to-mp4 ()
-  "Download youtube video to disk as an mp4 file using youtube-dl
-and append a date to it using date2name."
+  "Download youtube video to disk as an mp4 file using youtube-dl.
+Append a date to it using date2name."
   (interactive)
   (let* ((str (current-kill 0))
          (default-directory "~/downloads/youtube")
@@ -1968,8 +1973,8 @@ and append a date to it using date2name."
              "mv *mp4 ~/downloads/youtube" "\n"))))
 
 (defun youtube-to-mp3 ()
-  "Download youtube video to disk as an mp3 file using youtube-dl
-and append a date to it using date2name."
+  "Download youtube video to disk as an mp3 file using youtube-dl.
+Append a date to it using date2name."
   (interactive)
   (let* ((str (current-kill 0))
          (default-directory "~/downloads/youtube")
@@ -1984,11 +1989,10 @@ and append a date to it using date2name."
 ;; http://is.gd/jYpEVC
 
 (defun org-export-all (backend)
-  "Export all subtrees that are *not* tagged with :noexport: to
-separate files.
+  "Export all subtrees that are *not* tagged with :noexport: to separate files.
 
-Note that subtrees must have the :EXPORT_FILE_NAME: property set
-to a unique value for this to work properly."
+Note that subtrees must have the :EXPORT_FILE_NAME: property set to a
+unique value for this to work properly."
   (interactive "sEnter backend: ")
   (let ((fn (cond ((equal backend "html") 'org-html-export-to-html)
                   ((equal backend "latex") 'org-latex-export-to-latex)
@@ -2017,14 +2021,14 @@ to a unique value for this to work properly."
 ;; time and date
 
 (defun insert-iso-date ()
-  "Insert the current date at point. See `format-time-string' for
-possible date string replacements."
+  "Insert the current date at point.
+See `format-time-string' for possible date string replacements."
   (interactive)
   (insert (format-time-string "%Y-%m-%d")))
 
 (defun insert-date ()
-  "Insert the current date at point. See `format-time-string' for
-possible date string replacements."
+  "Insert the current date at point.
+See `format-time-string' for possible date string replacements."
   (interactive)
   (insert (format-time-string "%d %b %Y")))
 
@@ -2075,7 +2079,6 @@ kill the buffer in it also."
   (switch-to-next-buffer))
 
 (defun rotate-windows ()
-  "Rotate your windows."
   (interactive)
   (cond ((not (> (count-windows)1))
          (message "You can't rotate a single window!"))

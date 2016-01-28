@@ -47,7 +47,7 @@
   :group 'config-emms)
 
 (defcustom emms-seconds-to-fast-forward +5
-  "Number of seconds to fast forward. The default value is +5"
+  "Number of seconds to fast forward. The default value is +5."
   :type 'number
   :group 'config-emms)
 
@@ -69,15 +69,16 @@
 (setq emms-info-libtag-program-name "/usr/bin/emms-print-metadata")
 
 (defun emms-rewind ()
-  "Rewind audio incrementally in seconds according to the value
-of `emms-seconds-to-rewind'. This should be a negative number."
+  "Rewind audio incrementally in seconds.
+The value is specified in the variable `emms-seconds-to-rewind' and
+should be a negative number."
   (interactive)
   (emms-seek emms-seconds-to-rewind))
 
 (defun emms-fast-forward ()
-  "Fast-forward audio incrementally in seconds according to the
-value of `emms-seconds-to-fast-forward'. This should be a
-positive number."
+  "Fast-forward audio incrementally in seconds.
+The value is specified in `emms-seconds-to-fast-forward' and should be
+a positive number."
   (interactive)
   (emms-seek emms-seconds-to-fast-forward))
 
@@ -107,8 +108,7 @@ positive number."
 ;; add tracks from dired
 
 (defun dired-add-to-emms-playlist nil
-  "Adds directory tree rooted at the selected directory to the
-current EMMS playlist."
+  "Add directory tree to the current EMMS playlist."
   (interactive)
   (let ((file (expand-file-name (dired-get-filename))))
     (if (and file (file-directory-p file))
@@ -190,8 +190,9 @@ current EMMS playlist."
   (emms-tag-editor-next-same-field t))
 
 (defun emms-tag-editor-submit-and-exit-2 ()
-  "After submitting changes in the `emms-tag-editor', delete its
-window and return to the playlist buffer."
+  "Submit changes made to the track information.
+Exit the tag editor, delete its window and return to the playlist
+buffer."
   (interactive)
   (emms-tag-editor-submit-and-exit)
   (windmove-up)

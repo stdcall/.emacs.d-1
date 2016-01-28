@@ -109,8 +109,8 @@
 
 (add-hook 'mu4e-compose-mode-hook
 	  (defun mu4e-change-dictionary-language ()
-	    "Change ispell dictionary language automatically when
-replying. If tests return nil, do nothing."
+	    "Change Ispell dictionary language automatically when replying.
+If tests return nil, do nothing."
 	    (setq x mu4e-al-contact-list)
 	    (let ((msg mu4e-compose-parent-message)
 		  (y (car x)))
@@ -131,9 +131,9 @@ replying. If tests return nil, do nothing."
   (mu4e-compose-change-dictionary-language))
 
 (defun mu4e-compose-change-dictionary-language ()
-  "Change ispell dictionary language automatically when
-composing. This function requires calling `message-goto-body',
-which is normally bound to C-c C-b in the message buffer."
+  "Change Ispell dictionary language automatically when composing.
+This function requires calling `message-goto-body', which is normally
+bound to \\[message-goto-body] in the message buffer."
   (setq x mu4e-al-contact-list)
   (let ((y (car x)))
     (save-excursion
@@ -162,6 +162,8 @@ which is normally bound to C-c C-b in the message buffer."
 			"xxxx@autistici.org")
 		       ((mu4e-message-contact-field-matches msg :to "xxxx@autistici.org")
 			"xxxx@autistici.org")
+		       ((mu4e-message-contact-field-matches msg :cc "xxxx@autistici.org")
+		       	"xxxx@autistici.org")
 		       ((mu4e-message-contact-field-matches msg :to "xxxx@qub.ac.uk")
 			"xxxx@qub.ac.uk")
 		       (t "xxxx@autistici.org")))))))
@@ -206,7 +208,7 @@ which is normally bound to C-c C-b in the message buffer."
 
 (setq mu4e-bookmarks
       '(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
-	("NOT flag:trashed AND NOT maildir:/archive AND NOT maildir:/sent" "Unprocessed Messages" ?i) ;inbox
+	("NOT flag:trashed AND NOT maildir:/archive AND NOT maildir:/sent" "Unprocessed messages" ?i) ;inbox
 	("maildir:/archive" "Archived messages" ?a)
 	("list:*" "Mailing lists" ?l)
 	("date:2d..now AND NOT flag:trashed AND NOT list:*" "Last 2 days" ?d)
@@ -243,27 +245,25 @@ which is normally bound to C-c C-b in the message buffer."
 	("untagHold" . mu4e-action-untag-hold)))
 
 (defun mu4e-action-tag-hold (msg)
-  "Add a `hold' tag to the current message and prompt for a
-tickler date."
+  "Add a \"hold\" tag to the current MSG and prompt for a tickler date."
   (org-capture nil "#")
   (mu4e-action-retag-message msg "+hold"))
 
 (defun mu4e-action-untag-hold (msg)
-  "Remove `hold' tag from the current message."
+  "Remove \"hold\" tag from the current MSG."
   (mu4e-action-retag-message msg "-hold"))
 
 (defun search-for-sender (msg)
-  "Search for messages sent by the sender of the message at
-point."
+  "Search for messages sent by the sender of the MSG at point."
   (mu4e-headers-search
    (concat "from:" (cdar (mu4e-message-field msg :from)))))
 
 (defun jag/mu4e-capture-message (msg)
-  "Capture an action and link it to the original message."
+  "Capture an action and link it to the original MSG."
   (org-capture nil "&"))
 
 (defun jag/mu4e-capture-appt (msg)
-  "Capture an appointment and link it to the original message."
+  "Capture an appointment and link it to the original MSG."
   (org-capture nil "^"))
 
 ;; ==================================================================
@@ -317,6 +317,8 @@ With prefix N move backwards N records."
 ;; citation
 ;; ==================================================================
 
+;; use Supercite for citation
+
 (add-hook 'mail-citation-hook 'sc-cite-original)
 (add-hook 'mu4e-compose-mode-hook 'sc-minor-mode) ; mu4e-compose-cite-function?
 
@@ -338,8 +340,7 @@ With prefix N move backwards N records."
   "Nil if date string is invalid.")
 
 (defun sc-message-header-on-wrote ()
-  "Similar to `sc-header-on-said', but using a different date
-string."
+  "Similar to `sc-header-on-said', but using a different date string."
   ;; https://github.com/dhgxx/elisp/blob/master/mi-gnus-init.el
   (setq sc-message-safe-time-val
 	(safe-date-to-time (sc-mail-field "date")))
@@ -369,9 +370,8 @@ string."
 ;; ==================================================================
 
 (defun mu4e-shorten-url (url)
-  "Shorten URL using https://is.gd back end. See
-https://is.gd/apishorteningreference.php for additional
-parameters."
+  "Shorten URL using https://is.gd back end.
+See URL `https://is.gd/apishorteningreference.php' for additional parameters."
   (interactive "sShorten URL: ")
   (let ((buf (url-retrieve-synchronously
 	      (format "http://is.gd/create.php?format=simple&url=%s" url))))
@@ -413,10 +413,10 @@ parameters."
 
 ;; email selected region
 
-(defun mu4e-email-region (beg end)
-  "Send region as the body of an email."
+(defun mu4e-email-region (start end)
+  "Send the text between START and END as the body of an email."
   (interactive "r")
-  (let ((content (buffer-substring beg end)))
+  (let ((content (buffer-substring start end)))
     (mu4e-compose-new)
     (message-goto-body)
     (insert (concat content "\n"))
