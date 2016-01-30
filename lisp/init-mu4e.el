@@ -401,16 +401,6 @@ See URL `https://is.gd/apishorteningreference.php' for additional parameters."
                msgs
                "\n")))
 
-;; function that takes a msg and returns a string for the description
-;; part of an org-mode link.
-
-(defun my-link-descr (msg)
-  (let ((subject (or (plist-get msg :subject)
-		     "No subject")))
-    (concat subject "")))
-
-(setq org-mu4e-link-desc-func 'my-link-descr)
-
 ;; email selected region
 
 (defun mu4e-email-region (start end)
