@@ -47,14 +47,14 @@
 ;; default settings
 ;; ==================================================================
 
+(setq mail-user-agent 'mu4e-user-agent)
 (setq message-kill-buffer-on-exit t)
 (setq mu4e-attachment-dir  "~/private/tmp")
 (setq mu4e-confirm-quit nil)
 (setq mu4e-headers-skip-duplicates t)
 (setq mu4e-compose-dont-reply-to-self t)
 (setq mu4e-view-show-addresses t)
-(setq mu4e-date-format-long "%Y-%m-%d %H:%M")
-(setq mu4e-headers-date-format "%Y-%m-%d %H:%M")
+(setq mu4e-headers-date-format "%d %b %Y %R")
 (setq mu4e-html2text-command "w3m -I utf8 -O utf8 -T text/html")
 (setq mu4e-compose-signature "Jonathan")
 
@@ -77,12 +77,10 @@
 ;; the last field.
 
 (setq mu4e-headers-fields
-      '( (:date           .  27)    ;; alternatively, use :human-date
-	 (:flags          .   6)
-	 (:from-or-to     .  22)
-	 (:thread-subject .  nil))) ;; alternatively, use :subject
-
-;; https://github.com/thierryvolpiatto/emacs-tv-config/blob/master/mu4e-config.el
+      '((:date           .  22)	;; alternatively, use :human-date
+	(:flags          .   6)
+	(:from-or-to     .  22)
+	(:thread-subject .  nil))) ;; alternatively, use :subject
 
 (add-hook 'mu4e-main-mode-hook
 	  (defun mu4e-main-mode-font-lock-rules ()
@@ -172,8 +170,8 @@ bound to \\[message-goto-body] in the message buffer."
 ;; ˚˚ key bindings
 ;; ==================================================================
 
-(global-set-key (kbd "∫") 'mu4e-headers-search-bookmark) ;that's alt-b
-(global-set-key (kbd "ø") 'helm-mu) ;that's alt-o
+(global-set-key (kbd "∫") 'mu4e-headers-search-bookmark) ; that's alt-b
+(global-set-key (kbd "ø") 'helm-mu)	; that's alt-o
 (global-set-key (kbd "C-x M") 'mu4e-email-region)
 
 (define-key mu4e-compose-mode-map (kbd "C-c s") nil)
@@ -208,7 +206,7 @@ bound to \\[message-goto-body] in the message buffer."
 
 (setq mu4e-bookmarks
       '(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
-	("NOT flag:trashed AND NOT maildir:/archive AND NOT maildir:/sent" "Unprocessed messages" ?i) ;inbox
+	("NOT flag:trashed AND NOT maildir:/archive AND NOT maildir:/sent" "Unprocessed messages" ?i) ; inbox
 	("maildir:/archive" "Archived messages" ?a)
 	("list:*" "Mailing lists" ?l)
 	("date:2d..now AND NOT flag:trashed AND NOT list:*" "Last 2 days" ?d)
@@ -282,7 +280,7 @@ bound to \\[message-goto-body] in the message buffer."
 (setq bbdb-phone-label-list (quote ("work" "home" "mobile" "other")))
 (setq bbdb-phone-style nil)
 (setq bbdb-mua-update-interactive-p '(query . create))
-(setq bbdb-message-all-addresses t)	;return all mail addresses of a message
+(setq bbdb-message-all-addresses t) ; return all mail addresses of a message
 (setq bbdb-mua-pop-up nil)
 
 (defun jag/bbdb-next-record (n)
@@ -340,8 +338,7 @@ With prefix N move backwards N records."
   "Nil if date string is invalid.")
 
 (defun sc-message-header-on-wrote ()
-  "Similar to `sc-header-on-said', but using a different date string."
-  ;; https://github.com/dhgxx/elisp/blob/master/mi-gnus-init.el
+  ">>>>> On <date> at <time>, <from> wrote:"
   (setq sc-message-safe-time-val
 	(safe-date-to-time (sc-mail-field "date")))
   (let ((sc-mumble "")
@@ -349,7 +346,7 @@ With prefix N move backwards N records."
     (if whofrom
 	(insert "\n" sc-reference-tag-string
 		(sc-hdr "On "
-			(format-time-string "%d %b %Y at %H:%M" sc-message-safe-time-val) ", ")
+			(format-time-string "%d %b %Y at %R" sc-message-safe-time-val) ", ")
 		whofrom " wrote:\n\n"))))
 
 (defun sc-message-header-on-wrote-pt ()
@@ -362,7 +359,7 @@ With prefix N move backwards N records."
     (if whofrom
 	(insert "\n" sc-reference-tag-string
 		(sc-hdr "Em "
-			(format-time-string "%d de %b de %Y às %H:%M" sc-message-safe-time-val) ", ")
+			(format-time-string "%d de %b de %Y às %R" sc-message-safe-time-val) ", ")
 		whofrom " escreveu:\n\n"))))
 
 ;; ==================================================================
