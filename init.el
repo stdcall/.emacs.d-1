@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-01-28>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-04>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -173,6 +173,9 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq ad-redefinition-action 'accept)
 (fset 'yes-or-no-p #'y-or-n-p)
 (setq overflow-newline-into-fringe nil)
+(setq display-time-format " %R ")
+(setq display-time-default-load-average nil)
+(setq display-time-24hr-format t)
 
 ;; backup settings
 
@@ -631,14 +634,17 @@ The app is chosen from your OS's preference."
 
 (unbind-key "M-o" ibuffer-mode-map)
 (unbind-key "C-o" ibuffer-mode-map)
+
 (unbind-key "M-h" org-mode-map)
 (unbind-key "C-'" org-mode-map)		; org-cycle-agenda-files
 (unbind-key "C-," org-mode-map)		; org-cycle-agenda-files
 (unbind-key "M-p" org-mode-map)		; org-shiftup
 (unbind-key "C-c [" org-mode-map)	; org-agenda-file-to-front
 (unbind-key "C-c C-j" org-mode-map)	; was org-goto
+
 (unbind-key "C-o" dired-mode-map)	; use C-m instead
 (unbind-key "M-p" dired-mode-map)
+(unbind-key "C-M-j" dired-mode-map)
 
 ;; avoid arrow keys when switching buffers
 
@@ -800,7 +806,7 @@ The app is chosen from your OS's preference."
   (setq helm-bibtex-full-frame nil)
   (setq helm-bibtex-number-of-optional-arguments 1)
   (setq helm-bibtex-cite-default-as-initial-input t)
-  (setq helm-bibtex-additional-search-fields '(keywords tags))
+  (setq helm-bibtex-additional-search-fields '(keywords))
   (setq helm-bibtex-notes-template-one-file
         "** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\n\n")
   (setq helm-bibtex-fallback-options
@@ -1107,8 +1113,7 @@ take any."
 
 (use-package mu4e
   :config (use-package config-mu4e)
-  :bind (("M-M"   . mu4e)
-         ("C-x m" . mu4e-compose-new)))
+  :bind ("M-M"   . mu4e))
 
 ;; enable encryption
 
@@ -1123,7 +1128,6 @@ take any."
 ;; enable multimedia support
 
 (use-package emms
-  :defer t
   :config (use-package config-emms))
 
 ;; timer
@@ -1142,7 +1146,7 @@ take any."
 
 ;; transcribe audio
 
-(use-package transcribe-mode
+(use-package transcribe
   :config
   (setq transcribe-interviewer "Jonathan")
   (setq transcribe-interviewee "Interviewee"))
@@ -1421,7 +1425,7 @@ lines in the block (excluding the line with
 
 (setq org-capture-templates
       '(("t" "Task" entry (file+headline "~/Documents/org/todo.org" "Tasks")
-         "** TODO %^{Description} %^g\n%^{Effort}p" :prepend t)
+         "** TODO %^{Description} %^g\n" :prepend t)
 
         ("r" "Reference" entry (file+headline "~/Documents/org/notes.org" "In-basket")
          "** %^{Description} %^g\n%?" :prepend t)
@@ -1474,10 +1478,10 @@ lines in the block (excluding the line with
         ("h" "Habit" entry (file+headline "~/Documents/org/todo.org" "Habits")
          "** TODO %?\n   SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
 
-        ("&" "E-mail" entry (file+headline "~/Documents/org/todo.org" "Tasks")
-         "** TODO %? %a %(org-set-tags-to \"mail\")\n%^{Effort}p" :prepend t) ;requires org-mu4e
+        ("&" "Email" entry (file+headline "~/Documents/org/todo.org" "Tasks")
+         "** TODO %? %(org-set-tags-to \"mail\")\n%a" :prepend t)
 
-        ("^" "E-mail appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
+        ("^" "Email appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
          "** %?\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%a" :prepend t)
 
         ("#" "Hold" entry (file+headline "~/Documents/org/todo.org" "Tickler")
