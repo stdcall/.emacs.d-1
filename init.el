@@ -276,21 +276,37 @@ With a prefix ARG, cycle randomly through a list of available themes."
   :ensure t
   :bind ("C-s" . jag/swiper)
   :config
-  (defun jag/swiper (arg)
+  (defun swiper-show-file-outline ()
+    "Show an outline of the current file in the minibuffer.
+Count the number of matches and assign it to `ivy-height'. Then,
+search the regexp using `swiper'."
+    (let ((file (abbreviate-file-name (buffer-file-name))))
+      (with-temp-buffer
+	(insert-file-contents file)
+	(goto-char (point-min))
+	(let ((val (count-matches "^;; ˚+ ")))
+	  (setq ivy-height (+ val 1))))
+      (swiper "^;; ˚+ ")))
+
+  (defun jag/swiper (&optional arg)
     "Search selected region using `swiper'.
-With a prefix ARG, search word at point. If nothing is selected,
-prompt for a string."
+With a prefix ARG, search word at point. With two prefix arguments,
+show an outline of the file in the minibuffer. Otherwise, prompt for a
+string."
     (interactive "P")
-    (if arg
-	(swiper (thing-at-point 'word))
-      (if (use-region-p)
-	  (progn
-	    (let ((str (buffer-substring
-			(region-beginning)
-			(region-end))))
-	      (deactivate-mark)
-	      (swiper str)))
-	(swiper)))))
+    ;; reset ivy-height to its default value
+    (let ((ivy-height 10))
+      (if (eq (car current-prefix-arg) 16)
+	  (swiper-show-file-outline)
+	(if arg
+	    (swiper (thing-at-point 'word))
+	  (if (use-region-p)
+	      (let ((str (buffer-substring
+			  (region-beginning)
+			  (region-end))))
+		(deactivate-mark)
+		(swiper str))
+	    (swiper)))))))
 
 ;; search online
 
