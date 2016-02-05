@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-04>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-05>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -109,7 +109,7 @@ With a prefix ARG, prompt for a new font."
 
 ;; cycle through this set of themes
 
-(setq my-themes '(gotham stekene-dark))
+(setq my-themes '(planet gotham))
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme (&optional arg)
@@ -276,7 +276,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
   :ensure t
   :bind ("C-s" . jag/swiper)
   :config
-  (defun swiper-show-file-outline ()
+  (defun swiper-preview-file-outline ()
     "Show an outline of the current file in the minibuffer.
 Count the number of matches and assign it to `ivy-height'. Then,
 search the regexp using `swiper'."
@@ -297,7 +297,7 @@ string."
     ;; reset ivy-height to its default value
     (let ((ivy-height 10))
       (if (eq (car current-prefix-arg) 16)
-	  (swiper-show-file-outline)
+	  (swiper-preview-file-outline)
 	(if arg
 	    (swiper (thing-at-point 'word))
 	  (if (use-region-p)
@@ -642,9 +642,7 @@ The app is chosen from your OS's preference."
 
 ;; time and date
 
-(bind-keys
- ("C-c i i" . insert-iso-date)
- ("C-c i d" . insert-date))
+(bind-key "C-c i" 'insert-date)
 
 ;; unbind
 
@@ -813,7 +811,7 @@ The app is chosen from your OS's preference."
 
 (use-package helm-bibtex
   :load-path "~/Documents/git/helm-bibtex"
-  :bind ("C-c C-j" . helm-bibtex)
+  :bind* ("C-c C-j" . helm-bibtex)
   :config
   (autoload 'helm-bibtex "helm-bibtex" "" t)
   (setq helm-bibtex-bibliography "~/Documents/org/refs.bib"
@@ -1228,6 +1226,7 @@ take any."
 (setq org-confirm-babel-evaluate nil)
 (setq org-tags-column -50)
 (setq org-reverse-note-order t)
+(setq org-return-follows-link t)
 (setq org-src-fontify-natively t)
 (setq org-src-tab-acts-natively t)
 (setq org-src-preserve-indentation t)
@@ -2040,17 +2039,18 @@ unique value for this to work properly."
 
 ;; time and date
 
-(defun insert-iso-date ()
-  "Insert the current date at point.
-See `format-time-string' for possible date string replacements."
-  (interactive)
-  (insert (format-time-string "%Y-%m-%d")))
-
-(defun insert-date ()
-  "Insert the current date at point.
-See `format-time-string' for possible date string replacements."
-  (interactive)
-  (insert (format-time-string "%d %b %Y")))
+(defun insert-date (arg)
+  "Insert the current date in the extended ISO format.
+With a prefix ARG, insert a different date string. With two prefix
+arguments, also change the locale. See `format-time-string' for
+possible date string replacements."
+  (interactive "P")
+  (if (eq (car current-prefix-arg) 16)
+      (let ((system-time-locale "pt_BR"))
+	(insert (format-time-string "%d/%m/%Y")))
+    (if arg
+	(insert (format-time-string "%d %B %Y"))
+      (insert (format-time-string "%F")))))
 
 (defun display-time-world-and-focus ()
   "Display of times in various time zones."
@@ -2075,8 +2075,8 @@ kill the buffer in it also."
   (interactive)
   (other-window 1)
   (kill-this-buffer)
-  (if (not (one-window-p))
-      (delete-window)))
+  (unless (one-window-p)
+    (delete-window)))
 
 ;; kill buffer and its windows
 
