@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-05>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-09>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -166,8 +166,6 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq debug-on-error t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore)
-(setq scroll-step 1)
-(setq scroll-conservatively 1000)
 (setq require-final-newline t)
 (setq sentence-end-double-space nil)
 (setq ad-redefinition-action 'accept)
@@ -881,7 +879,7 @@ take any."
                            (read-from-minibuffer "Postnote[1]: ") "")))
               (if (and (= helm-bibtex-number-of-optional-arguments 1) (string= "" pos))
                   (format "%s:%s" cite-command (s-join "," keys))
-                (format "[[%s:%s][%s]]"  cite-command (s-join "," keys) pos)))
+                (format "\\%s[%s]{%s}" cite-command pos (s-join "," keys))))
           (let ((pre (if (= helm-bibtex-number-of-optional-arguments 2)
                          (read-from-minibuffer "Prenote[1]: ") ""))
                 (pos (if (= helm-bibtex-number-of-optional-arguments 2)
@@ -979,7 +977,7 @@ take any."
                         '(("\\(\\\\cite\\)" . font-lock-keyword-face)
                           ("\\[\\([0-9]+\\)\\]" . font-lock-variable-name-face)
                           ("\\[\\([0-9]+-[0-9]+\\)\\]" . font-lock-variable-name-face) ;ie [34-35]
-                          ("\\s-*[[:upper:]]+[a-zA-Z-]+[0-9]+[a-z]" . font-lock-constant-face)))
+                          ("\\s-*[[:upper:]]+[a-zA-Z-]+[0-9]+[a-z]*" . font-lock-constant-face)))
 (font-lock-add-keywords 'org-mode
                         '(("\\(\\\\citep\\)" . font-lock-keyword-face)))
 (font-lock-add-keywords 'org-mode
@@ -1057,6 +1055,7 @@ take any."
 
 ;; emacs lisp
 
+(setq emacs-lisp-docstring-fill-column 70)
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 (add-hook 'lisp-interaction-mode-hook 'eldoc-mode)
 (eval-after-load "eldoc" '(diminish 'eldoc-mode))
