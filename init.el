@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-09>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-14>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -477,6 +477,18 @@ string."
 	  (set-visited-file-name new-name)
           (set-buffer-modified-p nil))))))
 
+;; avoid killing buffers by accident
+
+(setq bury-buffer-list '("*scratch*" "*Messages*"))
+
+(defun kill-or-bury-this-buffer ()
+  "Kill or bury the current buffer.
+See `bury-buffer-list' for a list buffers to bury."
+  (interactive)
+  (if (member (buffer-name (current-buffer)) bury-buffer-list)
+      (bury-buffer)
+    (kill-buffer (current-buffer))))
+
 ;; ==================================================================
 ;; ˚˚ dired for managing directories
 ;; ==================================================================
@@ -549,7 +561,7 @@ The app is chosen from your OS's preference."
 (bind-key "C-o" 'ido-find-file)
 (bind-key "C-M-o" 'helm-find-files)
 (bind-key "C-c o" 'occur)
-(bind-key "C-x C-k" 'kill-this-buffer)
+(bind-key "C-x C-k" 'kill-or-bury-this-buffer)
 (bind-key "C-c R" 'rename-file-and-buffer)
 (bind-key "M-c" 'kill-ring-save)
 (bind-key "M-m" 'capitalize-word)
@@ -700,7 +712,7 @@ The app is chosen from your OS's preference."
 (bind-keys :prefix-map jag-prefix-map
 	   :prefix "M-i"
 	   ("c"   . calculator)
-	   ("a"   . bbdb)
+	   ("a"   . helm-bbdb)
 	   ("b"   . boxquote-region)
 	   ("u"   . boxquote-unbox)
 	   ("w"   . display-time-world-and-focus)
@@ -839,8 +851,8 @@ The app is chosen from your OS's preference."
 
   ;; open with deafult pdf viewer
   (setq helm-bibtex-pdf-open-function
-        (lambda (fpath)
-          (start-process "open" "*open*" "open" fpath)))
+  	(lambda (fpath)
+  	  (call-process "open" nil 0 nil "-a" "Skim.app" fpath)))
 
   ;; default action
   (helm-delete-action-from-source "Open PDF file (if present)" helm-source-bibtex)
@@ -1501,11 +1513,11 @@ lines in the block (excluding the line with
         ("#" "Hold" entry (file+headline "~/Documents/org/todo.org" "Tickler")
          "** TODO delete %a %(org-set-tags-to \"mail\")\n   SCHEDULED: %^t\n" :prepend t :immediate-finish t)
 
-        ("F" "Fiona" entry (file+headline "~/Documents/org/orientation.org" "2015")
+        ("F" "Fiona" entry (file+headline "~/Documents/org/orientation.org" "2016")
          "** Fiona %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)
 
-        ("S" "Suzel" entry (file+headline "~/Documents/org/orientation.org" "2015")
-         "** Suzel %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)))
+        ("I" "Ioannis" entry (file+headline "~/Documents/org/orientation.org" "2016")
+         "** Ioannis %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)))
 
 ;; capture context
 
@@ -1514,7 +1526,7 @@ lines in the block (excluding the line with
         ("&" ((in-mode . "mu4e-view-mode")))
         ("^" ((in-mode . "mu4e-view-mode")))
         ("F" ((in-file . "orientation.org")))
-        ("S" ((in-file . "orientation.org")))))
+        ("I" ((in-file . "orientation.org")))))
 
 ;; ==================================================================
 ;; ˚˚ org mode extension
@@ -2148,8 +2160,7 @@ kill the buffer in it also."
       (progn
 	(display-time-mode 1)
 	(display-battery-mode 1))
-    (progn
-      (display-time-mode 0)
-      (display-battery-mode 0))))
+    (display-time-mode 0)
+    (display-battery-mode 0)))
 
 (use-package test)
