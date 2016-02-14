@@ -77,9 +77,9 @@
 ;; the last field.
 
 (setq mu4e-headers-fields
-      '((:date           .  22)	;; alternatively, use :human-date
+      '((:date           .  19)	;; alternatively, use :human-date
 	(:flags          .   6)
-	(:from-or-to     .  22)
+	(:from-or-to     .  23)
 	(:thread-subject .  nil))) ;; alternatively, use :subject
 
 (add-hook 'mu4e-main-mode-hook
@@ -209,9 +209,9 @@ bound to \\[message-goto-body] in the message buffer."
 	("NOT flag:trashed AND NOT maildir:/archive AND NOT maildir:/sent" "Unprocessed messages" ?i) ; inbox
 	("maildir:/archive" "Archived messages" ?a)
 	("list:*" "Mailing lists" ?l)
-	("date:2d..now AND NOT flag:trashed AND NOT list:*" "Last 2 days" ?d)
-	("date:7d..now AND NOT flag:trashed AND NOT list:*" "Last 7 days" ?w)
-	("date:30d..now AND NOT flag:trashed AND NOT list:*" "Last 30 days" ?m)
+	("date:2d..now AND NOT flag:trashed AND NOT maildir:/sent" "Last 2 days" ?d)
+	("date:7d..now AND NOT flag:trashed AND NOT maildir:/sent" "Last 7 days" ?w)
+	("date:30d..now AND NOT flag:trashed AND NOT maildir:/sent" "Last 30 days" ?m)
 	("tag:hold OR flag:flagged" "Messages on hold" ?h)
 	("flag:attach AND NOT list:*" "Messages with attachment" ?A)
 	("maildir:/uni" "Messages from Queen's" ?q)))
@@ -265,7 +265,7 @@ bound to \\[message-goto-body] in the message buffer."
   (org-capture nil "^"))
 
 ;; ==================================================================
-;; address book
+;; ˚˚ address book
 ;; ==================================================================
 
 ;; BBDB contact management
@@ -283,26 +283,6 @@ bound to \\[message-goto-body] in the message buffer."
 (setq bbdb-message-all-addresses t) ; return all mail addresses of a message
 (setq bbdb-mua-pop-up nil)
 
-(defun jag/bbdb-next-record (n)
-  "Move point to the beginning of the next BBDB record.
-With prefix N move forward N records."
-  (interactive "p")
-  (let ((npoint (bbdb-scan-property 'bbdb-record-number 'integerp n)))
-    (if npoint (goto-char npoint)
-      (ignore-errors))))
-
-(defun jag/bbdb-prev-record (n)
-  "Move point to the beginning of the previous BBDB record.
-With prefix N move backwards N records."
-  (interactive "p")
-  (jag/bbdb-next-record (- n)))
-
-(defun jag/bbdb-maps()
-  (define-key bbdb-mode-map (kbd "n") 'jag/bbdb-next-record)
-  (define-key bbdb-mode-map (kbd "p") 'jag/bbdb-prev-record))
-
-(add-hook 'bbdb-mode-hook 'jag/bbdb-maps)
-
 ;; use ; on a message to invoke BBDB interactively
 ;; http://blog.petitepomme.net/post/28547901478/installing-and-configuring-bbdb-3
 
@@ -311,8 +291,13 @@ With prefix N move backwards N records."
  (lambda ()
    (define-key mu4e-view-mode-map (kbd ";") 'bbdb-mua-edit-field)))
 
+;; helm interface for BBDB
+
+(use-package helm-bbdb
+  :load-path "~/Documents/git/helm-bbdb")
+
 ;; ==================================================================
-;; citation
+;; ˚˚ citation
 ;; ==================================================================
 
 ;; use Supercite for citation
@@ -363,7 +348,7 @@ With prefix N move backwards N records."
 		whofrom " escreveu:\n\n"))))
 
 ;; ==================================================================
-;; extensions
+;; ˚˚ extensions
 ;; ==================================================================
 
 (defun mu4e-shorten-url (url)
