@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-14>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-16>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -109,7 +109,7 @@ With a prefix ARG, prompt for a new font."
 
 ;; cycle through this set of themes
 
-(setq my-themes '(planet gotham))
+(setq my-themes '(bliss planet))
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme (&optional arg)
@@ -483,7 +483,7 @@ string."
 
 (defun kill-or-bury-this-buffer ()
   "Kill or bury the current buffer.
-See `bury-buffer-list' for a list buffers to bury."
+See `bury-buffer-list' for a list of buffers to bury."
   (interactive)
   (if (member (buffer-name (current-buffer)) bury-buffer-list)
       (bury-buffer)
@@ -1024,7 +1024,8 @@ take any."
 
 (use-package expand-region
   :ensure t
-  :bind ("C-M-3" . er/expand-region))
+  :bind (("C-M-3" . er/expand-region)
+	 ("C-M-2" . er/contract-region)))
 
 ;; auto completion
 
@@ -1330,6 +1331,7 @@ take any."
                                "~/Documents/org/fieldwork.org"
                                "~/Documents/org/annotation.org"
                                "~/Documents/org/draft.org"
+			       "~/Documents/org/anth1004.org"
                                ;; "~/Documents/org/contacts.org"
 			       "~/Documents/org/analysis.org")))
 (setq org-agenda-remove-tags t)
@@ -1832,6 +1834,18 @@ abc |ghi        <-- point still after white space after calling this function."
     (if (equal current-prefix-arg '(4))
         (comment-region-as-kill (region-beginning) (region-end))
       (comment-dwim arg))))
+
+;; split line without moving the point
+
+(defun jag/split-line ()
+  "Split the current line without moving the point.
+The text to the right of the point is pushed down one line.
+Press \\[delete-char] to bring the text back up."
+  (interactive)
+  (save-excursion
+    (newline)))
+
+(bind-key "C-M-;" 'jag/split-line)
 
 ;; aspell for spell checking
 
