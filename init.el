@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-16>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-21>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -673,8 +673,8 @@ The app is chosen from your OS's preference."
 ;; avoid arrow keys when switching buffers
 
 (bind-keys
- ("M-˚"   . next-buffer)		; M-alt-k
- ("M-∆"   . previous-buffer))		; M-alt-j
+ ("M-∆" . previous-buffer)		; M-alt-j
+ ("M-˚" . next-buffer))			; M-alt-k
 
 ;; use command as meta key and option for dead keys
 
@@ -686,7 +686,7 @@ The app is chosen from your OS's preference."
 (use-package key-chord
   :commands key-chord-define
   :config
-  (key-chord-mode 1)
+  ;; (key-chord-mode 1)
   (key-chord-define-global "jk" "Cape Town")
   (key-chord-define-global "jl" "South Africa")
   (key-chord-define-global "jj" (lambda() (interactive) (find-file "~/Documents/org/todo.org")))
@@ -1138,7 +1138,7 @@ take any."
 ;; mail client
 
 (use-package mu4e
-  :config (use-package config-mu4e)
+  :init (use-package config-mu4e)
   :bind ("M-M"   . mu4e))
 
 ;; enable encryption
@@ -1159,7 +1159,7 @@ take any."
 ;; timer
 
 (use-package tea-time
-  :bind ("C-c C-x t" . tea-time)
+  :bind ("C-c C-x C-;" . tea-time)
   :config
   (setq tea-time-sound "~/Documents/archive/audio/bell.wav")
   (setq tea-time-sound-command "mplayer -volume 0.5 %s"))
