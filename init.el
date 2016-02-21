@@ -393,6 +393,7 @@ string."
               (bind-key "C-n" 'ido-grid-mode-down ido-completion-map)  ;;     |
               (bind-key "C-j" 'ido-grid-mode-left ido-completion-map)  ;;    k/n
               (bind-key "C-l" 'ido-grid-mode-right ido-completion-map)
+	      (bind-key [tab] 'ido-complete ido-completion-map)
 	      (bind-key "C-M-j" 'ido-exit-minibuffer ido-completion-map)
               (bind-key "C-M-k" 'ido-kill-buffer-at-head ido-completion-map))))
 
@@ -1553,11 +1554,22 @@ lines in the block (excluding the line with
   :config
   (setq org-pomodoro-long-break-frequency 4
 	org-pomodoro-long-break-length 20)
+  (setq org-pomodoro-show-number t)
   (setq org-pomodoro-expiry-time 180)
   (setq org-pomodoro-audio-player "mplayer")
   (setq org-pomodoro-finished-sound-args "-volume 0.5"
 	org-pomodoro-long-break-sound-args "-volume 0.5"
-	org-pomodoro-short-break-sound-args "-volume 0.5"))
+	org-pomodoro-short-break-sound-args "-volume 0.5")
+
+  (add-hook 'org-pomodoro-started-hook
+	  (defun org-pomodoro-kitchen-timer ()
+	    (let ((sound-file "~/Documents/archive/audio/timer-ticking.mp3"))
+	      (call-process-shell-command
+	       (concat "mplayer " (expand-file-name sound-file)) nil 0))))
+
+  (add-hook 'org-pomodoro-killed-hook
+	    (defun org-pomodoro-kill-kitchen-timer ()
+	      (shell-command "killall mplayer"))))
 
 ;; wrap text with punctation
 
