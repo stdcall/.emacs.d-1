@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-21>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-22>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -134,7 +134,22 @@ With a prefix ARG, cycle randomly through a list of available themes."
 
 ;; select a different theme
 
-(bind-key "C-c t" 'load-theme)
+(defun select-theme ()
+  "Select from a list of themes displayed in the minibuffer."
+  (interactive)
+  (let* ((themes (custom-available-themes))
+	 (num (length themes))
+	 (sort (cl-sort themes 'string-lessp))
+	 (ido-grid-mode-padding "       ")
+	 (ido-grid-mode-max-rows (+ 1 (/ num 4)))
+	 (ido-grid-mode-max-columns (+ 1 4))
+	 (theme (intern
+		 (ido-completing-read "Load custom theme: "
+				      (mapcar 'symbol-name sort)))))
+    (mapc #'disable-theme custom-enabled-themes)
+    (load-theme theme t)))
+
+(bind-key "C-c t" 'select-theme)
 
 ;; ==================================================================
 ;; ˚˚ directory and load paths
@@ -478,7 +493,7 @@ string."
 	  (set-visited-file-name new-name)
           (set-buffer-modified-p nil))))))
 
-;; avoid killing buffers by accident
+;; avoid killing these buffers by accident
 
 (setq bury-buffer-list '("*scratch*" "*Messages*"))
 
