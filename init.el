@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-22>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-29>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -119,8 +119,14 @@ With a prefix ARG, cycle randomly through a list of available themes."
   (if arg
       (let* ((list (custom-available-themes))
 	     (theme (nth (random (length list)) list)))
-	(load-theme theme t)
-	(message "%s" theme))
+	;; try not to repeat the same theme
+	(if (string= theme (car custom-enabled-themes))
+	    (let* ((new-list (remove theme (custom-available-themes)))
+		   (new-theme (nth (random (length new-list)) new-list)))
+	      (load-theme new-theme t)
+	      (message "%s" new-theme))
+	  (load-theme theme t)
+	  (message "%s" theme)))
     (when my-cur-theme
       (disable-theme my-cur-theme)
       (setq my-themes (append my-themes (list my-cur-theme))))
@@ -178,7 +184,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 ;; ˚˚ default settings
 ;; ==================================================================
 
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore)
 (setq require-final-newline t)
@@ -1881,7 +1887,7 @@ Press \\[delete-char] to bring the text back up."
   (("M-4" . ispell-word)
    ("M-5" . ispell-region)
    ("M-6" . ispell-buffer))
-  :config
+  :init
   (setq-default ispell-program-name "/usr/local/bin/aspell")
   (setq-default ispell-list-command "list")
   (setq ispell-local-dictionary "british")
