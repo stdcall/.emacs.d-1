@@ -528,9 +528,7 @@ See `bury-buffer-list' for a list of buffers to bury."
                                  "\\|.localized$"
                                  "\\|.Rhistory$"))
   (add-hook 'dired-mode-hook 'hl-line-mode)
-  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
-  (add-hook 'dired-mode-hook (lambda()
-                               (bind-key "j" 'swiper dired-mode-map))))
+  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode))))
 
 (use-package dired+
   :config
@@ -544,6 +542,17 @@ See `bury-buffer-list' for a list of buffers to bury."
           wdired-abort-changes)
   (eval `(defadvice ,it (after revert-buffer activate)
            (revert-buffer))))
+
+;; narrow a dired buffer to the files matching a fuzzy string
+
+(use-package dired-narrow
+  :bind (:map dired-mode-map
+              ("j" . dired-narrow-fuzzy))
+  :config
+  (setq dired-narrow-exit-action 'revert-buffer)
+  (bind-keys :map dired-narrow-map
+	     ("C-n" . dired-narrow-next-file)
+	     ("C-p" . dired-narrow-previous-file)))
 
 ;; preview images in dired using qlmanage
 
