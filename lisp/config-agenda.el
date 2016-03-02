@@ -1,71 +1,52 @@
 ;;; config-agenda.el --- org-agenda custom commands
 
 (setq org-agenda-custom-commands
-      '(
+      '(("x" "appts" agenda*)
+
 	("a" "agenda"
 	 ((agenda ""
-		  ((org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")))
-	  (tags-todo "+PRIORITY=\"A\"|TODO=\"STARTED\""
-		     ((org-agenda-overriding-header "Priority")))
-	  (tags-todo "-PRIORITY=\"A\"mail/TODO"
-		     ((org-agenda-overriding-header "Mail tasks")
-		      (org-agenda-skip-function '(org-agenda-skip-entry-if
-						  'deadline 'scheduled 'timestamp))))
-	  ))
-
-	("x" "next action"
-         ((tags-todo "LEVEL=2-SCHEDULED=\"<today>\"/NEXT"
-                     ((org-agenda-overriding-header "Next action")))
+		  ((org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")
+		   (org-agenda-remove-tags t)))
 	  (tags "LEVEL=2+CATEGORY=\"task\"/!"
 		((org-agenda-overriding-header "Unscheduled Tasks")
+		 (org-agenda-compact-blocks nil)
 		 (org-agenda-skip-function '(org-agenda-skip-entry-if
 					     'todo '("NEXT" "WAITING" "CANCELED" "DEFERRED")
-					     'deadline 'scheduled 'timestamp)))))
-	   ((org-agenda-remove-tags nil)
-	    (org-agenda-sorting-strategy
-	     '(priority-down effort-up))
-	    (org-agenda-show-inherited-tags nil)
-	    (org-agenda-tags-column -113)
-	    (org-agenda-compact-blocks t)
-	    (org-agenda-prefix-format " %i %-10:c %-4e ")))
+					     'deadline 'scheduled 'timestamp))))
+	  (tags-todo "LEVEL=2-SCHEDULED=\"<today>\"/NEXT"
+		     ((org-agenda-overriding-header "Next action")
+		      (org-agenda-compact-blocks t))))
+	 ((org-agenda-remove-tags nil)
+	  (org-agenda-show-inherited-tags nil)
+	  (org-agenda-prefix-format " %i %-10:c %-4e ")))
 
-	("i" "inbox"                    ; weekly review
-          ((todo "WAITING"
-                ((org-agenda-overriding-header "Waiting for")))
-          (tags-todo "LEVEL=2+CATEGORY=\"stuck\"-TODO=\"WAITING\""
-                     ((org-agenda-overriding-header "Stuck Tasks")))
+	("w" "review"
+	 ((todo "WAITING"
+		((org-agenda-overriding-header "Waiting for")))
+	  (tags-todo "-CANCELED/!"
+		     ((org-agenda-overriding-header "Stuck Projects")
+		      (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
           (tags "+SCHEDULED<\"<today>\"-CATEGORY=\"habit\"|+DEADLINE<\"<today>\"|+TIMESTAMP<\"<today>\"-CATEGORY=\"appt\""
                 ((org-agenda-overriding-header "Past due")))
           (tags "LEVEL=2+CATEGORY=\"appt\"+TIMESTAMP<\"<today>\"-repeat"
-                ((org-agenda-overriding-header "Past appointments")
-                 (org-agenda-skip-function nil)))
+                ((org-agenda-overriding-header "Past appointments")))
           (tags "TODO=\"DONE\"-exclude-CATEGORY={practice\\|garden}|+TODO=\"CANCELED\""
-                ((org-agenda-overriding-header "Tasks to Refile") ;to archive, press m B $
-                 (org-agenda-skip-function nil))))
-         ((org-agenda-remove-tags nil)
-          (org-agenda-tags-column -110)
-	  (org-agenda-files '("~/Documents/org/todo.org"))
-          (org-agenda-show-inherited-tags nil)))
-
-        ("o" "someday"
-         ((tags "LEVEL=2+CATEGORY=\"someday\""
-                ((org-agenda-overriding-header "Someday/Maybe")
-                 (org-agenda-sorting-strategy
-                  '(todo-state-up))))
-          (tags "LEVEL>=3+CATEGORY=\"someday\""
-                ((org-agenda-sorting-strategy
-                  '(todo-state-up))))))
+                ((org-agenda-overriding-header "Tasks to Refile"))) ; to refile/archive in bulk, press m B
+	  (tags "LEVEL=2+CATEGORY=\"someday\""
+		((org-agenda-overriding-header "Someday/Maybe"))))
+	 ((org-agenda-remove-tags nil)
+	  (org-agenda-show-inherited-tags nil)
+	  (org-agenda-skip-function nil)
+	  (org-agenda-compact-blocks t)
+	  (org-agenda-files '("~/Documents/org/todo.org"))))
 
         ("n" "notes"
          ((tags "LEVEL=2+CATEGORY=\"notes\""
-		((org-agenda-overriding-header "Notes"))))
-         ((org-agenda-remove-tags nil)
-          (org-agenda-show-inherited-tags nil)
-          (org-agenda-tags-column -112)
-          (org-agenda-prefix-format "  ")))
+		((org-agenda-overriding-header "Notes")
+		 (org-agenda-prefix-format "  ")))))
 
         ("c" . "context")
-	;; physical context
+
 	("cc" "physical context (@errands, @phone, @mail, @home)"
          ((tags-todo "errands-CATEGORY=\"tickler\""
                      ((org-agenda-overriding-header "@errands")))
@@ -74,9 +55,8 @@
 	  (tags-todo "mail"
 		     ((org-agenda-overriding-header "@mail")))
 	  (tags-todo "home"
-		     ((org-agenda-overriding-header "@home")))
-	  ))
-	;; perceptual context
+		     ((org-agenda-overriding-header "@home")))))
+
 	("cr" "read" tags "read"
 	 ((org-agenda-overriding-header "To Read")))
 	("cw" "watch" tags "watch"
@@ -95,7 +75,7 @@
         ("ca" "contacts"
          ((tags-todo "LEVEL=2+CATEGORY=\"contacts\"+TODO=\"MEET\""
                      ((org-agenda-overriding-header "Unscheduled")
-		     (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled))))
+		      (org-agenda-skip-function '(org-agenda-skip-entry-if 'scheduled))))
           (tags-todo "LEVEL=2+CATEGORY=\"contacts\""
                      ((org-agenda-overriding-header "Scheduled")
                       (org-agenda-skip-function '(org-agenda-skip-entry-if 'notscheduled))))
@@ -116,10 +96,10 @@
           (tags "LEVEL=2+CATEGORY=\"contacts\""
                 ((org-agenda-overriding-header "Contacts")
                  (org-agenda-skip-function '(org-agenda-skip-entry-if
-                                             'todo '("MEET" "WAITING" "EMAIL" "CALL" "FOLLOW-UP" "DONE")))))
-          ))
+                                             'todo '("MEET" "WAITING" "EMAIL" "CALL" "FOLLOW-UP" "DONE")))))))
 
-        ("p" . "print")			;press C-a a e to export
+        ("p" . "print")			; press C-a a e to export
+
         ("pa" "agenda"
          ((agenda "" ((org-agenda-ndays 2)))
           (tags-todo "errands-CATEGORY=\"tickler\""
@@ -137,11 +117,11 @@
          ("~/ownCloud/agenda.txt"))
 
         ("pg" "groceries"
-          ((tags "LEVEL=3+CATEGORY=\"vegetables\""
-		 ((org-agenda-prefix-format "  [ ] ")
-		  (org-agenda-overriding-header
-		   (concat (format-time-string "%A    %d %B %Y%n" (current-time))
-			   "\nFruits & Vegetables:"))))
+	 ((tags "LEVEL=3+CATEGORY=\"vegetables\""
+		((org-agenda-prefix-format "  [ ] ")
+		 (org-agenda-overriding-header
+		  (concat (format-time-string "%A    %d %B %Y%n" (current-time))
+			  "\nFruits & Vegetables:"))))
           (tags "LEVEL=3+CATEGORY=\"seeds\""
                 ((org-agenda-prefix-format "  [ ] ")
                  (org-agenda-overriding-header "\nSeeds & nuts:")))
@@ -151,23 +131,21 @@
           (tags "LEVEL=3+CATEGORY=\"other\""
                 ((org-agenda-prefix-format "  [ ] ")
                  (org-agenda-overriding-header "\nOther:"))))
-	  ((org-agenda-with-colors nil)
+	 ((org-agenda-with-colors nil)
 	  (org-agenda-compact-blocks t))
-	  ("~/ownCloud/groceries.txt"))
+	 ("~/ownCloud/groceries.txt"))
 
         ("r" "practice"
          ((tags "LEVEL>=3+CATEGORY=\"practice\"-exclude+next"
                 ((org-agenda-overriding-header "Practice!")
-                 (org-agenda-prefix-format "  %-10:c %-8e")))))
-        ))
+                 (org-agenda-prefix-format "  %-10:c %-8e")))))))
 
 ;; generate reports
 
 (add-to-list 'org-agenda-custom-commands
-             '("d" "daily report" ;TODO: make timestamp inactive when
-				  ;item is closed
+             '("D" "daily report"
                ((agenda ""))
-               ((org-agenda-overriding-header "Daily report\n------------")
+               ((org-agenda-overriding-header "Daily report")
                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'timestamp
                                                                      'regexp ":exclude:"))
                 (org-agenda-span 1)
@@ -178,9 +156,9 @@
                 (org-agenda-time-grid nil))) t)
 
 (add-to-list 'org-agenda-custom-commands
-             '("w" "weekly report"
+             '("W" "weekly report"
                ((agenda ""))
-               ((org-agenda-overriding-header "Weekly report\n-------------")
+               ((org-agenda-overriding-header "Weekly report")
                 (org-agenda-skip-function '(org-agenda-skip-entry-if 'timestamp))
                 (org-agenda-span 8)
                 (org-agenda-start-day "-7d")
@@ -189,17 +167,6 @@
                 (org-agenda-archives-mode t)
                 (org-agenda-start-with-clockreport-mode t)
                 (org-agenda-time-grid nil))) t)
-
-(add-to-list 'org-agenda-custom-commands
-	     '("z" "meditation"
-	       ((agenda ""))
-	       ((org-agenda-overriding-header "Meditation monthly report")
-		(org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")
-		(org-agenda-ndays 1)
-		(org-habit-show-all-today t)
-		(org-habit-graph-column 40)
-		(org-habit-preceding-days 30)
-		(org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp ":meditation:")))))
 
 (add-to-list 'org-agenda-custom-commands
 	     '("h" "habit"
@@ -213,3 +180,4 @@
 		(org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp "habit")))))
 
 (provide 'config-agenda)
+;;; config-agenda.el ends here

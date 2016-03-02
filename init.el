@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-02-29>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-02>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -1345,7 +1345,7 @@ take any."
 (bind-key "o" 'org-agenda-clock-out org-agenda-mode-map)
 
 ;; ==================================================================
-;; ˚˚ agenda settings
+;; ˚˚ org agenda settings
 ;; ==================================================================
 
 (setq org-agenda-files (quote ("~/Documents/org/todo.org"
@@ -1357,6 +1357,7 @@ take any."
                                ;; "~/Documents/org/contacts.org"
 			       "~/Documents/org/analysis.org")))
 (setq org-agenda-remove-tags t)
+(setq org-agenda-tags-column -125)
 (setq org-agenda-skip-function
       '(org-agenda-skip-entry-if 'todo '("DONE" "CANCELED" "DEFERRED")))
 (setq org-deadline-warning-days 7)
@@ -1424,39 +1425,63 @@ take any."
 
 (bind-key "d" 'jag/org-agenda-mark-as-done org-agenda-mode-map)
 
-;; remove empty agenda blocks
-;; https://lists.gnu.org/archive/html/emacs-orgmode/2015-06/msg00266.html
+;; move forward and backward by one agenda block
 
-(defun org-agenda-delete-empty-blocks ()
-  "Remove empty agenda blocks.
-A block is identified as empty if there are fewer than 2 non-empty
-lines in the block (excluding the line with
-`org-agenda-block-separator' characters)."
-  (setq buffer-read-only nil)
-  (save-excursion
-    (goto-char (point-min))
-    (let* ((blank-line-re "^\\s-*$")
-	   (content-line-count (if (looking-at-p blank-line-re) 0 1))
-	   (start-pos (point))
-	   (block-re (format "%c\\{10,\\}" org-agenda-block-separator)))
-      (while (and (not (eobp)) (forward-line))
-	(cond
-	 ((looking-at-p block-re)
-	  (when (< content-line-count 2)
-	    (delete-region start-pos (1+ (point-at-bol))))
-	  (setq start-pos (point))
-	  (forward-line)
-	  (setq content-line-count (if (looking-at-p blank-line-re) 0 1)))
-	 ((not (looking-at-p blank-line-re))
-	  (setq content-line-count (1+ content-line-count)))))
-      (when (< content-line-count 2)
-	(delete-region start-pos (point-max)))
-      (goto-char (point-min))
-      (when (looking-at-p block-re)
-	(delete-region (point) (1+ (point-at-eol))))))
-  (setq buffer-read-only t))
+(defun jag/org-agenda-forward-block ()
+  "Move forward by one agenda block.
+Reposition the block to the top of the window."
+  (interactive)
+  (org-agenda-forward-block)
+  (recenter-top-bottom 0))
 
-(add-hook 'org-agenda-finalize-hook #'org-agenda-delete-empty-blocks)
+(defun jag/org-agenda-backward-block ()
+  "Move backward by one agenda block.
+Reposition the block to the top of the window."
+  (interactive)
+  (org-agenda-backward-block)
+  (recenter-top-bottom 0))
+
+(bind-keys :map org-agenda-mode-map
+	   ("C-M-n" . jag/org-agenda-forward-block)
+	   ("C-M-p" . jag/org-agenda-backward-block))
+
+;; a project is a project when it contain subtasks
+
+(defun bh/is-project-p ()
+  "Any task with a todo keyword subtask."
+  (save-restriction
+    (widen)
+    (let ((has-subtask)
+          (subtree-end (save-excursion (org-end-of-subtree t)))
+          (is-a-task (member (nth 2 (org-heading-components)) org-todo-keywords-1)))
+      (save-excursion
+        (forward-line 1)
+        (while (and (not has-subtask)
+                    (< (point) subtree-end)
+                    (re-search-forward "^\*+ " subtree-end t))
+          (when (member (org-get-todo-state) org-todo-keywords-1)
+            (setq has-subtask t))))
+      (and is-a-task has-subtask))))
+
+;; a stuck project is a project whose next actions have not been defined
+
+(defun bh/skip-non-stuck-projects ()
+  "Skip trees that are not stuck projects."
+  (save-restriction
+    (widen)
+    (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
+      (if (bh/is-project-p)
+          (let* ((subtree-end (save-excursion (org-end-of-subtree t)))
+                 (has-next))
+            (save-excursion
+              (forward-line 1)
+              (while (and (not has-next) (< (point) subtree-end) (re-search-forward "^\\*+ NEXT " subtree-end t))
+                (unless (member "WAITING" (org-get-tags-at))
+                  (setq has-next t))))
+            (if has-next
+                next-headline
+              nil)) ; a stuck project, has subtasks but no next task
+        next-headline))))
 
 ;; ==================================================================
 ;; ˚˚ GTD settings
@@ -1634,8 +1659,9 @@ lines in the block (excluding the line with
 
 (use-package ox-publish
   :bind
-  (("M-P"   . jag/org-publish-current-file)
-   ("M-i P" . org-publish-current-project))
+  (:map org-mode-map
+	("M-P"   . jag/org-publish-current-file)
+	("M-i P" . org-publish-current-project))
   :config
   (setq org-publish-project-alist
       '(("org"
