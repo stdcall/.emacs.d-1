@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-02>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-04>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -381,7 +381,23 @@ string."
   (add-to-list 'ido-ignore-files "\\.DS_Store")
   (add-to-list 'ido-ignore-files "\\.backups")
   (add-to-list 'ido-ignore-files "\\.Rhistory")
-  (add-to-list 'ido-ignore-buffers "*Completions*"))
+  (add-to-list 'ido-ignore-buffers "*Completions*")
+
+  ;; open files externally using Ido
+  (defun jag/ido-find-file (arg)
+    "Similar to `ido-find-file'.
+With a prefix ARG, the file opens externally."
+    (interactive "P")
+    (if arg
+	(let ((file (ido-read-file-name "Open externally: ")))
+	  (call-process shell-file-name nil nil nil
+			shell-command-switch
+			(format "%s %s"
+				(if (eq system-type 'darwin)
+				    "open"
+				  "xdg-open")
+				file)))
+      (ido-find-file))))
 
 ;; sort ido filelist by modification time instead of alphabetically
 
@@ -405,6 +421,7 @@ string."
   (setq ido-grid-mode-keys nil)
   (setq ido-grid-mode-prefix-scrolls t)
   (setq ido-grid-mode-prefix ">> ")
+  (set-face-foreground 'ido-first-match "lime green")
   ;; grid navigation
   (add-hook 'ido-setup-hook
             (lambda ()
@@ -589,7 +606,7 @@ The app is chosen from your OS's preference."
 ;; ˚˚ key bindings
 ;; ==================================================================
 
-(bind-key "C-o" 'ido-find-file)
+(bind-key "C-o" 'jag/ido-find-file)
 (bind-key "C-M-o" 'helm-find-files)
 (bind-key "C-c o" 'occur)
 (bind-key "C-x C-k" 'kill-or-bury-this-buffer)
@@ -1038,7 +1055,9 @@ take any."
   :diminish smartparens-mode
   :config (progn (require 'smartparens-config)
 		 (require 'init-smartparens)
-		 (smartparens-global-mode t)))
+		 (smartparens-global-mode t))
+  (setq sp-ignore-modes-list
+	(delete 'minibuffer-inactive-mode sp-ignore-modes-list)))
 
 ;; expand abbreviations into templates
 
@@ -1103,6 +1122,7 @@ take any."
 (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
 (add-hook 'lisp-interaction-mode-hook 'eldoc-mode)
 (eval-after-load "eldoc" '(diminish 'eldoc-mode))
+(add-hook 'eval-expression-minibuffer-setup-hook #'eldoc-mode)
 
 ;; learn emacs the hard way
 
@@ -1281,6 +1301,8 @@ take any."
 (setq org-habit-graph-column 55)
 (setq org-habit-preceding-days 14)
 (setq org-clock-out-remove-zero-time-clocks t)
+(setq org-blank-before-new-entry '((heading . nil)
+				   (plain-list-item . nil)))
 
 (setq org-columns-default-format "%50ITEM(Task) %6Effort(Effort Estimate){:} %6CLOCKSUM(Actual Time)")
 (setq org-global-properties (quote (("Effort_ALL" . "0:25 0:02 0:05 0:10 0:15 0:20 0:40 1:00 2:00 4:00")
