@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-04>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-08>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -351,10 +351,10 @@ string."
 ;; remember recent and most frequent commands
 
 (use-package smex
-  :init
-  (smex-initialize)
+  :ensure t
   :bind (("M-x" . smex)
-         ("M-X" . smex-major-mode-commands)))
+         ("M-X" . smex-major-mode-commands))
+  :config (smex-initialize))
 
 ;;; switch between buffers, files and directories
 ;; M-n / M-p cycles through directories
@@ -386,7 +386,7 @@ string."
   ;; open files externally using Ido
   (defun jag/ido-find-file (arg)
     "Similar to `ido-find-file'.
-With a prefix ARG, the file opens externally."
+With a prefix ARG, open file externally."
     (interactive "P")
     (if arg
 	(let ((file (ido-read-file-name "Open externally: ")))
@@ -440,8 +440,7 @@ With a prefix ARG, the file opens externally."
 (use-package avy
   :bind
   (("C-x SPC" . avy-goto-word-1)
-   ("M-g g"   . avy-goto-line)
-   ("M-o"     . ace-window))
+   ("M-g g"   . avy-goto-line))
   :config
   (setq avy-keys-alist
 	`((avy-goto-word-1 . (?j ?k ?l ?\; ?a ?s))
@@ -461,7 +460,9 @@ With a prefix ARG, the file opens externally."
         ibuffer-show-empty-filter-groups nil)
   (setq ibuffer-saved-filter-groups
         (quote (("default"
-                 ("Org" (mode . org-mode))
+                 ("Org" (or
+			 (mode . org-mode)
+			 (name . "^\\*Org Agenda")))
                  ("LaTeX" (or
 			   (mode . latex-mode)
 			   (mode . bibtex-mode)
@@ -470,10 +471,9 @@ With a prefix ARG, the file opens externally."
 			  (mode . mu4e-headers-mode)
 			  (mode . mu4e-view-mode)
 			  (mode . mu4e-compose-mode)))
-		 ("Emacs Lisp" (mode . emacs-lisp-mode))
+		 ("Lisp" (mode . emacs-lisp-mode))
 		 ("Dired" (mode . dired-mode))
 		 ("Magit" (name . "\*magit"))
-		 ("Shell" (name . "\*shell\*"))
 		 ("Emacs" (or
 			   (mode . Custom-mode)
 			   (name . "\*Packages\*")
@@ -647,7 +647,7 @@ The app is chosen from your OS's preference."
  ("M-1" . delete-other-windows)
  ("M-2" . vsplit-last-buffer)
  ("M-3" . hsplit-last-buffer)
- ("M-o" . ace-window)
+ ("M-o" . other-window)
  ("C-c C-x r" . rotate-windows)
  ("C-c 0" . kill-buffer-and-its-frame)
  ("C-c k" . close-and-kill-next-pane)
@@ -1312,8 +1312,7 @@ take any."
 
 (setq org-archive-location "%s_archive::* Archived Tasks")
 (setq org-archive-reversed-order t)
-(setq org-refile-targets (quote ((nil :maxlevel . 4)
-                                 (org-agenda-files :maxlevel . 4))))
+(setq org-refile-targets (quote ((nil :maxlevel . 1))))
 
 ;;; renumber footnotes when new ones are inserted
 ;; press C-c C-x f to insert new reference and C-u C-c C-x f for a
@@ -2118,21 +2117,6 @@ Append a date to it using date2name."
      (concat "cd ~/downloads/youtube/tmp && youtube-dl -o '%(title)s.%(ext)s' -x --audio-format mp3 --add-metadata " str "--restrict-filenames" "\n"
              "date2name -c *.mp3" "\n"
              "mv *.mp3 ~/downloads/youtube" "\n"))))
-
-;; export org headings to a separate file
-;; http://is.gd/jYpEVC
-
-(defun org-export-all (backend)
-  "Export all subtrees that are *not* tagged with :noexport: to separate files.
-
-Note that subtrees must have the :EXPORT_FILE_NAME: property set to a
-unique value for this to work properly."
-  (interactive "sEnter backend: ")
-  (let ((fn (cond ((equal backend "html") 'org-html-export-to-html)
-                  ((equal backend "latex") 'org-latex-export-to-latex)
-                  ((equal backend "pdf") 'org-latex-export-to-pdf)
-                  ((equal backend "ascii") 'org-ascii-export-to-ascii))))
-    (org-map-entries (lambda () (funcall fn nil t)) "-noexport")))
 
 ;; unlink org mode link
 
