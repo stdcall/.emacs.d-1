@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-08>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-09>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -109,7 +109,7 @@ With a prefix ARG, prompt for a new font."
 
 ;; cycle through this set of themes
 
-(setq my-themes '(bliss planet))
+(setq my-themes '(bliss brin))
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme (&optional arg)
@@ -528,6 +528,15 @@ See `bury-buffer-list' for a list of buffers to bury."
       (bury-buffer)
     (kill-buffer (current-buffer))))
 
+(defun switch-to-scratch-and-back ()
+  "Toggle between the *scratch* buffer and the current buffer.
+If the *scratch* buffer does not exist, create one."
+  (interactive)
+  (let ((scratch-buffer-name (get-buffer-create "*scratch*")))
+    (if (equal (current-buffer) scratch-buffer-name)
+	(switch-to-buffer (other-buffer))
+      (switch-to-buffer scratch-buffer-name))))
+
 ;; ==================================================================
 ;; ˚˚ dired for managing directories
 ;; ==================================================================
@@ -765,6 +774,7 @@ The app is chosen from your OS's preference."
 	   ("u"   . boxquote-unbox)
 	   ("w"   . display-time-world-and-focus)
 	   ("f"   . switch-font)
+	   ("j"   . switch-to-scratch-and-back)
 	   ("M-q" . unfill-paragraph))
 
 ;; quickly switch between dictionaries
@@ -1230,7 +1240,7 @@ take any."
 
 ;; LilyPond for writing music scores
 
-(use-package LilyPond-mode
+(use-package lilypond-mode
   :mode ("\\.ly$" . LilyPond-mode)
   :init
   (autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
@@ -1629,7 +1639,7 @@ Reposition the block to the top of the window."
   :bind ("∏" . org-pomodoro) ; S-alt-p
   :config
   (setq org-pomodoro-long-break-frequency 4
-	org-pomodoro-long-break-length 20)
+  	org-pomodoro-long-break-length 20)
   (setq org-pomodoro-show-number t)
   (setq org-pomodoro-expiry-time 180)
   (setq org-pomodoro-audio-player "mplayer")
