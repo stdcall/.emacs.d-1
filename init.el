@@ -662,7 +662,9 @@ The app is chosen from your OS's preference."
  ("C-c 0" . kill-buffer-and-its-frame)
  ("C-c k" . close-and-kill-next-pane)
  ("M-`" . other-frame)
- ("M-)" . delete-frame))
+ ("M-)" . delete-frame)
+ ("C-M-1" 'shrink-window)
+ ("C-M-2" 'enlarge-window))
 
 (bind-keys
  ("C-6" . jag/toggle-fullscreen)
@@ -809,9 +811,46 @@ The app is chosen from your OS's preference."
   :config
   (smooth-scroll-mode t))
 
+;; relative scrolling
+
+(defvar max-frame-height 36
+  "The maximum frame height.")
+
+(defun jag/scroll-up ()
+  "Scroll relative to the size of the current window (or frame).
+The maximum frame height is defined by the variable
+`max-frame-height'."
+  (interactive)
+  (let* ((full-size max-frame-height)
+	 (half-size (/ full-size 2))
+    	 (quarter-size (/ full-size 4)))
+    (cond ((>= (window-size) full-size)
+	   (scroll-up 5))
+	  ((and (<= (window-size) half-size)
+		(> (window-size) quarter-size))
+	   (scroll-up 2))
+	  ((<= (window-size) quarter-size)
+	   (scroll-up 1)))))
+
+(defun jag/scroll-down ()
+  "Scroll relative to the size of the current window (or frame).
+The maximum frame height is defined by the variable
+`max-frame-height'."
+  (interactive)
+  (let* ((full-size max-frame-height)
+	 (half-size (/ full-size 2))
+    	 (quarter-size (/ full-size 4)))
+    (cond ((>= (window-size) full-size)
+	   (scroll-down 5))
+	  ((and (<= (window-size) half-size)
+		(> (window-size) quarter-size))
+	   (scroll-down 2))
+	  ((<= (window-size) quarter-size)
+	   (scroll-down 1)))))
+
 (bind-keys
- ("C-M-k" . (lambda () (interactive) (scroll-up-1 5)))
- ("C-M-j" . (lambda () (interactive) (scroll-down-1 5))))
+ ("C-M-k" . jag/scroll-up)
+ ("C-M-j" . jag/scroll-down))
 
 (bind-keys*
  ("C-M-q" . beginning-of-buffer)
