@@ -49,7 +49,7 @@
 
 (setq mail-user-agent 'mu4e-user-agent)
 (setq message-kill-buffer-on-exit t)
-(setq mu4e-attachment-dir  "~/private/tmp")
+(setq mu4e-attachment-dir  "~/Desktop")
 (setq mu4e-confirm-quit nil)
 (setq mu4e-headers-skip-duplicates t)
 (setq mu4e-compose-dont-reply-to-self t)
@@ -369,7 +369,7 @@ See URL `https://is.gd/apishorteningreference.php' for additional parameters."
           (lambda ()
             (let ((msg (newest-subject)))
               (unless (string-equal ": " msg)
-                (shell-command (concat "terminal-notifier -title \"New message\" -sender \"org.gnu.Emacs\" -sound 'default' -message \"" msg "\"")))) ))
+                (shell-command (concat "terminal-notifier -title \"New message\" -sender \"org.gnu.Emacs\" -message \"" msg "\"")))) ))
 
 (defun newest-subject ()
   (let* ((mu-res (concat "(list "
@@ -421,6 +421,16 @@ See URL `https://is.gd/apishorteningreference.php' for additional parameters."
   "Scroll text of selected window down 4 lines."
   (interactive)
   (scroll-down-1 4))
+
+(defun mml-attach-file--go-to-eob (orig-fun &rest args)
+  "Go to the end of buffer before attaching files."
+  (save-excursion
+    (save-restriction
+      (widen)
+      (goto-char (point-max))
+      (apply orig-fun args))))
+
+(advice-add 'mml-attach-file :around #'mml-attach-file--go-to-eob)
 
 (provide 'config-mu4e)
 ;;; config-mu4e.el ends here
