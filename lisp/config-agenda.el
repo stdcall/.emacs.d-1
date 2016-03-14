@@ -13,8 +13,8 @@
 		 (org-agenda-skip-function '(org-agenda-skip-entry-if
 					     'todo '("NEXT" "WAITING" "CANCELED" "DEFERRED")
 					     'deadline 'scheduled 'timestamp))))
-	  (tags-todo "LEVEL=2-SCHEDULED=\"<today>\"/NEXT"
-		     ((org-agenda-overriding-header "Next action")
+	  (tags-todo "LEVEL=2|LEVEL=3-CATEGORY={practice}/!NEXT"
+		     ((org-agenda-overriding-header "Next Action")
 		      (org-agenda-compact-blocks t))))
 	 ((org-agenda-remove-tags nil)
 	  (org-agenda-show-inherited-tags nil)
@@ -26,8 +26,6 @@
 	  (tags-todo "-CANCELED/!"
 		     ((org-agenda-overriding-header "Stuck Projects")
 		      (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-          (tags "+SCHEDULED<\"<today>\"-CATEGORY=\"habit\"|+DEADLINE<\"<today>\"|+TIMESTAMP<\"<today>\"-CATEGORY=\"appt\""
-                ((org-agenda-overriding-header "Past due")))
           (tags "LEVEL=2+CATEGORY=\"appt\"+TIMESTAMP<\"<today>\"-repeat"
                 ((org-agenda-overriding-header "Past appointments")))
           (tags "TODO=\"DONE\"-exclude-CATEGORY={practice\\|garden}|+TODO=\"CANCELED\""
@@ -132,6 +130,10 @@
                 ((org-agenda-prefix-format "  [ ] ")
                  (org-agenda-overriding-header "\nOther:"))))
 	 ((org-agenda-with-colors nil)
+	  (org-agenda-sorting-strategy '(tag-up))
+	  (org-agenda-tags-column -30)
+	  (org-agenda-show-inherited-tags nil)
+	  (org-agenda-remove-tags nil)
 	  (org-agenda-compact-blocks t))
 	 ("~/ownCloud/groceries.txt"))
 
