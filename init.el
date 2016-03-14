@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-09>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-14>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -192,6 +192,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq ad-redefinition-action 'accept)
 (fset 'yes-or-no-p #'y-or-n-p)
 (setq overflow-newline-into-fringe nil)
+(setq scroll-step 1)
 (setq display-time-format " %R ")
 (setq display-time-default-load-average nil)
 (setq display-time-24hr-format t)
@@ -725,6 +726,7 @@ The app is chosen from your OS's preference."
 
 (unbind-key "C-o" dired-mode-map)	; use C-m instead
 (unbind-key "M-p" dired-mode-map)
+(unbind-key "M-c" dired-mode-map)
 (unbind-key "C-M-j" dired-mode-map)
 
 ;; avoid arrow keys when switching buffers
@@ -853,14 +855,15 @@ The app is chosen from your OS's preference."
   :load-path "~/Documents/git/org-ref"
   :load-path "~/Documents/git/helm-bibtex"
   :init
-  (require 'doi-utils)
+  (use-package doi-utils
+    :config
+    (setq doi-utils-timestamp-format-function nil))
   (setq org-ref-bibliography-notes "~/Documents/org/annotation.org"
         org-ref-default-bibliography '("~/Documents/org/refs.bib")
         org-ref-pdf-directory "~/Documents/papers/")
-  (setq org-ref-cite-onclick-function 'org-ref-cite-onclick-minibuffer-menu)
+  (setq org-ref-cite-onclick-function 'org-ref-cite-click-helm)
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
   (setq org-ref-show-citation-on-enter nil)
-  (setq org-ref-colorize-links nil)
   (setq org-ref-note-title-format
         "** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
   ;; custom open notes function
@@ -871,7 +874,8 @@ The app is chosen from your OS's preference."
           (show-children)
           (outline-previous-visible-heading 1)
           (recenter-top-bottom 0)
-          (show-children))))
+          (show-children)
+	  (helm-bibtex-notes-mode 1))))
 
 ;;; helm-bibtex for managing bibliographies
 ;; press M-a to select all entries or C-SPC to mark entries
@@ -903,9 +907,6 @@ The app is chosen from your OS's preference."
 	(find-file helm-bibtex-notes-path)
 	(goto-char (point-min))
 	(swiper input))))
-
-  (helm-delete-action-from-source "Search my notes" helm-source-bibtex)
-  (helm-add-action-to-source "Search my notes" 'helm-bibtex-search-notes helm-source-bibtex 10)
 
   ;; open with deafult pdf viewer
   (setq helm-bibtex-pdf-open-function
@@ -949,14 +950,14 @@ take any."
                            (read-from-minibuffer "Postnote[1]: ") "")))
               (if (and (= helm-bibtex-number-of-optional-arguments 1) (string= "" pos))
                   (format "%s:%s" cite-command (s-join "," keys))
-                (format "\\%s[%s]{%s}" cite-command pos (s-join "," keys))))
+                (format "[[%s:%s][%s]]" cite-command (s-join "," keys) pos)))
           (let ((pre (if (= helm-bibtex-number-of-optional-arguments 2)
                          (read-from-minibuffer "Prenote[1]: ") ""))
                 (pos (if (= helm-bibtex-number-of-optional-arguments 2)
                          (read-from-minibuffer "Postnote[2]: ") "")))
             (if (and (= helm-bibtex-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
                 (format "%s:%s" cite-command (s-join "," keys))
-              (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join "," keys)))))))))
+              (format "[[%s:%s][%s::%s]]" cite-command (s-join "," keys) pre pos))))))))
 
 ;; ==================================================================
 ;; ˚˚ AUCTeX for managing (La)TeX files
@@ -1084,8 +1085,7 @@ take any."
 
 (use-package expand-region
   :ensure t
-  :bind (("C-M-3" . er/expand-region)
-	 ("C-M-2" . er/contract-region)))
+  :bind (("C-M-3" . er/expand-region)))
 
 ;; auto completion
 
@@ -1402,7 +1402,6 @@ take any."
       '(org-agenda-skip-entry-if 'todo '("DONE" "CANCELED" "DEFERRED")))
 (setq org-deadline-warning-days 7)
 (setq org-agenda-skip-deadline-if-done t)
-(setq org-tags-exclude-from-inheritance '("project"))
 (setq org-log-done 'time)
 (setq org-agenda-dim-blocked-tasks nil)
 (setq org-agenda-use-time-grid nil)
@@ -1639,7 +1638,7 @@ Reposition the block to the top of the window."
   :bind ("∏" . org-pomodoro) ; S-alt-p
   :config
   (setq org-pomodoro-long-break-frequency 4
-  	org-pomodoro-long-break-length 20)
+	org-pomodoro-long-break-length 20)
   (setq org-pomodoro-show-number t)
   (setq org-pomodoro-expiry-time 180)
   (setq org-pomodoro-audio-player "mplayer")
@@ -1960,7 +1959,7 @@ Press \\[delete-char] to bring the text back up."
   (setq ispell-extra-args '("--sug-mode=ultra"))
 
   ;; prevent ispell from checking code blocks and citations
-  (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
+  (add-to-list 'ispell-skip-region-alist '(org-property-drawer-re))
   (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
   (add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
   (add-to-list 'ispell-skip-region-alist '("^#\\+begin_example " . "#\\+end_example$"))
@@ -1977,11 +1976,11 @@ Press \\[delete-char] to bring the text back up."
  (defhydra hydra-words (:color teal :hint nil)
    "
 ^Dictionary^               ^Thesaurus^             ^Translation^             ^Other
---------------------------------------------------------------------------------------------
-  _d_: dictionary          _t_: thesaurus          _e_: translate to en      _g_: grove music online
-  _s_: search word         _h_: oxford thesaurus   _P_: translate to pt      _o_: other dictionaries
-  _a_: portuguese          _T_: search online      _E_: open browser         _w_: wikipedia
-_M-s_: search online       ^ ^                     _P_: open browser         _q_: quit
+------------------------------------------------------------------------------------------
+  _d_: dictionary          _t_: thesaurus          _e_: translate to en      _h_: helm-dictionary
+  _s_: search word         _o_: oxford thesaurus   _P_: translate to pt      _w_: wikipedia
+  _a_: portuguese          _T_: search online      _E_: open browser         _q_: quit
+_M-s_: search online       ^ ^                     _P_: open browser
 "
    ("d" osx-dictionary-search-pointer)
    ("s" osx-dictionary-search-input)
@@ -1989,7 +1988,7 @@ _M-s_: search online       ^ ^                     _P_: open browser         _q_
    ("M-s" dictionary-search)
 
    ("t" thesaurus)
-   ("h" osx-dictionary-thesaurus-search-input)
+   ("o" osx-dictionary-thesaurus-search-input)
    ("T" thesaurus-search)
 
    ("e" google-translate-at-point)
@@ -1997,58 +1996,49 @@ _M-s_: search online       ^ ^                     _P_: open browser         _q_
    ("E" translate-to-en)
    ("P" translate-to-pt)
 
-   ("g" grove-music-online)
-   ("o" helm-dictionary)
+   ("h" helm-dictionary)
    ("w" wiki-summary)
    ("q" nil)))
 
 (use-package osx-dictionary
-  :defer t)
+  :config
+  (defadvice osx-dictionary-second-dictionary-search-input (around osx-dictionary-dictionary-choice)
+    (let ((osx-dictionary-dictionary-choice "Portuguese"))
+      ad-do-it))
 
-(defadvice osx-dictionary-second-dictionary-search-input (around osx-dictionary-dictionary-choice)
-  (let ((osx-dictionary-dictionary-choice "Portuguese"))
-    ad-do-it))
+  (defun osx-dictionary-second-dictionary-search-input ()
+    (interactive)
+    (osx-dictionary-search-input))
 
-(defun osx-dictionary-second-dictionary-search-input ()
-  (interactive)
-  (osx-dictionary-search-input))
+  (defadvice osx-dictionary-thesaurus-search-input (around osx-dictionary-dictionary-choice)
+    (let ((osx-dictionary-dictionary-choice "British English Thesaurus"))
+      ad-do-it))
 
-(defadvice osx-dictionary-thesaurus-search-input (around osx-dictionary-dictionary-choice)
-  (let ((osx-dictionary-dictionary-choice "British English Thesaurus"))
-    ad-do-it))
-
-(defun osx-dictionary-thesaurus-search-input ()
-  (interactive)
-  (osx-dictionary-search-pointer))
-
-(defun grove-music-online ()
-  (interactive)
-  (split-window-below)
-  (other-window 1)
-  (eww-open-file "~/Documents/archive/grove/TOC.htm"))
+  (defun osx-dictionary-thesaurus-search-input ()
+    (interactive)
+    (osx-dictionary-search-pointer)))
 
 ;; additional dictionaries
 
 (use-package helm-dictionary
   :defer t
-  :config
-  (setq helm-dictionary-database "~/Library/Spelling/LocalDictionary")
+  :init
+  (setq helm-dictionary-database "~/.emacs.d/en-pt-dictionary")
   (setq helm-dictionary-online-dicts
-	'(("linguee" . "http://www.linguee.com/english-portuguese/search?source=auto&query=%s")
-	  ("dicio.com.br" . "http://www.dicio.com.br/%s/")
-	  ("sinonimos.com.br" . "http://www.sinonimos.com.br/%s/"))))
+	'(("linguee" . "http://www.linguee.com/english-portuguese/search?source=auto&query=%s"))))
 
 ;; thesaurus
 
 (use-package synonyms
   :config
   (setq synonyms-file "~/Documents/archive/mthesaur.txt")
-  (setq synonyms-cache-file "~/.emacs.d/mthesaur.cache"))
+  (setq synonyms-cache-file "~/.emacs.d/mthesaur.cache")
 
-(defun thesaurus ()
-  (interactive)
-  (synonyms)
-  (windmove-down))
+  (defun thesaurus ()
+    (interactive)
+    (let ((word (thing-at-point 'word)))
+      (synonyms nil word)
+      (windmove-down))))
 
 (defun thesaurus-search ()
   "Look up word at point in an online thesaurus."
