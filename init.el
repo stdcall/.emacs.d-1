@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-14>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-16>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -170,7 +170,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 ;; keep custom settings separate
 
 (use-package custom
-  :init
+  :config
   (setq custom-file
 	(expand-file-name "custom.el" user-emacs-directory))
   (when (file-exists-p custom-file)
@@ -192,7 +192,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq ad-redefinition-action 'accept)
 (fset 'yes-or-no-p #'y-or-n-p)
 (setq overflow-newline-into-fringe nil)
-(setq scroll-step 1)
+;; (setq scroll-step 1)
 (setq display-time-format " %R ")
 (setq display-time-default-load-average nil)
 (setq display-time-24hr-format t)
@@ -326,6 +326,8 @@ string."
 			  (region-end))))
 		(deactivate-mark)
 		(swiper str))
+	    (unless (> (window-size) (/ max-frame-height 2))
+	      (setq ivy-height 5))
 	    (swiper)))))))
 
 ;; search online
@@ -663,8 +665,8 @@ The app is chosen from your OS's preference."
  ("C-c k" . close-and-kill-next-pane)
  ("M-`" . other-frame)
  ("M-)" . delete-frame)
- ("C-M-1" 'shrink-window)
- ("C-M-2" 'enlarge-window))
+ ("C-M-1" . shrink-window)
+ ("C-M-2" . enlarge-window))
 
 (bind-keys
  ("C-6" . jag/toggle-fullscreen)
@@ -826,8 +828,11 @@ The maximum frame height is defined by the variable
     	 (quarter-size (/ full-size 4)))
     (cond ((>= (window-size) full-size)
 	   (scroll-up 5))
+	  ((and (< (window-size) full-size)
+		(> (window-size) half-size))
+	   (scroll-up 4))
 	  ((and (<= (window-size) half-size)
-		(> (window-size) quarter-size))
+	  	(> (window-size) quarter-size))
 	   (scroll-up 2))
 	  ((<= (window-size) quarter-size)
 	   (scroll-up 1)))))
@@ -842,8 +847,11 @@ The maximum frame height is defined by the variable
     	 (quarter-size (/ full-size 4)))
     (cond ((>= (window-size) full-size)
 	   (scroll-down 5))
+	  ((and (< (window-size) full-size)
+		(> (window-size) half-size))
+	   (scroll-down 4))
 	  ((and (<= (window-size) half-size)
-		(> (window-size) quarter-size))
+	  	(> (window-size) quarter-size))
 	   (scroll-down 2))
 	  ((<= (window-size) quarter-size)
 	   (scroll-down 1)))))
@@ -896,7 +904,8 @@ The maximum frame height is defined by the variable
   :init
   (use-package doi-utils
     :config
-    (setq doi-utils-timestamp-format-function nil))
+    (setq doi-utils-timestamp-format-function nil)
+    (setq doi-utils-make-notes nil))
   (setq org-ref-bibliography-notes "~/Documents/org/annotation.org"
         org-ref-default-bibliography '("~/Documents/org/refs.bib")
         org-ref-pdf-directory "~/Documents/papers/")
@@ -904,7 +913,7 @@ The maximum frame height is defined by the variable
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
   (setq org-ref-show-citation-on-enter nil)
   (setq org-ref-note-title-format
-        "** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
+        "\n** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
   ;; custom open notes function
   (setq org-ref-open-notes-function
         (lambda nil
@@ -925,7 +934,8 @@ The maximum frame height is defined by the variable
   :bind* ("C-c C-j" . helm-bibtex)
   :config
   (autoload 'helm-bibtex "helm-bibtex" "" t)
-  (setq helm-bibtex-bibliography "~/Documents/org/refs.bib"
+  (setq helm-bibtex-bibliography '("~/Documents/org/refs.bib"
+				   "~/Documents/org/misc.bib")
         helm-bibtex-library-path "~/Documents/papers"
         helm-bibtex-notes-path "~/Documents/org/annotation.org")
   (setq helm-bibtex-full-frame nil)
@@ -933,9 +943,10 @@ The maximum frame height is defined by the variable
   (setq helm-bibtex-cite-default-as-initial-input t)
   (setq helm-bibtex-additional-search-fields '(keywords))
   (setq helm-bibtex-notes-template-one-file
-        "** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\n\n")
+        "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\n\n")
   (setq helm-bibtex-fallback-options
         (quote (("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
+		("Retrieve bibtex" . retrieve-bibtex)
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
   ;; press C-o to go to the next source
