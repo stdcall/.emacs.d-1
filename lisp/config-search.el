@@ -29,7 +29,7 @@ prompt for a string in the minibuffer."
       "https://duckduckgo.com/?q=%s"
       (if (use-region-p)
 	  (if arg
-	      (concat "\"" str "\"")
+	      (concat "\"" (url-unhex-string str) "\"")
 	    str)
 	(read-from-minibuffer "DuckDuckGo: "))))))
 
@@ -70,7 +70,7 @@ prompt for a string in the minibuffer."
       "https://scholar.google.co.uk/scholar?q=%s"
       (if (use-region-p)
 	  (if arg
-	      (concat "\"" str "\"")
+	      (concat "\"" (url-unhex-string str) "\"")
 	    str)
 	(read-from-minibuffer "Google Scholar: "))))))
 
