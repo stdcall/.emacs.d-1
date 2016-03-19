@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-16>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-19>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -265,9 +265,12 @@ With a prefix ARG, cycle randomly through a list of available themes."
 	     ("C-e"   . helm-select-2nd-action)
 	     ("C-M-n" . helm-select-8th-action))
 
-  (defun helm-select-2nd-action ()
+  (defun helm-select-2nd-action (arg)
     "Select the 2nd action for the currently selected candidate."
-    (interactive)
+    (interactive "P")
+    (if arg
+	(setq helm-bibtex-number-of-optional-arguments 2)
+      (setq helm-bibtex-number-of-optional-arguments 1))
     (let ((n 2))
       (helm-select-nth-action (- n 1))))
 
@@ -339,17 +342,19 @@ string."
 (use-package projectile
   :ensure t
   :bind-keymap ("C-c p" . projectile-command-map)
-  :init
-  (projectile-global-mode)
   :config
+  (projectile-global-mode)
   (setq projectile-completion-system 'helm)
   (setq projectile-mode-line
         '(:eval
           (format " Proj[%s]"
-                  (projectile-project-name))))
-  (setq projectile-switch-project-action 'helm-projectile)
+                  (projectile-project-name)))))
+
+(use-package helm-projectile
+  :config
+  (helm-projectile-on)
   (setq helm-projectile-sources-list
-        '(helm-source-projectile-files-list helm-source-projectile-projects)))
+	'(helm-source-projectile-files-list helm-source-projectile-projects)))
 
 ;; remember recent and most frequent commands
 
@@ -832,7 +837,7 @@ The maximum frame height is defined by the variable
 		(> (window-size) half-size))
 	   (scroll-up 4))
 	  ((and (<= (window-size) half-size)
-	  	(> (window-size) quarter-size))
+		(> (window-size) quarter-size))
 	   (scroll-up 2))
 	  ((<= (window-size) quarter-size)
 	   (scroll-up 1)))))
@@ -851,7 +856,7 @@ The maximum frame height is defined by the variable
 		(> (window-size) half-size))
 	   (scroll-down 4))
 	  ((and (<= (window-size) half-size)
-	  	(> (window-size) quarter-size))
+		(> (window-size) quarter-size))
 	   (scroll-down 2))
 	  ((<= (window-size) quarter-size)
 	   (scroll-down 1)))))
@@ -1860,7 +1865,12 @@ asynchronously, in another process."
 ;; highlight passive voice, duplicate words, and weasel words
 
 (use-package writegood-mode
-  :bind ("C-c w" . writegood-mode))
+  :defer t)
+
+;; distraction-free writing for Emacs
+
+(use-package writeroom-mode
+  :bind ("C-c w" . writeroom-mode))
 
 ;; delete word without killing it
 ;; http://www.emacswiki.org/emacs/BackwardDeleteWord
