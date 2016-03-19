@@ -183,8 +183,8 @@ bound to \\[message-goto-body] in the message buffer."
 (define-key mu4e-main-mode-map (kbd "q") 'bury-buffer)
 (define-key mu4e-main-mode-map (kbd "x") 'mu4e-quit)
 
-(define-key mu4e-view-mode-map (kbd "RET") 'mu4e-scroll-up-4)
-(define-key mu4e-view-mode-map (kbd "<backspace>") 'mu4e-scroll-down-4)
+(define-key mu4e-view-mode-map (kbd "RET") 'jag/scroll-up)
+(define-key mu4e-view-mode-map (kbd "<backspace>") 'jag/scroll-down)
 
 ;; enable encryption; C-c C-e s (sign); C-c C-e e (encrypt); C-c C-e v
 ;; (verify); C-c C-e d (decrypt)
@@ -202,7 +202,9 @@ bound to \\[message-goto-body] in the message buffer."
 	("/trash" .   ?t)
 	("/archive" . ?a)))
 
-;; bookmarks
+;; ==================================================================
+;; ˚˚ bookmarks
+;; ==================================================================
 
 (setq mu4e-bookmarks
       '(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
@@ -409,18 +411,6 @@ See URL `https://is.gd/apishorteningreference.php' for additional parameters."
   (interactive)
   (delete-region (region-beginning) (region-end))
   (insert "[...]\n\n"))
-
-;; faster scrolling
-
-(defun mu4e-scroll-up-4 ()
-  "Scroll text of selected window up 4 lines."
-  (interactive)
-  (scroll-up-1 4))
-
-(defun mu4e-scroll-down-4 ()
-  "Scroll text of selected window down 4 lines."
-  (interactive)
-  (scroll-down-1 4))
 
 (defun mml-attach-file--go-to-eob (orig-fun &rest args)
   "Go to the end of buffer before attaching files."
