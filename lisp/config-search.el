@@ -2,19 +2,14 @@
 
 (key-chord-define-global
  "qq"
- (defhydra hydra-query (:hint nil :color teal)
+ (defhydra hydra-query (:color teal :columns 1)
    "
- [_j_]: duckduckgo
- [_k_]: github
- [_l_]: gist
- [_;_]: gscholar
- [_q_]: quit
 "
-   ("j" search-duckduckgo)
-   ("k" search-github)
-   ("l" search-gist)
-   (";" search-google-scholar)
-   ("q" nil)))
+   ("j" search-duckduckgo "duckduckgo")
+   ("k" search-github "github")
+   ("l" search-gist "gist")
+   (";" search-google-scholar "scholar")
+   ("q" nil "quit")))
 
 (defun search-duckduckgo (&optional arg)
   "Search selected region online.
