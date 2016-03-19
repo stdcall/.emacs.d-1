@@ -1,7 +1,8 @@
 ;;; config-bibtex.el --- bibtex-mode configuration file
 
 ;;; Tips:
-;; - enclose words in double braces to ensure that capitalization is maintained
+;; - capitalization of titles is determined by the bibliography style
+;; - to ensure that capitalization is maintained you should enclose the first (upper case) letter in braces
 ;; - check nonstandard author names, e.g. Paulo {dos Santos}
 ;; - separate names of authors with "and", not commas
 
