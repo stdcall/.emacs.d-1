@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-19>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-20>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -473,25 +473,14 @@ With a prefix ARG, open file externally."
 			 (name . "^\\*Org Agenda")))
                  ("LaTeX" (or
 			   (mode . latex-mode)
-			   (mode . bibtex-mode)
-			   (mode . TeX-output-mode)))
+			   (mode . bibtex-mode)))
 		 ("Mail" (or
 			  (mode . mu4e-headers-mode)
 			  (mode . mu4e-view-mode)
 			  (mode . mu4e-compose-mode)))
-		 ("Lisp" (mode . emacs-lisp-mode))
+		 ("Lisp"  (mode . emacs-lisp-mode))
 		 ("Dired" (mode . dired-mode))
-		 ("Magit" (name . "\*magit"))
-		 ("Emacs" (or
-			   (mode . Custom-mode)
-			   (name . "\*Packages\*")
-			   (name . "\*Compile-Log\*")
-			   (name . "\*scratch\*")
-			   (name . "\*Help\*")
-			   (name . "\*Completions\*")
-			   (name . "\*Messages\*")
-			   (name . "\*Backtrace\*")
-			   (name . "\*Warnings\*")))))))
+		 ("Magit" (name . "\*magit"))))))
 
   (add-hook 'ibuffer-mode-hook
             '(lambda ()
@@ -526,7 +515,7 @@ With a prefix ARG, open file externally."
 
 ;; avoid killing these buffers by accident
 
-(setq bury-buffer-list '("*scratch*" "*Messages*"))
+(defvar bury-buffer-list '("*scratch*" "*Messages*"))
 
 (defun kill-or-bury-this-buffer ()
   "Kill or bury the current buffer.
@@ -543,7 +532,24 @@ If the *scratch* buffer does not exist, create one."
   (let ((scratch-buffer-name (get-buffer-create "*scratch*")))
     (if (equal (current-buffer) scratch-buffer-name)
 	(switch-to-buffer (other-buffer))
-      (switch-to-buffer scratch-buffer-name))))
+      (switch-to-buffer scratch-buffer-name)
+      (lisp-interaction-mode))))
+
+(defun kill-buffer-and-its-frame ()
+  "Kill the current buffer and delete its frame."
+  (interactive)
+  (kill-buffer)
+  (quit-window)
+  (delete-frame))
+
+(defun kill-other-buffer-and-window ()
+  "Kill the next buffer in line and close its window."
+  (interactive)
+  (other-window 1)
+  (if (member (buffer-name (current-buffer)) bury-buffer-list)
+      (progn (bury-buffer)
+	     (delete-window))
+    (kill-buffer-and-window)))
 
 ;; ==================================================================
 ;; ˚˚ dired for managing directories
@@ -631,7 +637,6 @@ The app is chosen from your OS's preference."
 (bind-key "M-c" 'kill-ring-save)
 (bind-key "M-m" 'capitalize-word)
 (bind-key "M-v" 'yank)
-(bind-key "M-s" 'save-buffer)
 (bind-key "C-c x" 'calendar)
 (bind-key "C-c f" 'reveal-in-finder)
 (bind-key "C-c <C-return>" 'xah-open-in-external-app)
@@ -667,7 +672,7 @@ The app is chosen from your OS's preference."
  ("M-o" . other-window)
  ("C-c C-x r" . rotate-windows)
  ("C-c 0" . kill-buffer-and-its-frame)
- ("C-c k" . close-and-kill-next-pane)
+ ("C-c k" . kill-other-buffer-and-window)
  ("M-`" . other-frame)
  ("M-)" . delete-frame)
  ("C-M-1" . shrink-window)
@@ -871,13 +876,14 @@ The maximum frame height is defined by the variable
 
 (bind-key
  "C-M-SPC"
- (defhydra hydra-scroll (:pre (smooth-scroll-mode 0)
-			      :post (smooth-scroll-mode t))
-   ("k"   (lambda () (interactive) (scroll-down-1 10)) "down")
-   ("SPC" (lambda () (interactive) (scroll-up-1 10)) "up")
-   (","   beginning-of-buffer "top")
-   ("."   end-of-buffer "bottom")
-   ("C-l" recenter-top-bottom "recenter")
+ (defhydra hydra-scroll (:pre (progn (smooth-scroll-mode 0)
+				     (setq scroll-step 1))
+			      :post (progn (smooth-scroll-mode t)
+					   (setq scroll-step 0)))
+   "scroll"
+   ("j"   (jag/scroll-up) "up")
+   ("SPC" (jag/scroll-up) "up")
+   ("k"   (jag/scroll-down) "down")
    ("l"   nil "quit")
    ("q"   nil "quit")))
 
@@ -1337,7 +1343,6 @@ take any."
 (bind-keys
  ("C-c l" . org-store-link)
  ("C-c a" . org-agenda)
- ("C-c c" . org-capture)
  ("C-c b" . org-iswitchb))
 
 ;; load files automatically
@@ -1592,23 +1597,26 @@ Reposition the block to the top of the window."
 
 ;; org-capture templates
 
-(setq org-capture-templates
-      '(("t" "Task" entry (file+headline "~/Documents/org/todo.org" "Tasks")
-         "** TODO %^{Description} %^g\n" :prepend t)
+(use-package org-capture
+  :bind  ("C-c c" . org-capture)
+  :config
+  (setq org-capture-templates
+	'(("t" "Task" entry (file+headline "~/Documents/org/todo.org" "Tasks")
+	   "** TODO %^{Description} %^g\n" :prepend t)
 
-        ("r" "Reference" entry (file+headline "~/Documents/org/notes.org" "In-basket")
-         "** %^{Description} %^g\n%?" :prepend t)
+	  ("r" "Reference" entry (file+headline "~/Documents/org/notes.org" "In-basket")
+	   "** %^{Description} %^g\n%?" :prepend t)
 
-        ("b" "Bookmark" plain (file+headline "~/Documents/org/todo.org" "Bookmarks")
-         "- %?" :prepend t)
+	  ("b" "Bookmark" plain (file+headline "~/Documents/org/todo.org" "Bookmarks")
+	   "- %?" :prepend t)
 
-        ("n" "Note" entry (file+headline "~/Documents/org/todo.org" "Notes")
-         "** %?%i\n%U" :prepend t)
+	  ("n" "Note" entry (file+headline "~/Documents/org/todo.org" "Notes")
+	   "** %?%i\n%U" :prepend t)
 
-        ("l" "Ledger")
+	  ("l" "Ledger")
 
-        ("le" "Expenses" plain (file+headline "~/Documents/org/ledger.org" "Expenses")
-         "
+	  ("le" "Expenses" plain (file+headline "~/Documents/org/ledger.org" "Expenses")
+	   "
 #+name: expenses
 #+begin_src ledger
 %(org-read-date) * %^{Payed to}
@@ -1617,8 +1625,8 @@ Reposition the block to the top of the window."
 #+end_src\n
 " :prepend t)
 
-        ("li" "Income" plain (file+headline "~/Documents/org/ledger.org" "Income")
-         "
+	  ("li" "Income" plain (file+headline "~/Documents/org/ledger.org" "Income")
+	   "
 #+name: income
 #+begin_src ledger
 %(org-read-date) * %^{Received from}
@@ -1627,49 +1635,48 @@ Reposition the block to the top of the window."
 #+end_src\n
 " :prepend t)
 
-        ("d" "Diary" entry (file+headline "~/Documents/org/fieldwork.org" "Diary")
-         "** %(format-time-string \"%Y-%m-%d %b %H:%M\")\n\n%? %^{Effort}p" :clock-in t)
+	  ("d" "Diary" entry (file+headline "~/Documents/org/fieldwork.org" "Diary")
+	   "** %(format-time-string \"%Y-%m-%d %b %H:%M\")\n\n%? %^{Effort}p" :clock-in t)
 
-        ("f" "Fieldnote" entry (file+headline "~/Documents/org/fieldwork.org" "Fieldnotes")
-         "** %(format-time-string \"%d %b %Y\")\n%? %^{Effort}p" :clock-in t)
+	  ("f" "Fieldnote" entry (file+headline "~/Documents/org/fieldwork.org" "Fieldnotes")
+	   "** %(format-time-string \"%d %b %Y\")\n%? %^{Effort}p" :clock-in t)
 
-        ("c" "Contact" entry (file+headline "~/Documents/org/contacts.org" "Contacts")
-         "** %(org-contacts-template-name)
+	  ("c" "Contact" entry (file+headline "~/Documents/org/contacts.org" "Contacts")
+	   "** %(org-contacts-template-name)
 :PROPERTIES:
 :EMAIL: %(org-contacts-template-email)
 :PHONE: %^{phone}
 :NOTES: %^{notes}
 :END:" :prepend t)
 
-        ("a" "Appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
-         "** %^{Description}\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%?" :prepend t)
+	  ("a" "Appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
+	   "** %^{Description}\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%?" :prepend t)
 
-        ("h" "Habit" entry (file+headline "~/Documents/org/todo.org" "Habits")
-         "** TODO %?\n   SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
+	  ("h" "Habit" entry (file+headline "~/Documents/org/todo.org" "Habits")
+	   "** TODO %?\n   SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
 
-        ("&" "Email" entry (file+headline "~/Documents/org/todo.org" "Tasks")
-         "** TODO %? %(org-set-tags-to \"mail\")\n%a" :prepend t)
+	  ("&" "Email" entry (file+headline "~/Documents/org/todo.org" "Tasks")
+	   "** TODO %? %(org-set-tags-to \"mail\")\n%a" :prepend t)
 
-        ("^" "Email appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
-         "** %?\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%a" :prepend t)
+	  ("^" "Email appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
+	   "** %?\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%a" :prepend t)
 
-        ("#" "Hold" entry (file+headline "~/Documents/org/todo.org" "Tickler")
-         "** TODO delete %a %(org-set-tags-to \"mail\")\n   SCHEDULED: %^t\n" :prepend t :immediate-finish t)
+	  ("#" "Hold" entry (file+headline "~/Documents/org/todo.org" "Tickler")
+	   "** TODO delete %a %(org-set-tags-to \"mail\")\n   SCHEDULED: %^t\n" :prepend t :immediate-finish t)
 
-        ("F" "Fiona" entry (file+headline "~/Documents/org/orientation.org" "2016")
-         "** Fiona %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)
+	  ("F" "Fiona" entry (file+headline "~/Documents/org/orientation.org" "2016")
+	   "** Fiona %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)
 
-        ("I" "Ioannis" entry (file+headline "~/Documents/org/orientation.org" "2016")
-         "** Ioannis %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)))
+	  ("I" "Ioannis" entry (file+headline "~/Documents/org/orientation.org" "2016")
+	   "** Ioannis %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)))
 
-;; capture context
-
-(setq org-capture-templates-contexts
-      '(("#" ((in-mode . "mu4e-view-mode")))
-        ("&" ((in-mode . "mu4e-view-mode")))
-        ("^" ((in-mode . "mu4e-view-mode")))
-        ("F" ((in-file . "orientation.org")))
-        ("I" ((in-file . "orientation.org")))))
+  ;; capture context
+  (setq org-capture-templates-contexts
+	'(("#" ((in-mode . "mu4e-view-mode")))
+	  ("&" ((in-mode . "mu4e-view-mode")))
+	  ("^" ((in-mode . "mu4e-view-mode")))
+	  ("F" ((in-file . "orientation.org")))
+	  ("I" ((in-file . "orientation.org"))))))
 
 ;; ==================================================================
 ;; ˚˚ org mode extension
@@ -2220,28 +2227,6 @@ possible date string replacements."
 ;; ==================================================================
 ;; ˚˚ frame and window
 ;; ==================================================================
-
-(defun kill-buffer-and-its-frame ()
-  "Kill the current buffer as well as its frame."
-  (interactive)
-  (kill-buffer)
-  (quit-window)
-  (delete-frame))
-
-(defun close-and-kill-next-pane ()
-  "If there are multiple windows, then close the other pane and
-kill the buffer in it also."
-  (interactive)
-  (other-window 1)
-  (kill-this-buffer)
-  (unless (one-window-p)
-    (delete-window)))
-
-;; kill buffer and its windows
-
-(substitute-key-definition 'kill-buffer
-                           'kill-buffer-and-its-windows
-                           global-map)
 
 ;; move point to the new window
 
