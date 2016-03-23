@@ -21,22 +21,23 @@
 ;;; Code:
 
 (require 'emms-setup)
-(emms-standard)
-(emms-default-players)
 (require 'emms-player-mplayer)
 (require 'emms-player-simple)
 (require 'emms-mode-line)
-(emms-mode-line 1)
 (require 'emms-mode-line-icon)
 (require 'emms-info)
 (require 'emms-playing-time)
-(emms-playing-time 1)
 (require 'emms-tag-editor)
 (require 'emms-playlist-sort)
 (require 'emms-bookmarks)
 (require 'emms-streams)
 (require 'emms-mark)
 (require 'helm-emms)
+
+(emms-standard)
+(emms-default-players)
+(emms-mode-line 1)
+(emms-playing-time 1)
 
 (defgroup config-emms nil
   "Customization group for `config-emms'.")
@@ -149,15 +150,18 @@ a positive number."
 (setq emms-mode-line-mode-line-function
       (lambda nil
 	(let ((track (emms-playlist-current-selected-track)))
-          (let ((title (emms-track-get track 'info-title)))
+          (let ((title (emms-track-get track 'info-title))
+		(radio (cdr (nth 1 track))))
             (if (not (null title))
 		(format emms-mode-line-format title)
-              (if (not (null (string-match "^url: " (emms-track-simple-description track))))
-                  (format emms-mode-line-format "Internet Radio") ;FIXME:
+              (if (string= "streamlist" radio)
+		  (let* ((url (cdr (nth 2 track)))
+			 (name (replace-regexp-in-string ".*\/" "" url)))
+		    (format emms-mode-line-format (concat "Radio: " name)))
                 (format emms-mode-line-format "Unknown")))))))
 
 ;; emms volume control
-;; see http://anthony.lecigne.net/2014-08-16-emms-mplayer.html
+;; see http://anthony.lecigne.net/blog/2014/08/16/control-volume-mplayer-emms/
 
 (defun jag/emms-volume-change-function (amount)
   (interactive "p")
@@ -196,7 +200,6 @@ buffer."
   (interactive)
   (emms-tag-editor-submit-and-exit)
   (windmove-up)
-  (other-window 0)
   (delete-other-windows))
 
 ;; key bindings
