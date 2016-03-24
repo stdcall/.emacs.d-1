@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-20>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-23>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -478,7 +478,7 @@ With a prefix ARG, open file externally."
 			  (mode . mu4e-headers-mode)
 			  (mode . mu4e-view-mode)
 			  (mode . mu4e-compose-mode)))
-		 ("Lisp"  (mode . emacs-lisp-mode))
+		 ("Lisp" (mode . emacs-lisp-mode))
 		 ("Dired" (mode . dired-mode))
 		 ("Magit" (name . "\*magit"))))))
 
@@ -541,6 +541,12 @@ If the *scratch* buffer does not exist, create one."
   (kill-buffer)
   (quit-window)
   (delete-frame))
+
+;; kill buffer and its windows
+
+(substitute-key-definition 'kill-buffer
+                           'kill-buffer-and-its-windows
+                           global-map)
 
 (defun kill-other-buffer-and-window ()
   "Kill the next buffer in line and close its window."
@@ -934,7 +940,12 @@ The maximum frame height is defined by the variable
           (outline-previous-visible-heading 1)
           (recenter-top-bottom 0)
           (show-children)
-	  (helm-bibtex-notes-mode 1))))
+	  (helm-bibtex-notes-mode 1)))
+
+  (defun retrieve-bibtex ()
+    (doi-utils-add-entry-from-crossref-query
+     helm-input
+     (car org-ref-default-bibliography))))
 
 ;;; helm-bibtex for managing bibliographies
 ;; press M-a to select all entries or C-SPC to mark entries
