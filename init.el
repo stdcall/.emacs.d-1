@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-23>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-26>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -192,7 +192,6 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq ad-redefinition-action 'accept)
 (fset 'yes-or-no-p #'y-or-n-p)
 (setq overflow-newline-into-fringe nil)
-;; (setq scroll-step 1)
 (setq display-time-format " %R ")
 (setq display-time-default-load-average nil)
 (setq display-time-24hr-format t)
@@ -389,23 +388,7 @@ string."
   (add-to-list 'ido-ignore-files "\\.DS_Store")
   (add-to-list 'ido-ignore-files "\\.backups")
   (add-to-list 'ido-ignore-files "\\.Rhistory")
-  (add-to-list 'ido-ignore-buffers "*Completions*")
-
-  ;; open files externally using Ido
-  (defun jag/ido-find-file (arg)
-    "Similar to `ido-find-file'.
-With a prefix ARG, open file externally."
-    (interactive "P")
-    (if arg
-	(let ((file (ido-read-file-name "Open externally: ")))
-	  (call-process shell-file-name nil nil nil
-			shell-command-switch
-			(format "%s %s"
-				(if (eq system-type 'darwin)
-				    "open"
-				  "xdg-open")
-				file)))
-      (ido-find-file))))
+  (add-to-list 'ido-ignore-buffers "*Completions*"))
 
 ;; sort ido filelist by modification time instead of alphabetically
 
@@ -635,9 +618,8 @@ The app is chosen from your OS's preference."
 ;; ˚˚ key bindings
 ;; ==================================================================
 
-(bind-key "C-o" 'jag/ido-find-file)
+(bind-key "C-o" 'ido-find-file)
 (bind-key "C-M-o" 'helm-find-files)
-(bind-key "C-c o" 'occur)
 (bind-key "C-x C-k" 'kill-or-bury-this-buffer)
 (bind-key "C-c R" 'rename-file-and-buffer)
 (bind-key "M-c" 'kill-ring-save)
