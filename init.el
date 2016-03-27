@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-26>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-27>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -164,6 +164,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq user-emacs-directory (file-truename "~/.emacs.d/"))
 (setq default-directory "~/Documents/org/")
 (add-to-list 'load-path "~/.emacs.d/lisp/")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/")
 (setq delete-by-moving-to-trash t
       trash-directory "~/.Trash/emacs")
 
@@ -540,6 +541,12 @@ If the *scratch* buffer does not exist, create one."
 	     (delete-window))
     (kill-buffer-and-window)))
 
+;; switch between the two most recent buffers
+
+(defun switch-to-other-buffer ()
+  (interactive)
+  (switch-to-buffer (other-buffer (current-buffer) 1)))
+
 ;; ==================================================================
 ;; ˚˚ dired for managing directories
 ;; ==================================================================
@@ -650,6 +657,13 @@ The app is chosen from your OS's preference."
  ("C-3" . helm-bookmarks)
  ("C-4" . headlong-bookmark-jump))
 
+;; buffers
+
+(bind-keys
+ ("C-c 0" . kill-buffer-and-its-frame)
+ ("C-c k" . kill-other-buffer-and-window)
+ ("C-c o" . switch-to-other-buffer))
+
 ;; frame and window
 
 (bind-keys
@@ -659,8 +673,6 @@ The app is chosen from your OS's preference."
  ("M-3" . hsplit-last-buffer)
  ("M-o" . other-window)
  ("C-c C-x r" . rotate-windows)
- ("C-c 0" . kill-buffer-and-its-frame)
- ("C-c k" . kill-other-buffer-and-window)
  ("M-`" . other-frame)
  ("M-)" . delete-frame)
  ("C-M-1" . shrink-window)
