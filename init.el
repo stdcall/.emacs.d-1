@@ -1820,6 +1820,18 @@ asynchronously, in another process."
 (add-hook 'org-babel-after-execute-hook
           (lambda () (org-display-inline-images nil t)))
 
+;; save org files automatically
+
+(defun save-org-mode-files ()
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (and (eq major-mode 'org-mode)
+		 (buffer-modified-p)
+		 (buffer-file-name))
+	(save-buffer)))))
+
+(run-with-idle-timer 50 t 'save-org-mode-files)
+
 ;; ==================================================================
 ;; ˚˚ writing, editing and version control
 ;; ==================================================================
@@ -2016,6 +2028,36 @@ Press \\[delete-char] to bring the text back up."
     (newline)))
 
 (bind-key "C-M-;" 'jag/split-line)
+
+;; word count
+
+(defun word-count ()
+  "Print total number of words in the current buffer or region.
+In `latex-mode', use `latex-word-count' instead."
+  (interactive)
+  (if (eq major-mode 'latex-mode)
+      (latex-word-count)
+    (message "%d words" (if (use-region-p)
+			    (count-words-region (mark) (point))
+			  (count-words (point-min) (point-max))))))
+
+(defun latex-word-count ()
+  "Print total number of words using texcount command line tool."
+  (interactive)
+  (let* ((this-file (buffer-file-name))
+	 (enc-str (symbol-name buffer-file-coding-system))
+	 (enc-opt
+	  (cond
+	   ((string-match "utf-8-unix" enc-str) "-utf8")
+	   ((string-match "latin" enc-str) "-latin1")
+	   ("-encoding=guess")))
+	 (word-count
+	  (with-output-to-string
+	    (with-current-buffer standard-output
+	      (call-process "texcount" nil t nil "-0" enc-opt this-file)))))
+    (message word-count)))
+
+(bind-key "M-=" 'word-count)
 
 ;; aspell for spell checking
 
