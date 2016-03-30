@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-27>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-30>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -660,6 +660,8 @@ The app is chosen from your OS's preference."
 ;; buffers
 
 (bind-keys
+ ("M-∆"   . previous-buffer)		; M-alt-j
+ ("M-˚"   . next-buffer)		; M-alt-k
  ("C-c 0" . kill-buffer-and-its-frame)
  ("C-c k" . kill-other-buffer-and-window)
  ("C-c o" . switch-to-other-buffer))
@@ -672,7 +674,7 @@ The app is chosen from your OS's preference."
  ("M-2" . vsplit-last-buffer)
  ("M-3" . hsplit-last-buffer)
  ("M-o" . other-window)
- ("C-c C-x r" . rotate-windows)
+ ("M-R" . rotate-windows)
  ("M-`" . other-frame)
  ("M-)" . delete-frame)
  ("C-M-1" . shrink-window)
@@ -742,12 +744,6 @@ The app is chosen from your OS's preference."
 (unbind-key "M-p" dired-mode-map)
 (unbind-key "M-c" dired-mode-map)
 (unbind-key "C-M-j" dired-mode-map)
-
-;; avoid arrow keys when switching buffers
-
-(bind-keys
- ("M-∆" . previous-buffer)		; M-alt-j
- ("M-˚" . next-buffer))			; M-alt-k
 
 ;; use command as meta key and option for dead keys
 
