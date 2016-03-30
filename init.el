@@ -1086,13 +1086,40 @@ take any."
 		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
 		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
-  ;; beamer for creating slides in latex
   (add-to-list 'org-latex-classes
-               '("beamer"
-                 "\\documentclass\[presentation\]\{beamer\}"
-                 ("\\section\{%s\}" . "\\section*\{%s\}")
-                 ("\\subsection\{%s\}" . "\\subsection*\{%s\}")
-                 ("\\subsubsection\{%s\}" . "\\subsubsection*\{%s\}"))))
+	       '("koma-report"
+		 "\\documentclass{scrreprt}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage{graphicx}
+\\usepackage{amsmath}
+[NO-DEFAULT-PACKAGES]
+[EXTRA]"
+		 ("\\chapter{%s}" . "\\chapter*{%s}")
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		 ("\\paragraph{%s}" . "\\paragraph*{%s}")))
+
+;; beamer for creating slides in latex
+(add-to-list 'org-latex-classes
+	     '("beamer"
+	       "\\documentclass\[presentation\]\{beamer\}"
+	       ("\\section\{%s\}" . "\\section*\{%s\}")
+	       ("\\subsection\{%s\}" . "\\subsection*\{%s\}")
+	       ("\\subsubsection\{%s\}" . "\\subsubsection*\{%s\}"))))
+
+;; choose a more common typographical style used in British English
+
+(setq org-export-default-language "en-GB")
+
+(add-to-list 'org-export-smart-quotes-alist
+	     '("en-GB"
+	       (primary-opening :utf-8 "“" :html "&lsquo;" :latex "`" :texinfo "`")
+	       (primary-closing :utf-8 "”" :html "&rsquo;" :latex "'" :texinfo "'")
+	       (secondary-opening :utf-8 "‘" :html "&ldquo;" :latex "``" :texinfo "``")
+	       (secondary-closing :utf-8 "’" :html "&rdquo;" :latex "''" :texinfo "''")
+	       (apostrophe :utf-8 "’" :html "&rsquo;")))
 
 ;; ignore headings tagged with `ignoreheading' when exporting to latex
 
