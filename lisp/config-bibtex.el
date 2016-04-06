@@ -41,11 +41,10 @@
   (interactive)
   (bibtex-beginning-of-entry)
   (save-excursion
-    (bibtex-delete-key)
     (bibtex-replace-nonascii)
     (bibtex-replace-naked-ampersand)
     (bibtex-last-comma)
-    (bibtex-clean-entry)
+    (bibtex-clean-entry t)
     (let ((key (bibtex-key-in-head)))
       (when (bibtex-key-in-head)
 	(message "Formatting %s (done)" key)))))
@@ -63,15 +62,6 @@ See `bibtex-autokey-before-presentation-function'."
     (let ((cap-key (capitalize key)))
       (bibtex-search-entry cap-key)
       (message "%s" cap-key))))
-
-(defun bibtex-delete-key ()
-  "Delete bibtex key of the entry at point."
-  (save-excursion
-    (bibtex-beginning-of-entry)
-    (re-search-forward bibtex-entry-maybe-empty-head)
-    (if (match-beginning bibtex-key-in-head)
-	(delete-region (match-beginning bibtex-key-in-head)
-		       (match-end bibtex-key-in-head)))))
 
 ;; replace non-ascii characters
 
