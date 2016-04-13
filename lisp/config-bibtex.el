@@ -17,8 +17,8 @@
 ;; M-x bibtex-reformat to reformat entries
 
 ;;; See also:
+;; http://www.jonathanleroux.org/bibtex-mode.html
 ;; https://github.com/jkitchin/org-ref/blob/master/org-ref-bibtex.el
-;; http://www.brl.ntt.co.jp/people/leroux/bibtex-mode.html
 
 ;;; generate key automatically
 ;; ie. Smith2015s (author's last name / year / first letter of the
