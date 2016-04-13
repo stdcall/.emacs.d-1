@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-03-30>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-04-13>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -109,7 +109,7 @@ With a prefix ARG, prompt for a new font."
 
 ;; cycle through this set of themes
 
-(setq my-themes '(bliss brin))
+(setq my-themes '(bliss gotham))
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme (&optional arg)
@@ -269,8 +269,8 @@ With a prefix ARG, cycle randomly through a list of available themes."
     "Select the 2nd action for the currently selected candidate."
     (interactive "P")
     (if arg
-	(setq helm-bibtex-number-of-optional-arguments 2)
-      (setq helm-bibtex-number-of-optional-arguments 1))
+	(setq bibtex-completion-number-of-optional-arguments 2)
+      (setq bibtex-completion-number-of-optional-arguments 1))
     (let ((n 2))
       (helm-select-nth-action (- n 1))))
 
@@ -412,7 +412,7 @@ string."
   (ido-grid-mode 1)
   (setq ido-grid-mode-keys nil)
   (setq ido-grid-mode-prefix-scrolls t)
-  (setq ido-grid-mode-prefix ">> ")
+  (setq ido-grid-mode-prefix "=> ")
   (set-face-foreground 'ido-first-match "lime green")
   ;; grid navigation
   (add-hook 'ido-setup-hook
@@ -431,13 +431,12 @@ string."
 
 (use-package avy
   :bind
-  (("C-x SPC" . avy-goto-word-1)
-   ("M-g g"   . avy-goto-line))
+  (("M-s" . avy-goto-word-1)
+   ("C-x SPC"   . avy-goto-line))
   :config
   (setq avy-keys-alist
-	`((avy-goto-word-1 . (?j ?k ?l ?\; ?a ?s))
-	  (avy-goto-line   . (?j ?k ?l ?\;))))
-  (setq aw-keys '(?j ?o ?k ?\;)))
+	`((avy-goto-word-1 . (?j ?k ?l ?\; ?a ?s ?d))
+	  (avy-goto-line   . (?j ?k ?l ?\; ?a ?s)))))
 
 ;; ==================================================================
 ;; ˚˚ buffer settings
@@ -945,19 +944,20 @@ The maximum frame height is defined by the variable
   :load-path "~/Documents/git/helm-bibtex"
   :bind* ("C-c C-j" . helm-bibtex)
   :config
-  (autoload 'helm-bibtex "helm-bibtex" "" t)
-  (setq helm-bibtex-bibliography '("~/Documents/org/refs.bib"
-				   "~/Documents/org/misc.bib")
-        helm-bibtex-library-path "~/Documents/papers"
-        helm-bibtex-notes-path "~/Documents/org/annotation.org")
+  (setq bibtex-completion-bibliography '("~/Documents/org/refs.bib"
+					 "~/Documents/org/misc.bib")
+        bibtex-completion-library-path '("~/Documents/papers" "~/Desktop/ANTH/Lanmann")
+        bibtex-completion-notes-path "~/Documents/org/annotation.org")
   (setq helm-bibtex-full-frame nil)
-  (setq helm-bibtex-number-of-optional-arguments 1)
-  (setq helm-bibtex-cite-default-as-initial-input t)
-  (setq helm-bibtex-additional-search-fields '(keywords))
-  (setq helm-bibtex-notes-template-one-file
+  (setq bibtex-completion-number-of-optional-arguments 1)
+  (setq bibtex-completion-cite-default-as-initial-input t)
+  (setq bibtex-completion-additional-search-fields '(keywords))
+  (setq bibtex-completion-notes-template-one-file
         "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\n\n")
-  (setq helm-bibtex-fallback-options
+  (setq bibtex-completion-fallback-options
         (quote (("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
+		("CrossRef                                  (biblio.el)" lambda nil
+		 (biblio-lookup #'biblio-crossref-backend helm-pattern))
 		("Retrieve bibtex" . retrieve-bibtex)
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
@@ -965,13 +965,13 @@ The maximum frame height is defined by the variable
   (defun helm-bibtex-search-notes-fallback ()
     "Search notes file."
     (let ((input (format "%s" helm-pattern)))
-      (when (f-file? helm-bibtex-notes-path)
-	(find-file helm-bibtex-notes-path)
+      (when (f-file? bibtex-completion-notes-path)
+	(find-file bibtex-completion-notes-path)
 	(goto-char (point-min))
 	(swiper input))))
 
   ;; open with deafult pdf viewer
-  (setq helm-bibtex-pdf-open-function
+  (setq bibtex-completion-pdf-open-function
   	(lambda (fpath)
   	  (call-process "open" nil 0 nil "-a" "Skim.app" fpath)))
 
@@ -980,9 +980,8 @@ The maximum frame height is defined by the variable
   (helm-add-action-to-source "Open PDF file (if present)" 'helm-bibtex-open-pdf helm-source-bibtex 0)
 
   ;; format citation style
-  (setq helm-bibtex-format-citation-functions
-        '((org-mode . jag/helm-bibtex-format-citation-org-ref)
-          (latex-mode . helm-bibtex-format-citation-cite))))
+  (setq bibtex-completion-format-citation-functions
+        '((org-mode . bibtex-completion-format-citation-org-ref)))
 
 (use-package helm-bibtex-ext
   :bind ("C-c h" . helm-bibtex-show-notes)
@@ -992,34 +991,41 @@ The maximum frame height is defined by the variable
 
 ;; prompt once and use org-ref syntax
 
-(defun jag/helm-bibtex-format-citation-org-ref (keys)
+(defun bibtex-completion-format-citation-org-ref (keys)
   "Formatter for `org-ref' citation commands.
 Prompt for the command and additional arguments if the commands can
 take any."
-  (let* ((initial (when helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
-         (default (unless helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
+  (let* ((initial (when bibtex-completion-cite-default-as-initial-input bibtex-completion-cite-default-command))
+         (default (unless bibtex-completion-cite-default-as-initial-input bibtex-completion-cite-default-command))
          (default-info (if default (format " (default \"%s\")" default) ""))
          (cite-command (completing-read
                         (format "Cite command%s: " default-info)
-                        helm-bibtex-cite-commands nil nil initial
-                        'helm-bibtex-cite-command-history default nil)))
+                        bibtex-completion-cite-commands nil nil initial
+                        'bibtex-completion-cite-command-history default nil)))
     (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
         (format "%s:%s" cite-command (s-join "," keys))
-      (if (= helm-bibtex-number-of-optional-arguments 0)
+      (if (= bibtex-completion-number-of-optional-arguments 0)
           (format "%s:%s" cite-command (s-join "," keys))
-        (if (= helm-bibtex-number-of-optional-arguments 1)
-            (let ((pos (if (= helm-bibtex-number-of-optional-arguments 1)
+        (if (= bibtex-completion-number-of-optional-arguments 1)
+            (let ((pos (if (= bibtex-completion-number-of-optional-arguments 1)
                            (read-from-minibuffer "Postnote[1]: ") "")))
-              (if (and (= helm-bibtex-number-of-optional-arguments 1) (string= "" pos))
+              (if (and (= bibtex-completion-number-of-optional-arguments 1) (string= "" pos))
                   (format "%s:%s" cite-command (s-join "," keys))
                 (format "[[%s:%s][%s]]" cite-command (s-join "," keys) pos)))
-          (let ((pre (if (= helm-bibtex-number-of-optional-arguments 2)
+          (let ((pre (if (= bibtex-completion-number-of-optional-arguments 2)
                          (read-from-minibuffer "Prenote[1]: ") ""))
-                (pos (if (= helm-bibtex-number-of-optional-arguments 2)
+                (pos (if (= bibtex-completion-number-of-optional-arguments 2)
                          (read-from-minibuffer "Postnote[2]: ") "")))
-            (if (and (= helm-bibtex-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
+            (if (and (= bibtex-completion-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
                 (format "%s:%s" cite-command (s-join "," keys))
               (format "[[%s:%s][%s::%s]]" cite-command (s-join "," keys) pre pos))))))))
+
+;; browse and import bibliographic references from CrossRef, DBLP,
+;; HAL, arXiv, Dissemin, and doi.org
+
+(use-package biblio
+  :config
+  (setq biblio-cleanup-bibtex-function #'bibtex-cleanup-entry))
 
 ;; ==================================================================
 ;; ˚˚ AUCTeX for managing (La)TeX files
@@ -1701,6 +1707,7 @@ Reposition the block to the top of the window."
   ;; capture context
   (setq org-capture-templates-contexts
 	'(("#" ((in-mode . "mu4e-view-mode")))
+	  ("#" ((in-mode . "mu4e-headers-mode")))
 	  ("&" ((in-mode . "mu4e-view-mode")))
 	  ("^" ((in-mode . "mu4e-view-mode")))
 	  ("F" ((in-file . "orientation.org")))
@@ -1865,7 +1872,6 @@ asynchronously, in another process."
   :ensure t
   :bind ("C-x g" . magit-status)
   :config
-  (setq magit-last-seen-setup-instructions "1.4.0")
   (add-hook 'git-commit-mode-hook 'turn-on-flyspell))
 
 ;; compare file differences and merge changes
