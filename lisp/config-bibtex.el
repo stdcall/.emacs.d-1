@@ -36,11 +36,12 @@
 
 ;; cleanup entries
 
-(defun bibtex-cleanup-entry ()
+(defun bibtex-cleanup-entry (&optional _)
   "Cleanup bibtex entry."
   (interactive)
   (bibtex-beginning-of-entry)
   (save-excursion
+    (bibtex-downcase-entry-type)
     (bibtex-replace-nonascii)
     (bibtex-replace-naked-ampersand)
     (bibtex-last-comma)
@@ -62,6 +63,12 @@ See `bibtex-autokey-before-presentation-function'."
     (let ((cap-key (capitalize key)))
       (bibtex-search-entry cap-key)
       (message "%s" cap-key))))
+
+(defun bibtex-downcase-entry-type ()
+  "Downcase entry types.
+@Article becomes @article and so forth."
+  (bibtex-beginning-of-entry)
+  (downcase-word 1))
 
 ;; replace non-ascii characters
 
