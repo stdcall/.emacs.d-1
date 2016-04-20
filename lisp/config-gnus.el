@@ -47,8 +47,8 @@
   (define-key gnus-summary-mode-map (kbd "RET") 'jag/gnus-summary-scroll-other-window)
   (define-key gnus-summary-mode-map (kbd "DEL") 'jag/gnus-summary-scroll-other-window-down)
   (define-key gnus-article-mode-map (kbd "q") 'jag/gnus-move-to-summary-window-and-exit)
-  (define-key gnus-summary-mode-map (kbd "C-M-k") '(lambda () (interactive) (scroll-up-1 5)))
-  (define-key gnus-summary-mode-map (kbd "C-M-j") '(lambda () (interactive) (scroll-down-1 5))))
+  (define-key gnus-summary-mode-map (kbd "C-M-k") 'jag/scroll-up)
+  (define-key gnus-summary-mode-map (kbd "C-M-j") 'jag/scroll-down))
 
 (add-hook 'gnus-summary-mode-hook 'my-gnus-maps)
 
