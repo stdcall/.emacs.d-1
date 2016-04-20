@@ -21,27 +21,71 @@
       mu4e-trash-folder  "/trash"
       mu4e-refile-folder "/archive")
 
-(defvar my-mu4e-account-alist
-  '(("ai"
-     (user-mail-address "xxxx@autistici.org")
-     (smtpmail-smtp-server "smtp.autistici.org"))
-    ("uni"
-     (user-mail-address "xxxx@qub.ac.uk")
-     (smtpmail-smtp-user "xxxx@ads.qub.ac.uk")
-     (smtpmail-starttls-credentials '(("smtp.office365.com" 587 nil nil)))
-     (smtpmail-smtp-server "smtp.office365.com"))))
+(setq smtpmail-auth-credentials (expand-file-name "~/.authinfo.gpg")
+      smtpmail-starttls-credentials '(("smtp.autistici.org" 587 nil nil))
+      smtpmail-default-smtp-server "smtp.autistici.org"
+      smtpmail-smtp-server "smtp.autistici.org"
+      smtpmail-smtp-user "xxxx@autistici.org"
+      smtpmail-stream-type 'starttls
+      smtpmail-smtp-service 587)
 
 (setq send-mail-function 'async-smtpmail-send-it
       message-send-mail-function 'async-smtpmail-send-it)
 
-(setq smtpmail-starttls-credentials '(("smtp.autistici.org" 587 nil nil))
-      smtpmail-auth-credentials (expand-file-name "~/.authinfo.gpg")
-      smtpmail-smtp-server "smtp.autistici.org"
-      smtpmail-default-smtp-server "smtp.autistici.org"
-      smtpmail-smtp-service 587)
+(setq mu4e-get-mail-command "getmail --rcfile getmailrc --rcfile getmailrc2"
+      mu4e-update-interval (* 10 60))	; update every 10 minutes
 
-(setq mu4e-get-mail-command "getmail --rcfile getmailrc --rcfile getmailrc2")
-(setq mu4e-update-interval (* 10 60))	; update every 10 minutes
+;; switch between different sets of settings
+
+(setq mu4e-context-policy 'pick-first
+      mu4e-compose-context-policy 'ask
+      mu4e-contexts
+      `( ,(make-mu4e-context
+	   :name "alias"
+	   :enter-func (lambda () (mu4e-message "alias"))
+	   :match-func (lambda (msg)
+			 (when msg
+			   (mu4e-message-contact-field-matches msg
+							       :to "xxxx@autistici.org")))
+	   :vars '((user-mail-address . "xxxx@autistici.org")
+		   (smtpmail-smtp-user . "xxxx@autistici.org")
+		   (smtpmail-default-smtp-server . "smtp.autistici.org")
+		   (smtpmail-smtp-server . "smtp.autistici.org")
+		   (smtpmail-starttls-credentials '(("smtp.autistici.org" 587 nil nil)))))
+	 ,(make-mu4e-context
+	   :name "main"
+	   :enter-func (lambda () (mu4e-message "main"))
+	   :match-func (lambda (msg)
+			 (when msg
+			   (mu4e-message-contact-field-matches msg
+							       :to "xxxx@autistici.org")))
+	   :vars '((user-mail-address . "xxxx@autistici.org")
+		   (smtpmail-smtp-user . "xxxx@autistici.org")
+		   (smtpmail-default-smtp-server . "smtp.autistici.org")
+		   (smtpmail-smtp-server . "smtp.autistici.org")
+		   (smtpmail-starttls-credentials '(("smtp.autistici.org" 587 nil nil)))))
+	 ,(make-mu4e-context
+	   :name "uni"
+	   :enter-func (lambda () (mu4e-message "uni"))
+	   :match-func (lambda (msg)
+			 (when msg
+			   (mu4e-message-contact-field-matches msg
+							       :to "xxxx@qub.ac.uk")))
+	   :vars '((user-mail-address . "xxxx@qub.ac.uk")
+		   (smtpmail-smtp-user . "xxxx@ads.qub.ac.uk")
+		   (smtpmail-smtp-server . "smtp.office365.com")
+		   (smtpmail-starttls-credentials . '(("smtp.office365.com" 587 nil nil)))))))
+
+;; This sets `mu4e-user-mail-address-list' to the concatenation of all
+;; `user-mail-address' values for all contexts. If you have other mail
+;; addresses as well, you'll need to add those manually.
+
+(setq mu4e-user-mail-address-list
+      (delq nil
+	    (mapcar (lambda (context)
+		      (when (mu4e-context-vars context)
+			(cdr (assq 'user-mail-address (mu4e-context-vars context)))))
+		    mu4e-contexts)))
 
 ;; ==================================================================
 ;; default settings
@@ -55,8 +99,10 @@
 (setq mu4e-compose-dont-reply-to-self t)
 (setq mu4e-view-show-addresses t)
 (setq mu4e-headers-date-format "%d %b %Y %R")
-(setq mu4e-html2text-command "w3m -I utf8 -O utf8 -T text/html")
 (setq mu4e-compose-signature "Jonathan")
+(setq mu4e-html2text-command (when (fboundp 'w3m)
+			       (lambda ()
+				 (w3m-region (point-min) (point-max)))))
 
 ;; enable inline images
 
@@ -179,20 +225,11 @@ bound to \\[message-goto-body] in the message buffer."
 (define-key mu4e-compose-mode-map (kbd "C-c u") 'mu4e-shorten-url)
 (define-key mu4e-compose-mode-map (kbd "C-c .") 'mu4e-trim-posting)
 (define-key mu4e-compose-mode-map (kbd "C-c C-x f") 'Footnote-add-footnote)
-
 (define-key mu4e-main-mode-map (kbd "q") 'bury-buffer)
 (define-key mu4e-main-mode-map (kbd "x") 'mu4e-quit)
 
 (define-key mu4e-view-mode-map (kbd "RET") 'jag/scroll-up)
 (define-key mu4e-view-mode-map (kbd "<backspace>") 'jag/scroll-down)
-
-;; enable encryption; C-c C-e s (sign); C-c C-e e (encrypt); C-c C-e v
-;; (verify); C-c C-e d (decrypt)
-
-(add-hook 'mu4e-compose-mode-hook 'epa-mail-mode)
-(add-hook 'mu4e-view-mode-hook 'epa-mail-mode)
-(define-key mu4e-view-mode-map (kbd "C-c C-e v") 'epa-mail-verify)
-(define-key mu4e-view-mode-map (kbd "C-c C-e d") 'epa-mail-decrypt)
 
 ;; maildirs frequently used; access them with 'j' ('jump')
 
@@ -201,6 +238,12 @@ bound to \\[message-goto-body] in the message buffer."
 	("/drafts" .  ?d)
 	("/trash" .   ?t)
 	("/archive" . ?a)))
+
+;; enable encryption; C-c C-e s (sign); C-c C-e e (encrypt); C-c C-e v
+;; (verify); C-c C-e d (decrypt)
+
+(add-hook 'mu4e-compose-mode-hook 'epa-mail-mode)
+(add-hook 'mu4e-view-mode-hook 'epa-mail-mode)
 
 ;; ==================================================================
 ;; ˚˚ bookmarks
@@ -239,7 +282,9 @@ bound to \\[message-goto-body] in the message buffer."
 	("view in browser" . mu4e-action-view-in-browser)))
 
 (setq mu4e-headers-actions
-      '(("tag" . mu4e-action-retag-message)
+      '(("capture action" . jag/mu4e-capture-message)
+	("appt" . jag/mu4e-capture-appt)
+	("tag" . mu4e-action-retag-message)
 	("showThread" . mu4e-action-show-thread)
 	("hold" . mu4e-action-tag-hold)
 	("untagHold" . mu4e-action-untag-hold)))
@@ -276,7 +321,7 @@ bound to \\[message-goto-body] in the message buffer."
 
 (setq bbdb-file "~/.bbdb")
 (setq bbdb-mail-user-agent (quote message-user-agent))
-(setq mu4e-view-mode-hook (quote (bbdb-mua-auto-update visual-line-mode)))
+(add-hook 'mu4e-view-mode-hook '(lambda () (bbdb-mua-auto-update)))
 (setq mu4e-compose-complete-addresses nil)
 (setq bbdb-completion-display-record nil)
 (setq bbdb-phone-label-list (quote ("work" "home" "mobile" "other")))
