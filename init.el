@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-04-13>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-04-22>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -595,6 +595,19 @@ If the *scratch* buffer does not exist, create one."
 		    (start-process "preview" nil "qlmanage" "-p"
 				   (dired-get-file-for-visit))) dired-mode-map)
 
+;; unmount disk from dired http://is.gd/ZILXy2
+
+(defun dired-unmount-device ()
+  "Unmount disk from dired."
+  (interactive)
+  (save-window-excursion
+    (let ((unmount (cond ((eq system-type 'gnu/linux) "umount")
+			 ((eq system-type 'darwin) "diskutil unmount"))))
+      (dired-do-async-shell-command unmount current-prefix-arg
+				    (dired-get-marked-files t current-prefix-arg)))))
+
+(bind-key "E" 'dired-unmount-device dired-mode-map)
+
 ;; open file using default application
 
 (defun xah-open-in-external-app (&optional file)
@@ -888,11 +901,11 @@ The maximum frame height is defined by the variable
 
 (defun jag/scroll-other-window ()
   (interactive)
-  (smooth-scroll/scroll-other-window 1))
+  (smooth-scroll/scroll-other-window 2))
 
- (defun jag/scroll-other-window-down ()
+(defun jag/scroll-other-window-down ()
   (interactive)
-  (smooth-scroll/scroll-other-window-down 1))
+  (smooth-scroll/scroll-other-window-down 2))
 
 ;; ==================================================================
 ;; ˚˚ citation, bibliography and cross-reference
@@ -911,6 +924,7 @@ The maximum frame height is defined by the variable
   (use-package doi-utils
     :config
     (setq doi-utils-timestamp-format-function nil)
+    (setq doi-utils-dx-doi-org-url "https://dx.doi.org/")
     (setq doi-utils-make-notes nil))
   (setq org-ref-bibliography-notes "~/Documents/org/annotation.org"
         org-ref-default-bibliography '("~/Documents/org/refs.bib")
@@ -946,19 +960,19 @@ The maximum frame height is defined by the variable
   :config
   (setq bibtex-completion-bibliography '("~/Documents/org/refs.bib"
 					 "~/Documents/org/misc.bib")
-        bibtex-completion-library-path '("~/Documents/papers" "~/Desktop/ANTH/Lanmann")
+        bibtex-completion-library-path '("~/Documents/papers" "~/Desktop/ANTH/papers")
         bibtex-completion-notes-path "~/Documents/org/annotation.org")
   (setq helm-bibtex-full-frame nil)
   (setq bibtex-completion-number-of-optional-arguments 1)
   (setq bibtex-completion-cite-default-as-initial-input t)
   (setq bibtex-completion-additional-search-fields '(keywords))
   (setq bibtex-completion-notes-template-one-file
-        "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\n\n")
+        "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\ncite:${=key=}\n")
   (setq bibtex-completion-fallback-options
         (quote (("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
 		("CrossRef                                  (biblio.el)" lambda nil
 		 (biblio-lookup #'biblio-crossref-backend helm-pattern))
-		("Retrieve bibtex" . retrieve-bibtex)
+		("Retrieve bibtex                           (doi-utils.el)" . retrieve-bibtex)
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
   ;; press C-o to go to the next source
@@ -981,7 +995,8 @@ The maximum frame height is defined by the variable
 
   ;; format citation style
   (setq bibtex-completion-format-citation-functions
-        '((org-mode . bibtex-completion-format-citation-org-ref)))
+	'((org-mode . bibtex-completion-format-citation-org-ref)
+	  (default  . bibtex-completion-format-citation-cite))))
 
 (use-package helm-bibtex-ext
   :bind ("C-c h" . helm-bibtex-show-notes)
@@ -1143,7 +1158,7 @@ take any."
                         '(("\\(\\\\cite\\)" . font-lock-keyword-face)
                           ("\\[\\([0-9]+\\)\\]" . font-lock-variable-name-face)
                           ("\\[\\([0-9]+-[0-9]+\\)\\]" . font-lock-variable-name-face) ;ie [34-35]
-                          ("\\s-*[[:upper:]]+[a-zA-Z-]+[0-9]+[a-z]*" . font-lock-constant-face)))
+                          ("\\<[[:upper:]]\w*[a-z]+[0-9]...[a-z]+" . font-lock-constant-face)))
 (font-lock-add-keywords 'org-mode
                         '(("\\(\\\\citep\\)" . font-lock-keyword-face)))
 (font-lock-add-keywords 'org-mode
@@ -1233,7 +1248,7 @@ take any."
 
 (use-package guru-mode
   :diminish guru-mode
-  :config (guru-global-mode 1))
+  :config (guru-global-mode +1))
 
 ;; markdown-mode
 
@@ -2299,6 +2314,18 @@ possible date string replacements."
   (interactive)
   (display-time-world)
   (other-window 1))
+
+(defun toggle-time (arg)
+  "Toggle display of time in the modeline.
+With a prefix ARG, display both date and time."
+  (interactive "P")
+  (if (null display-time-mode)
+      (progn
+	(when arg
+	  (setq display-time-format " %a %d %b %H:%M "))
+	(display-time-mode 1))
+    (display-time-mode 0)
+    (setq display-time-format " %R ")))
 
 ;; ==================================================================
 ;; ˚˚ frame and window
