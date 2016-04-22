@@ -1077,18 +1077,15 @@ take any."
   :config
   (bind-key "C-c u" 'latex-preview-pane-mode LaTeX-mode-map))
 
+;; Emacs support library for PDF files
+
+(use-package pdf-tools
+  :config (pdf-tools-install))
+
 ;; set PATH
 
 (setenv "PATH" (concat (getenv "PATH") ":/usr/texbin"))
 (setq exec-path (append exec-path '("/usr/texbin")))
-
-(use-package doc-view
-  :config
-  (setq doc-view-continuous t)
-  (setq doc-view-resolution 300)
-  ;; automatically update when making changes
-  (add-hook 'doc-view-mode-hook 'auto-revert-mode))
-
 (setenv "PATH" (concat "/usr/texbin:/usr/local/bin:" (getenv "PATH")))
 (setq exec-path (append '("/usr/texbin" "/usr/local/bin") exec-path))
 
