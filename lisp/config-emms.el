@@ -147,13 +147,25 @@ a positive number."
 ;; emms modeline display
 ;; http://metasyntax.net/guides/emacs.html
 
+(defvar emms-max-title-chars 36
+  "The title's maximum number of characters.
+When exceeding this number, truncate the title displayed in the
+modeline.")
+
 (setq emms-mode-line-mode-line-function
       (lambda nil
 	(let ((track (emms-playlist-current-selected-track)))
-          (let ((title (emms-track-get track 'info-title))
-		(radio (cdr (nth 1 track))))
+          (let* ((title (emms-track-get track 'info-title))
+		 (length (length title))
+		 (tocut (- length emms-max-title-chars))
+		 (radio (cdr (nth 1 track))))
             (if (not (null title))
-		(format emms-mode-line-format title)
+		(if (< emms-max-title-chars length)
+		    (let ((title-short
+			   (replace-regexp-in-string "[ \t\n]*\\'" ""
+						     (substring title 0 (- tocut)))))
+		      (format emms-mode-line-format (concat title-short "…")))
+		  (format emms-mode-line-format title))
               (if (string= "streamlist" radio)
 		  (let* ((url (cdr (nth 2 track)))
 			 (name (replace-regexp-in-string ".*\/" "" url)))
