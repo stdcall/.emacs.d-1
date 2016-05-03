@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-04-22>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-03>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -109,7 +109,7 @@ With a prefix ARG, prompt for a new font."
 
 ;; cycle through this set of themes
 
-(setq my-themes '(bliss gotham))
+(setq my-themes '(gotham bliss))
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme (&optional arg)
@@ -347,7 +347,7 @@ string."
   (setq projectile-completion-system 'helm)
   (setq projectile-mode-line
         '(:eval
-          (format " Proj[%s]"
+          (format " ρ:[%s]"
                   (projectile-project-name)))))
 
 (use-package helm-projectile
@@ -936,14 +936,14 @@ The maximum frame height is defined by the variable
         "\n** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
   ;; custom open notes function
   (setq org-ref-open-notes-function
-        (lambda nil
+        (lambda ()
           (org-show-entry)
           (org-narrow-to-subtree)
           (show-children)
           (outline-previous-visible-heading 1)
           (recenter-top-bottom 0)
           (show-children)
-	  (helm-bibtex-notes-mode 1)))
+	  (bibtex-completion-notes-mode 1)))
 
   (defun retrieve-bibtex ()
     (doi-utils-add-entry-from-crossref-query
@@ -1065,7 +1065,7 @@ take any."
   ;;; use Skim as default pdf viewer
   ;; option -b highlights the current line; option -g opens Skim in the background
   (setq TeX-view-program-list
-        '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b %n %o %b")))
+        '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline %n %o %b")))
   (setq TeX-view-program-selection '((output-pdf "PDF Viewer"))))
 
 (use-package server
@@ -1103,6 +1103,15 @@ take any."
 		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
 		 ("\\paragraph{%s}" . "\\paragraph*{%s}")
 		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+  (add-to-list 'org-latex-classes
+             '("koma-article"
+               "\\documentclass{scrartcl}"
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")
+               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
   (add-to-list 'org-latex-classes
 	       '("koma-report"
