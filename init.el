@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-03>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-04>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -162,7 +162,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 ;; ==================================================================
 
 (setq user-emacs-directory (file-truename "~/.emacs.d/"))
-(setq default-directory "~/Documents/org/")
+(setq default-directory "~/org/")
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (add-to-list 'load-path "~/.emacs.d/site-lisp/")
 (setq delete-by-moving-to-trash t
@@ -770,7 +770,7 @@ The app is chosen from your OS's preference."
   ;; (key-chord-mode 1)
   (key-chord-define-global "jk" "Cape Town")
   (key-chord-define-global "jl" "South Africa")
-  (key-chord-define-global "jj" (lambda() (interactive) (find-file "~/Documents/org/todo.org")))
+  (key-chord-define-global "jj" (lambda() (interactive) (find-file "~/org/todo.org")))
   ;; avoid using the shift key
   (key-chord-define-global "1q" "!")
   (key-chord-define-global "2w" "@")
@@ -918,17 +918,17 @@ The maximum frame height is defined by the variable
 ;; org-ref for managing citations
 
 (use-package org-ref
-  :load-path "~/Documents/git/org-ref"
-  :load-path "~/Documents/git/helm-bibtex"
+  :load-path "~/git/org-ref"
+  :load-path "~/git/helm-bibtex"
   :init
   (use-package doi-utils
     :config
     (setq doi-utils-timestamp-format-function nil)
     (setq doi-utils-dx-doi-org-url "https://dx.doi.org/")
     (setq doi-utils-make-notes nil))
-  (setq org-ref-bibliography-notes "~/Documents/org/annotation.org"
-        org-ref-default-bibliography '("~/Documents/org/refs.bib")
-        org-ref-pdf-directory "~/Documents/papers/")
+  (setq org-ref-bibliography-notes "~/org/annotation.org"
+        org-ref-default-bibliography '("~/org/refs.bib")
+        org-ref-pdf-directory "~/papers/")
   (setq org-ref-cite-onclick-function 'org-ref-cite-click-helm)
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
   (setq org-ref-show-citation-on-enter nil)
@@ -955,13 +955,13 @@ The maximum frame height is defined by the variable
 ;; individually
 
 (use-package helm-bibtex
-  :load-path "~/Documents/git/helm-bibtex"
+  :load-path "~/git/helm-bibtex"
   :bind* ("C-c C-j" . helm-bibtex)
   :config
-  (setq bibtex-completion-bibliography '("~/Documents/org/refs.bib"
-					 "~/Documents/org/misc.bib")
-        bibtex-completion-library-path '("~/Documents/papers" "~/Desktop/ANTH/papers")
-        bibtex-completion-notes-path "~/Documents/org/annotation.org")
+  (setq bibtex-completion-bibliography '("~/org/refs.bib"
+					 "~/org/misc.bib")
+        bibtex-completion-library-path '("~/papers" "~/org/ANT1004/papers")
+        bibtex-completion-notes-path "~/org/annotation.org")
   (setq helm-bibtex-full-frame nil)
   (setq bibtex-completion-number-of-optional-arguments 1)
   (setq bibtex-completion-cite-default-as-initial-input t)
@@ -969,10 +969,10 @@ The maximum frame height is defined by the variable
   (setq bibtex-completion-notes-template-one-file
         "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\ncite:${=key=}\n")
   (setq bibtex-completion-fallback-options
-        (quote (("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
+        (quote (("CrossRef                                  (doi-utils.el)" . retrieve-bibtex)
 		("CrossRef                                  (biblio.el)" lambda nil
 		 (biblio-lookup #'biblio-crossref-backend helm-pattern))
-		("Retrieve bibtex                           (doi-utils.el)" . retrieve-bibtex)
+		("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
   ;; press C-o to go to the next source
@@ -1069,7 +1069,9 @@ take any."
   (setq TeX-view-program-selection '((output-pdf "PDF Viewer"))))
 
 (use-package server
-  :init (server-start))
+  :config
+  (unless (server-running-p)
+    (server-start)))
 
 ;; latex preview pane
 
@@ -1338,13 +1340,13 @@ take any."
 (use-package tea-time
   :bind ("C-c C-x C-;" . tea-time)
   :config
-  (setq tea-time-sound "~/Documents/archive/audio/bell.wav")
+  (setq tea-time-sound "~/archive/audio/bell.wav")
   (setq tea-time-sound-command "mplayer -volume 0.5 %s"))
 
 ;; meditation timer
 
 (use-package org-meditation
-  :load-path "~/Documents/git/org-meditation"
+  :load-path "~/git/org-meditation"
   :config (bind-key "1" 'org-meditation org-agenda-mode-map))
 
 ;; transcribe audio
@@ -1503,14 +1505,14 @@ take any."
 ;; ˚˚ org agenda settings
 ;; ==================================================================
 
-(setq org-agenda-files (quote ("~/Documents/org/todo.org"
-                               "~/Documents/org/notes.org"
-                               "~/Documents/org/fieldwork.org"
-                               "~/Documents/org/annotation.org"
-                               "~/Documents/org/draft.org"
-			       "~/Documents/org/anth1004.org"
-                               ;; "~/Documents/org/contacts.org"
-			       "~/Documents/org/analysis.org")))
+(setq org-agenda-files (quote ("~/org/todo.org"
+                               "~/org/notes.org"
+                               "~/org/fieldwork.org"
+                               "~/org/annotation.org"
+                               "~/org/draft.org"
+			       "~/org/anth1004.org"
+                               ;; "~/org/contacts.org"
+			       "~/org/analysis.org")))
 (setq org-agenda-remove-tags t)
 (setq org-agenda-tags-column -125)
 (setq org-agenda-skip-function
@@ -1662,15 +1664,15 @@ Reposition the block to the top of the window."
 	  ("r" "Reference" entry (file+headline "~/Documents/org/notes.org" "In-basket")
 	   "** %^{Description} %^g\n%?" :prepend t)
 
-	  ("b" "Bookmark" plain (file+headline "~/Documents/org/todo.org" "Bookmarks")
+	  ("b" "Bookmark" plain (file+headline "~/org/todo.org" "Bookmarks")
 	   "- %?" :prepend t)
 
-	  ("n" "Note" entry (file+headline "~/Documents/org/todo.org" "Notes")
+	  ("n" "Note" entry (file+headline "~/org/todo.org" "Notes")
 	   "** %?%i\n%U" :prepend t)
 
 	  ("l" "Ledger")
 
-	  ("le" "Expenses" plain (file+headline "~/Documents/org/ledger.org" "Expenses")
+	  ("le" "Expenses" plain (file+headline "~/org/ledger.org" "Expenses")
 	   "
 #+name: expenses
 #+begin_src ledger
@@ -1680,7 +1682,7 @@ Reposition the block to the top of the window."
 #+end_src\n
 " :prepend t)
 
-	  ("li" "Income" plain (file+headline "~/Documents/org/ledger.org" "Income")
+	  ("li" "Income" plain (file+headline "~/org/ledger.org" "Income")
 	   "
 #+name: income
 #+begin_src ledger
@@ -1690,13 +1692,13 @@ Reposition the block to the top of the window."
 #+end_src\n
 " :prepend t)
 
-	  ("d" "Diary" entry (file+headline "~/Documents/org/fieldwork.org" "Diary")
+	  ("d" "Diary" entry (file+headline "~/org/fieldwork.org" "Diary")
 	   "** %(format-time-string \"%Y-%m-%d %b %H:%M\")\n\n%? %^{Effort}p" :clock-in t)
 
-	  ("f" "Fieldnote" entry (file+headline "~/Documents/org/fieldwork.org" "Fieldnotes")
+	  ("f" "Fieldnote" entry (file+headline "~/org/fieldwork.org" "Fieldnotes")
 	   "** %(format-time-string \"%d %b %Y\")\n%? %^{Effort}p" :clock-in t)
 
-	  ("c" "Contact" entry (file+headline "~/Documents/org/contacts.org" "Contacts")
+	  ("c" "Contact" entry (file+headline "~/org/contacts.org" "Contacts")
 	   "** %(org-contacts-template-name)
 :PROPERTIES:
 :EMAIL: %(org-contacts-template-email)
@@ -1704,25 +1706,25 @@ Reposition the block to the top of the window."
 :NOTES: %^{notes}
 :END:" :prepend t)
 
-	  ("a" "Appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
+	  ("a" "Appt" entry (file+headline "~/org/todo.org" "Appointments")
 	   "** %^{Description}\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%?" :prepend t)
 
-	  ("h" "Habit" entry (file+headline "~/Documents/org/todo.org" "Habits")
+	  ("h" "Habit" entry (file+headline "~/org/todo.org" "Habits")
 	   "** TODO %?\n   SCHEDULED: %t\n:PROPERTIES:\n:STYLE: habit\n:END:" :prepend t)
 
-	  ("&" "Email" entry (file+headline "~/Documents/org/todo.org" "Tasks")
+	  ("&" "Email" entry (file+headline "~/org/todo.org" "Tasks")
 	   "** TODO %? %(org-set-tags-to \"mail\")\n%a" :prepend t)
 
-	  ("^" "Email appt" entry (file+headline "~/Documents/org/todo.org" "Appointments")
+	  ("^" "Email appt" entry (file+headline "~/org/todo.org" "Appointments")
 	   "** %?\n:PROPERTIES:\n:At: %^{At}\n:END:\n%^t\n%a" :prepend t)
 
-	  ("#" "Hold" entry (file+headline "~/Documents/org/todo.org" "Tickler")
+	  ("#" "Hold" entry (file+headline "~/org/todo.org" "Tickler")
 	   "** TODO delete %a %(org-set-tags-to \"mail\")\n   SCHEDULED: %^t\n" :prepend t :immediate-finish t)
 
-	  ("F" "Fiona" entry (file+headline "~/Documents/org/orientation.org" "2016")
+	  ("F" "Fiona" entry (file+headline "~/org/orientation.org" "2016")
 	   "** Fiona %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)
 
-	  ("I" "Ioannis" entry (file+headline "~/Documents/org/orientation.org" "2016")
+	  ("I" "Ioannis" entry (file+headline "~/org/orientation.org" "2016")
 	   "** Ioannis %u\n:PROPERTIES:\n:ID: %(org-id-uuid)\n:END:\n%?" :prepend t)))
 
   ;; capture context
@@ -1744,7 +1746,7 @@ Reposition the block to the top of the window."
   :bind ("C-c d" . deft)
   :config
   (setq deft-extensions '("org"))
-  (setq deft-directory "~/Documents/org")
+  (setq deft-directory "~/org")
   (setq deft-recursive t)
   (setq deft-use-filename-as-title t)
   (setq deft-use-filter-string-for-filename t)
@@ -1766,7 +1768,7 @@ Reposition the block to the top of the window."
 
   (add-hook 'org-pomodoro-started-hook
 	  (defun org-pomodoro-kitchen-timer ()
-	    (let ((sound-file "~/Documents/archive/audio/timer-ticking.mp3"))
+	    (let ((sound-file "~/archive/audio/timer-ticking.mp3"))
 	      (call-process-shell-command
 	       (concat "mplayer " (expand-file-name sound-file)) nil 0))))
 
@@ -1822,9 +1824,9 @@ Reposition the block to the top of the window."
   :config
   (setq org-publish-project-alist
       '(("org"
-         :base-directory "~/Documents/web"
+         :base-directory "~/web"
          :base-extension "org"
-         :publishing-directory "~/Documents/web"
+         :publishing-directory "~/web"
          :publishing-function org-html-publish-to-html
          :recursive t
          :headline-levels 3
@@ -2195,7 +2197,7 @@ _M-s_: search online       ^ ^                     _P_: open browser
 
 (use-package synonyms
   :config
-  (setq synonyms-file "~/Documents/archive/mthesaur.txt")
+  (setq synonyms-file "~/archive/mthesaur.txt")
   (setq synonyms-cache-file "~/.emacs.d/mthesaur.cache")
 
   (defun thesaurus ()
