@@ -111,9 +111,14 @@ a positive number."
 	 (short-name (file-name-sans-extension
 		      (file-name-nondirectory name)))
 	 (title (or (emms-track-get track 'info-title) short-name))
-	 )
-    (format "%-46s | %-46s | %2d:%02d | %2s"
-	    title
+	 (length (length title)))
+    (format "%-50s %-50s %2d:%02d \t %2s"
+	    ;; truncate long titles in the playlist buffer
+	    (if (> length 50)
+		(concat
+		 (replace-regexp-in-string "[ ]*\\'" ""
+					   (substring title 0 48)) "…")
+	      title)
 	    artist
 	    (/ ptime 60)
 	    (% ptime 60)
