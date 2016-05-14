@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-14>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-15>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -44,16 +44,6 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tooltip-mode) (tooltip-mode -1))
-
-;; modeline
-
-(use-package powerline
-  :config
-  (use-package powerline-theme)
-  (powerline-custom-theme)
-  (setq battery-mode-line-format "[%p%%%%]")
-  (setq powerline-default-separator nil
-	powerline-display-hud nil))
 
 ;; font and frame settings
 
@@ -199,8 +189,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
   (message ""))
 
 ;; (setq debug-on-error t)
-(setq inhibit-startup-message t
-      inhibit-startup-echo-area-message t)
+(setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore)
 (setq require-final-newline t)
 (setq sentence-end-double-space nil)
@@ -782,7 +771,7 @@ The app is chosen from your OS's preference."
 (use-package key-chord
   :commands key-chord-define
   :config
-  ;; (key-chord-mode 1)
+  (key-chord-mode 1)
   (key-chord-define-global "jk" "Cape Town")
   (key-chord-define-global "jl" "South Africa")
   (key-chord-define-global "jj" (lambda() (interactive) (find-file "~/org/todo.org")))
@@ -1353,6 +1342,16 @@ take any."
     :modes (text-mode markdown-mode gfm-mode))
   (add-to-list 'flycheck-checkers 'proselint))
 
+;; modeline
+
+(use-package powerline
+  :config
+  (require 'powerline-theme)
+  (powerline-custom-theme)
+  (setq battery-mode-line-format "[%p%%%%]")
+  (setq powerline-default-separator nil
+	powerline-display-hud nil))
+
 ;; ==================================================================
 ;; ˚˚ news and mail
 ;; ==================================================================
@@ -1397,13 +1396,6 @@ take any."
 (use-package org-meditation
   :load-path "~/git/org-meditation"
   :config (bind-key "1" 'org-meditation org-agenda-mode-map))
-
-;; transcribe audio
-
-(use-package transcribe
-  :config
-  (setq transcribe-interviewer "Jonathan")
-  (setq transcribe-interviewee "Interviewee"))
 
 ;; LilyPond for writing music scores
 
