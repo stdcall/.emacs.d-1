@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-04>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-14>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -44,6 +44,16 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tooltip-mode) (tooltip-mode -1))
+
+;; modeline
+
+(use-package powerline
+  :config
+  (use-package powerline-theme)
+  (powerline-custom-theme)
+  (setq battery-mode-line-format "[%p%%%%]")
+  (setq powerline-default-separator nil
+	powerline-display-hud nil))
 
 ;; font and frame settings
 
@@ -185,8 +195,12 @@ With a prefix ARG, cycle randomly through a list of available themes."
 ;; ˚˚ default settings
 ;; ==================================================================
 
+(defun display-startup-echo-area-message ()
+  (message ""))
+
 ;; (setq debug-on-error t)
-(setq inhibit-startup-message t)
+(setq inhibit-startup-message t
+      inhibit-startup-echo-area-message t)
 (setq ring-bell-function 'ignore)
 (setq require-final-newline t)
 (setq sentence-end-double-space nil)
@@ -196,10 +210,12 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq display-time-format " %R ")
 (setq display-time-default-load-average nil)
 (setq display-time-24hr-format t)
+(setq mouse-wheel-progressive-speed nil)
+(setq frame-resize-pixelwise t)
 
 ;; backup settings
 
-(setq backup-directory-alist '(("." . "~/Documents/org/.backups")))
+(setq backup-directory-alist '(("." . "~/org/.backups")))
 (setq delete-old-versions t)
 (setq delete-by-moving-to-trash t)
 (setq version-control t)
@@ -237,11 +253,9 @@ With a prefix ARG, cycle randomly through a list of available themes."
 
 ;; scratch buffer mode and message
 
-(use-package org)
-
 (setq initial-major-mode 'lisp-interaction-mode)
 (setq initial-scratch-message
-      (concat ";; GNU Emacs " emacs-version " (Org mode " org-version")\n\n"))
+      (concat ";; GNU Emacs " emacs-version "\n\n"))
 
 ;; ==================================================================
 ;; ˚˚ files, projects, searches and commands
@@ -252,7 +266,8 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (use-package helm
   :bind ("C-r" . helm-resume)
   :config
-  (require 'helm-config)
+  (use-package org)
+  (use-package helm-config)
   (helm-autoresize-mode 1)
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
@@ -262,8 +277,8 @@ With a prefix ARG, cycle randomly through a list of available themes."
   (setq helm-autoresize-min-height 25)
   (bind-key "C-;" 'helm-org-in-buffer-headings org-mode-map)
   (bind-keys :map helm-map
-	     ("C-e"   . helm-select-2nd-action)
-	     ("C-M-n" . helm-select-8th-action))
+	     ("C-r"   . helm-select-2nd-action)
+	     ("C-e" . helm-select-3rd-action))
 
   (defun helm-select-2nd-action (arg)
     "Select the 2nd action for the currently selected candidate."
@@ -274,10 +289,10 @@ With a prefix ARG, cycle randomly through a list of available themes."
     (let ((n 2))
       (helm-select-nth-action (- n 1))))
 
-  (defun helm-select-8th-action ()
-    "Select the 8th action for the currently selected candidate."
+  (defun helm-select-3rd-action ()
+    "Select the 3rd action for the currently selected candidate."
     (interactive)
-    (let ((n 8))
+    (let ((n 3))
       (helm-select-nth-action (- n 1)))))
 
 (use-package helm-swoop
@@ -434,6 +449,7 @@ string."
   (("M-s" . avy-goto-word-1)
    ("C-x SPC"   . avy-goto-line))
   :config
+  (setq avy-background t)
   (setq avy-keys-alist
 	`((avy-goto-word-1 . (?j ?k ?l ?\; ?a ?s ?d))
 	  (avy-goto-line   . (?j ?k ?l ?\; ?a ?s)))))
@@ -638,12 +654,12 @@ The app is chosen from your OS's preference."
 ;; ==================================================================
 
 (bind-key "C-o" 'ido-find-file)
-(bind-key "C-M-o" 'helm-find-files)
 (bind-key "C-x C-k" 'kill-or-bury-this-buffer)
 (bind-key "C-c R" 'rename-file-and-buffer)
 (bind-key "M-c" 'kill-ring-save)
 (bind-key "M-m" 'capitalize-word)
 (bind-key "M-v" 'yank)
+(bind-key "C-M-;" 'split-line)
 (bind-key "C-c x" 'calendar)
 (bind-key "C-c f" 'reveal-in-finder)
 (bind-key "C-c <C-return>" 'xah-open-in-external-app)
@@ -713,7 +729,6 @@ The app is chosen from your OS's preference."
 (bind-key "M-DEL" 'backward-delete-word)
 (bind-key "M-j" 'delete-backward-char)	; was indent-new-comment-line
 (bind-key "µ" 'indent-new-comment-line)	; alt-m
-(bind-key "C-j" 'org-return org-mode-map) ; instead of org-return-indent
 (bind-key "C-M-p" 'org-toggle-link-display org-mode-map)
 
 ;; help commands
@@ -798,7 +813,7 @@ The app is chosen from your OS's preference."
 	   ("u"   . boxquote-unbox)
 	   ("w"   . display-time-world-and-focus)
 	   ("f"   . switch-font)
-	   ("j"   . switch-to-scratch-and-back)
+	   ("M-j" . switch-to-scratch-and-back)
 	   ("M-q" . unfill-paragraph))
 
 ;; quickly switch between dictionaries
@@ -915,6 +930,11 @@ The maximum frame height is defined by the variable
 
 (use-package config-bibtex)
 
+;; citation utilities
+
+(use-package citation-utils
+  :bind* ("C-c C-j" . power-ref))
+
 ;; org-ref for managing citations
 
 (use-package org-ref
@@ -926,6 +946,7 @@ The maximum frame height is defined by the variable
     (setq doi-utils-timestamp-format-function nil)
     (setq doi-utils-dx-doi-org-url "https://dx.doi.org/")
     (setq doi-utils-make-notes nil))
+  (use-package org-ref-isbn)
   (setq org-ref-bibliography-notes "~/org/annotation.org"
         org-ref-default-bibliography '("~/org/refs.bib")
         org-ref-pdf-directory "~/papers/")
@@ -934,6 +955,7 @@ The maximum frame height is defined by the variable
   (setq org-ref-show-citation-on-enter nil)
   (setq org-ref-note-title-format
         "\n** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
+
   ;; custom open notes function
   (setq org-ref-open-notes-function
         (lambda ()
@@ -944,6 +966,22 @@ The maximum frame height is defined by the variable
           (recenter-top-bottom 0)
           (show-children)
 	  (bibtex-completion-notes-mode 1)))
+
+  (setq org-ref-notes-function
+	(lambda (thekey)
+	  (bibtex-completion-edit-notes (car (org-ref-get-bibtex-key-and-file thekey)))))
+
+  (defun my/org-ref-open-pdf-at-point ()
+    "Open the pdf for bibtex key under point if it exists."
+    (interactive)
+    (let* ((results (org-ref-get-bibtex-key-and-file))
+	   (key (car results))
+	   (pdf-file (car (bibtex-completion-find-pdf key))))
+      (if (f-file? pdf-file)
+	  (funcall bibtex-completion-pdf-open-function pdf-file)
+	(message "No PDF found for %s" key))))
+
+  (setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
 
   (defun retrieve-bibtex ()
     (doi-utils-add-entry-from-crossref-query
@@ -956,7 +994,7 @@ The maximum frame height is defined by the variable
 
 (use-package helm-bibtex
   :load-path "~/git/helm-bibtex"
-  :bind* ("C-c C-j" . helm-bibtex)
+  ;; :bind* ("C-c C-j" . helm-bibtex)
   :config
   (setq bibtex-completion-bibliography '("~/org/refs.bib"
 					 "~/org/misc.bib")
@@ -966,6 +1004,7 @@ The maximum frame height is defined by the variable
   (setq bibtex-completion-number-of-optional-arguments 1)
   (setq bibtex-completion-cite-default-as-initial-input t)
   (setq bibtex-completion-additional-search-fields '(keywords))
+  (setq bibtex-completion-notes-symbol "✓")
   (setq bibtex-completion-notes-template-one-file
         "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\ncite:${=key=}\n")
   (setq bibtex-completion-fallback-options
@@ -1013,6 +1052,9 @@ take any."
   (let* ((initial (when bibtex-completion-cite-default-as-initial-input bibtex-completion-cite-default-command))
          (default (unless bibtex-completion-cite-default-as-initial-input bibtex-completion-cite-default-command))
          (default-info (if default (format " (default \"%s\")" default) ""))
+	 ;; (cite-command (helm-comp-read
+         ;;                (format "Cite command%s: " default-info)
+         ;;                bibtex-completion-cite-commands :must-match nil :initial-input initial)))
          (cite-command (completing-read
                         (format "Cite command%s: " default-info)
                         bibtex-completion-cite-commands nil nil initial
@@ -1160,18 +1202,6 @@ take any."
 (add-to-list 'org-export-filter-headline-functions
              'org-latex-ignore-heading-filter-headline)
 
-;; better latex highlight in org-mode
-
-(font-lock-add-keywords 'org-mode
-                        '(("\\(\\\\cite\\)" . font-lock-keyword-face)
-                          ("\\[\\([0-9]+\\)\\]" . font-lock-variable-name-face)
-                          ("\\[\\([0-9]+-[0-9]+\\)\\]" . font-lock-variable-name-face) ;ie [34-35]
-                          ("\\<[[:upper:]]\w*[a-z]+[0-9]...[a-z]+" . font-lock-constant-face)))
-(font-lock-add-keywords 'org-mode
-                        '(("\\(\\\\citep\\)" . font-lock-keyword-face)))
-(font-lock-add-keywords 'org-mode
-                        '(("\\(\\\\citet\\)" . font-lock-keyword-face)))
-
 ;; ==================================================================
 ;; ˚˚ useful packages and modes
 ;; ==================================================================
@@ -1197,6 +1227,7 @@ take any."
   (setq yas-snippet-dirs (concat user-emacs-directory "snippets"))
   (yas-reload-all)
   (add-hook 'org-mode-hook #'yas-minor-mode)
+  (add-hook 'emacs-lisp-mode-hook #'yas-minor-mode)
   (unbind-key "C-c &" yas-minor-mode-map))
 
 ;; increase selected region by semantic units
@@ -1303,6 +1334,24 @@ take any."
           (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
   (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
   (multi-web-global-mode 1))
+
+(use-package flycheck
+  :diminish flycheck-mode
+  :config
+  (add-hook 'markdown-mode-hook #'flycheck-mode)
+  (add-hook 'text-mode-hook #'flycheck-mode)
+
+  (flycheck-define-checker proselint
+    "A linter for prose."
+    :command ("proselint" source-inplace)
+    :error-patterns
+    ((warning line-start (file-name) ":" line ":" column ": "
+	      (id (one-or-more (not (any " "))))
+	      (message (one-or-more not-newline)
+		       (zero-or-more "\n" (any " ") (one-or-more not-newline)))
+	      line-end))
+    :modes (text-mode markdown-mode gfm-mode))
+  (add-to-list 'flycheck-checkers 'proselint))
 
 ;; ==================================================================
 ;; ˚˚ news and mail
@@ -1417,7 +1466,6 @@ take any."
 (setq org-tags-column -50)
 (setq org-reverse-note-order t)
 (setq org-return-follows-link t)
-(setq org-src-fontify-natively t)
 (setq org-src-tab-acts-natively t)
 (setq org-src-preserve-indentation t)
 (setq org-log-into-drawer t)
@@ -1427,6 +1475,9 @@ take any."
       'create-if-interactive-and-no-custom-id) ; C-c l/C-c C-l
 (setq org-habit-graph-column 55)
 (setq org-habit-preceding-days 14)
+(setq org-highlight-latex-and-related '(latex entities))
+(setq org-link-frame-setup
+      '((file . find-file)))
 (setq org-clock-out-remove-zero-time-clocks t)
 (setq org-blank-before-new-entry '((heading . nil)
 				   (plain-list-item . nil)))
@@ -1500,6 +1551,19 @@ take any."
 
 (bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)
 (bind-key "o" 'org-agenda-clock-out org-agenda-mode-map)
+
+;; http://is.gd/ROD35v
+
+(defun my/org-return ()
+  "Disable org-return-follows-link if at bol or eol."
+  (interactive)
+  (let* ((follow org-return-follows-link)
+         (org-return-follows-link (and follow (not (or (bolp) (eolp))))))
+    (org-return)))
+
+(bind-keys :map org-mode-map
+	   ("C-m" . my/org-return)
+	   ("<return>" . my/org-return))
 
 ;; ==================================================================
 ;; ˚˚ org agenda settings
@@ -1658,10 +1722,10 @@ Reposition the block to the top of the window."
   :bind  ("C-c c" . org-capture)
   :config
   (setq org-capture-templates
-	'(("t" "Task" entry (file+headline "~/Documents/org/todo.org" "Tasks")
+	'(("t" "Task" entry (file+headline "~/org/todo.org" "Tasks")
 	   "** TODO %^{Description} %^g\n" :prepend t)
 
-	  ("r" "Reference" entry (file+headline "~/Documents/org/notes.org" "In-basket")
+	  ("r" "Reference" entry (file+headline "~/org/notes.org" "In-basket")
 	   "** %^{Description} %^g\n%?" :prepend t)
 
 	  ("b" "Bookmark" plain (file+headline "~/org/todo.org" "Bookmarks")
@@ -2069,18 +2133,6 @@ abc |ghi        <-- point still after white space after calling this function."
         (comment-region-as-kill (region-beginning) (region-end))
       (comment-dwim arg))))
 
-;; split line without moving the point
-
-(defun jag/split-line ()
-  "Split the current line without moving the point.
-The text to the right of the point is pushed down one line.
-Press \\[delete-char] to bring the text back up."
-  (interactive)
-  (save-excursion
-    (newline)))
-
-(bind-key "C-M-;" 'jag/split-line)
-
 ;; word count
 
 (defun word-count ()
@@ -2321,7 +2373,8 @@ possible date string replacements."
   "Display of times in various time zones."
   (interactive)
   (display-time-world)
-  (other-window 1))
+  (other-window 1)
+  (goto-char (point-min)))
 
 (defun toggle-time (arg)
   "Toggle display of time in the modeline.
