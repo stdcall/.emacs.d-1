@@ -2,21 +2,13 @@
 
 ;;; Commentary:
 
-;; This configuration uses mplayer and taglib. Note that adding
-;; af=scaletempo to the .mplayer config file prevents the pitch from
-;; changing when the playback speed is altered.
-;;
-;; There are a few useful commands in the playlist buffer: C
-;; emms-playlist-clear; E emms-tag-editor-edit; S t sort by title; S a
-;; sort by artist; S N sort by name.
-;;
-;; To delete a file from disk: (1) S-m to enable emms-mark-mode; (2) d
-;; to open the file in a dired buffer; (3) d to delete the file; and
-;; (4) x to execute.
+;; See: https://www.gnu.org/software/emms/manual/
+;; Also useful: https://github.com/justbur/emacs-which-key
 
 ;;; Code:
 
 (require 'emms-setup)
+(require 'emms-browser)
 (require 'emms-player-mplayer)
 (require 'emms-player-simple)
 (require 'emms-mode-line)
@@ -27,17 +19,18 @@
 (require 'emms-playlist-sort)
 (require 'emms-bookmarks)
 (require 'emms-streams)
+(require 'emms-lyrics)
 (require 'emms-mark)
 (require 'helm-emms)
-
 
 ;; ==================================================================
 ;; ˚˚ default settings
 ;; ==================================================================
 
-(emms-standard)
+(emms-all)
 (emms-default-players)
 (emms-mode-line 1)
+(emms-lyrics 1)
 (emms-playing-time 1)
 
 (setq emms-playing-time-display-format "%s")
@@ -48,24 +41,29 @@
 			 emms-player-mpg321))
 (setq emms-source-file-default-directory "~/Music/")
 (setq emms-player-mplayer-command-name "mplayer")
+(setq emms-lyrics-dir "~/Music/lyrics"
+      emms-lyrics-display-on-modeline nil)
 
 (add-hook 'emms-playlist-mode-hook 'hl-line-mode)
 
 (require 'emms-info-libtag)
-(setq emms-info-functions '(emms-info-libtag))
-(setq emms-info-libtag-program-name "/usr/bin/emms-print-metadata")
+(setq emms-info-functions '(emms-info-libtag)
+      emms-info-libtag-program-name "/usr/bin/emms-print-metadata")
 
 ;; ==================================================================
 ;; ˚˚ speed and seeking
 ;; ==================================================================
+
+;; adding af=scaletempo to the .mplayer config file makes the pitch
+;; slightly more stable when changing the playback speed
+
+(defvar emms-player-mplayer-speed-increment 0.1)
 
 (defcustom emms-seconds-to-rewind -5
   "Number of seconds to rewind. The default value is -5.")
 
 (defcustom emms-seconds-to-fast-forward +5
   "Number of seconds to fast forward. The default value is +5.")
-
-(defvar emms-player-mplayer-speed-increment 0.1)
 
 (defun emms-rewind ()
   "Rewind audio incrementally in seconds.
@@ -106,15 +104,16 @@ a positive number."
 	 (type (emms-track-type track))
 	 (short-name (file-name-nondirectory name))
 	 (artist (or (emms-track-get track 'info-artist) empty))
-	 (year (or (emms-track-get track 'info-year) empty))
+	 (artist-length (length artist))
+	 (year (or (emms-track-get track 'info-year) "0"))
 	 (ptime (or (emms-track-get track 'info-playing-time) 0))
 	 (short-name (file-name-sans-extension
 		      (file-name-nondirectory name)))
 	 (title (or (emms-track-get track 'info-title) short-name))
-	 (length (length title)))
+	 (title-length (length title)))
     (format "%-50s %-50s %2d:%02d \t %2s"
 	    ;; truncate long titles in the playlist buffer
-	    (if (> length 50)
+	    (if (> title-length 50)
 		(concat
 		 (replace-regexp-in-string "[ ]*\\'" ""
 					   (substring title 0 48)) "…")
@@ -190,6 +189,41 @@ buffer."
   (delete-other-windows))
 
 ;; ==================================================================
+;; ˚˚ lyrics
+;; ==================================================================
+
+(add-to-list 'auto-mode-alist '("\\.lrc$" . emms-lyrics-mode))
+(define-key emms-lyrics-mode-map (kbd "C-c C-q") 'emms-lyrics-mode-quit)
+
+(defun emms-lookup-lyrics ()
+  "Display lyrics of the current track.
+If no file is found, lookup online."
+  (interactive)
+  (let* ((track (emms-playlist-current-selected-track))
+	 (name (cdr (assoc 'name track)))
+	 (artist (cdr (assoc 'info-artist track)))
+	 (title (cdr (assoc 'info-title track)))
+	 (lyrics (emms-lyrics-find-lyric title)))
+    (if lyrics
+	(find-file lyrics)
+      ;; (emms-lyrics-visit-lyric)
+      (if (y-or-n-p "Add new lyric?")
+	  (progn (find-file (format "%s/%s.lrc" emms-lyrics-dir title))
+		 (insert (format "%s - %s\n\n" title artist))
+		 (browse-url
+		  (format
+		   "https://duckduckgo.com/?q=letra+%s+%s" title artist)))
+	(browse-url
+	 (format
+	  "https://duckduckgo.com/?q=letra+%s+%s" title artist))))))
+
+(defun emms-lyrics-mode-quit ()
+  "Kill lyrics buffer and resume emms."
+  (interactive)
+  (kill-this-buffer)
+  (emms-playlist-mode-go))
+
+;; ==================================================================
 ;; ˚˚ misc utils
 ;; ==================================================================
 
@@ -229,19 +263,43 @@ buffer."
 
 (setq emms-volume-change-function 'jag/emms-volume-change-function)
 
+;; sort emms playlist by play-count, decreasingly
+
+(setq emms-playlist-sort-function '(lambda ()
+                                     (let ((current-prefix-arg t))
+                                       (emms-playlist-sort-by-play-count))))
+
+(defadvice emms (after call-interactively activate)
+  (emms-sort))
+
+(defun emms-current-track ()
+  "Return a description of the current track."
+  (interactive)
+  (let* ((track (emms-playlist-current-selected-track))
+	 (name (cdr (assoc 'name track)))
+	 (filename (file-name-nondirectory
+		    (file-name-sans-extension name)))
+	 ;; (play-count (cdr (assoc 'play-count track)))
+	 (artist (cdr (assoc 'info-artist track)))
+	 (title (cdr (assoc 'info-title track))))
+    (if (and title artist)
+	(message (format "%s - %s" title artist))
+      (message (format "%s" filename)))))
+
 ;; ==================================================================
 ;; ˚˚ key bindings
 ;; ==================================================================
 
+(global-set-key (kbd "M-p e") 'emms-playlist-mode-go)
 (global-set-key (kbd "M-p h") 'helm-emms)
-(global-set-key (kbd "M-p e") 'emms)
+(global-set-key (kbd "M-p b") 'emms-smart-browse)
 (global-set-key (kbd "M-p RET") 'emms-add-file)
 (global-set-key (kbd "M-p f") 'emms-add-directory)
 (global-set-key (kbd "M-p p") 'emms-start)
 (global-set-key (kbd "M-p s") 'emms-stop)
 (global-set-key (kbd "M-p SPC") 'emms-pause)
-(global-set-key (kbd "M-p ]") 'emms-next)
-(global-set-key (kbd "M-p [") 'emms-previous)
+(global-set-key (kbd "M-p M-]") 'emms-next)
+(global-set-key (kbd "M-p M-[") 'emms-previous)
 
 (global-set-key (kbd "M-p a") 'emms-bookmarks-add)
 (global-set-key (kbd "M-p ,") 'emms-bookmarks-prev)
@@ -261,19 +319,19 @@ buffer."
 (define-key emms-playlist-mode-map (kbd "SPC") 'emms-pause)
 (define-key emms-playlist-mode-map (kbd "M") 'emms-mark-mode)
 (define-key emms-playlist-mode-map (kbd "j") 'swiper)
+(define-key emms-playlist-mode-map (kbd "l") 'emms-lookup-lyrics)
 
 (define-key emms-tag-editor-mode-map (kbd "C-.") 'emms-tag-editor-next-same-field)
 (define-key emms-tag-editor-mode-map (kbd "C-,") 'emms-tag-editor-prev-same-field)
+(define-key emms-tag-editor-mode-map (kbd "C-c C-c") 'emms-tag-editor-submit-and-exit-2)
 
 (global-set-key (kbd "M-p j") 'emms-rewind)
 (global-set-key (kbd "M-p k") 'emms-fast-forward)
 (global-set-key (kbd "M-p m") 'emms-open-music-directory)
 (global-set-key (kbd "M-p l") 'emms-default-playlist)
 
-(global-set-key (kbd "M-p v") 'emms-player-mplayer-slow-down)
-(global-set-key (kbd "M-p ^") 'emms-player-mplayer-speed-up)
-
-(define-key emms-tag-editor-mode-map (kbd "C-c C-c") 'emms-tag-editor-submit-and-exit-2)
+(global-set-key (kbd "M-p u") 'emms-player-mplayer-speed-up)
+(global-set-key (kbd "M-p d") 'emms-player-mplayer-slow-down)
 
 (provide 'config-emms)
 ;;; config-emms.el ends here
