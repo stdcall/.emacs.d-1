@@ -225,6 +225,7 @@ bound to \\[message-goto-body] in the message buffer."
 (define-key mu4e-compose-mode-map (kbd "C-c u") 'mu4e-shorten-url)
 (define-key mu4e-compose-mode-map (kbd "C-c .") 'mu4e-trim-posting)
 (define-key mu4e-compose-mode-map (kbd "C-c C-x f") 'Footnote-add-footnote)
+
 (define-key mu4e-main-mode-map (kbd "q") 'bury-buffer)
 (define-key mu4e-main-mode-map (kbd "x") 'mu4e-quit)
 
@@ -239,8 +240,19 @@ bound to \\[message-goto-body] in the message buffer."
 	("/trash" .   ?t)
 	("/archive" . ?a)))
 
-;; enable encryption; C-c C-e s (sign); C-c C-e e (encrypt); C-c C-e v
-;; (verify); C-c C-e d (decrypt)
+;; ==================================================================
+;; ˚˚ encryption
+;; ==================================================================
+
+;;; PGP/MIME
+;; C-c C-m C-s (sign)
+;; C-c C-m C-e (sign and encrypt)
+
+;;; PGP inline
+;; C-c C-e s (sign)
+;; C-c C-e e (encrypt)
+;; C-c C-e v (verify)
+;; C-c C-e d (decrypt)
 
 (add-hook 'mu4e-compose-mode-hook 'epa-mail-mode)
 (add-hook 'mu4e-view-mode-hook 'epa-mail-mode)
@@ -259,7 +271,7 @@ bound to \\[message-goto-body] in the message buffer."
 	("date:30d..now AND NOT flag:trashed AND NOT maildir:/sent" "Last 30 days" ?m)
 	("tag:hold OR flag:flagged" "Messages on hold" ?h)
 	("flag:attach AND NOT list:*" "Messages with attachment" ?A)
-	("maildir:/uni" "Messages from Queen's" ?q)))
+	("maildir:/uni OR from:qub.ac.uk" "Messages from Queen's" ?q)))
 
 (add-to-list 'mu4e-bookmarks
 	     '((concat "NOT flag:trashed AND NOT maildir:/sent AND date:.."
@@ -341,7 +353,7 @@ bound to \\[message-goto-body] in the message buffer."
 ;; helm interface for BBDB
 
 (use-package helm-bbdb
-  :load-path "~/Documents/git/helm-bbdb")
+  :load-path "~/git/helm-bbdb")
 
 ;; ==================================================================
 ;; ˚˚ citation
@@ -410,13 +422,13 @@ See URL `https://is.gd/apishorteningreference.php' for additional parameters."
       (switch-to-buffer (other-buffer (current-buffer) t))
       (insert str))))
 
-;; enable notification with terminal-notifier
+;; enable notification
 
 (add-hook 'mu4e-index-updated-hook
           (lambda ()
             (let ((msg (newest-subject)))
               (unless (string-equal ": " msg)
-                (shell-command (concat "terminal-notifier -title \"New message\" -sender \"org.gnu.Emacs\" -message \"" msg "\"")))) ))
+		(alert (format "%s" msg) :title "New message")))))
 
 (defun newest-subject ()
   (let* ((mu-res (concat "(list "
