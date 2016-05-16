@@ -13,7 +13,6 @@
 (require 'emms-player-simple)
 (require 'emms-mode-line)
 (require 'emms-mode-line-icon)
-(require 'emms-info)
 (require 'emms-playing-time)
 (require 'emms-tag-editor)
 (require 'emms-playlist-sort)
@@ -46,9 +45,9 @@
 
 (add-hook 'emms-playlist-mode-hook 'hl-line-mode)
 
-(require 'emms-info-libtag)
-(setq emms-info-functions '(emms-info-libtag)
-      emms-info-libtag-program-name "/usr/bin/emms-print-metadata")
+(when (executable-find "emms-print-metadata")
+  (require 'emms-info-libtag)
+  (setq emms-info-functions '(emms-info-libtag)))
 
 ;; ==================================================================
 ;; ˚˚ speed and seeking
@@ -111,7 +110,7 @@ a positive number."
 		      (file-name-nondirectory name)))
 	 (title (or (emms-track-get track 'info-title) short-name))
 	 (title-length (length title)))
-    (format "%-50s %-50s %2d:%02d \t %2s"
+    (format "%-50s %-50s \t %2d:%02d %2s"
 	    ;; truncate long titles in the playlist buffer
 	    (if (> title-length 50)
 		(concat
@@ -269,7 +268,8 @@ If no file is found, lookup online."
                                      (let ((current-prefix-arg t))
                                        (emms-playlist-sort-by-play-count))))
 
-(defadvice emms (after call-interactively activate)
+(defadvice emms
+    (after emms-after activate)
   (emms-sort))
 
 (defun emms-current-track ()
