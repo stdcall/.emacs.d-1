@@ -110,7 +110,7 @@ a positive number."
 		      (file-name-nondirectory name)))
 	 (title (or (emms-track-get track 'info-title) short-name))
 	 (title-length (length title)))
-    (format "%-50s %-50s \t %2d:%02d %2s"
+    (format "%-50s %-48s \t %2d:%02d %2s"
 	    ;; truncate long titles in the playlist buffer
 	    (if (> title-length 50)
 		(concat
@@ -272,7 +272,7 @@ If no file is found, lookup online."
     (after emms-after activate)
   (emms-sort))
 
-(defun emms-current-track ()
+(defun emms-show-current-track ()
   "Return a description of the current track."
   (interactive)
   (let* ((track (emms-playlist-current-selected-track))
@@ -306,7 +306,7 @@ If no file is found, lookup online."
 (global-set-key (kbd "M-p .") 'emms-bookmarks-next)
 (global-set-key (kbd "M-p c") 'emms-bookmarks-clear)
 
-(global-set-key (kbd "M-p o") 'emms-show)
+(global-set-key (kbd "M-p o") 'emms-show-current-track)
 (global-set-key (kbd "M-p x") 'emms-shuffle)
 (global-set-key (kbd "M-p r") 'emms-toggle-repeat-track)
 (global-set-key (kbd "M-p R") 'emms-toggle-repeat-playlist)
