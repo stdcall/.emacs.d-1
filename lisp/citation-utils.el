@@ -392,9 +392,7 @@ With a prefix ARG, prompt for pre and postnotes. See
 	   collect (concat (propertize i 'font-lock-face `(:foreground ,org-ref-cite-color)))))
 
 (defun power-ref-citation-links ()
-  "Return a list of citation links and references in a helm buffer.
-With one prefix ARG, open utility functions. With two prefix
-arguments, validate the bibtex file and check for bad links."
+  "Return a list of citation links in a helm buffer."
   (interactive)
   (let ((keys '()))
     (org-element-map (org-element-parse-buffer) 'link
@@ -418,7 +416,7 @@ arguments, validate the bibtex file and check for bad links."
 
 ;;;###autoload
 (defun power-ref (&optional arg)
-  "Return a list of citation links and references in a helm buffer.
+  "Return a list of references in a helm buffer.
 With one prefix ARG, open utility functions. With two prefix
 arguments, validate the bibtex file and check for bad links."
   (interactive "P")
