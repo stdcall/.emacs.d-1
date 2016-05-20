@@ -32,9 +32,11 @@
 (emms-lyrics 1)
 (emms-playing-time 1)
 
+(setq emms-playlist-buffer-name "*Playlist*"
+      emms-stream-buffer-name "*Streams*")
+
 (setq emms-playing-time-display-format "%s")
 (setq emms-tag-editor-rename-format "%t")
-(setq emms-show-format "%s")
 (setq emms-player-list '(emms-player-mplayer-playlist
 			 emms-player-mplayer
 			 emms-player-mpg321))
@@ -110,7 +112,7 @@ a positive number."
 		      (file-name-nondirectory name)))
 	 (title (or (emms-track-get track 'info-title) short-name))
 	 (title-length (length title)))
-    (format "%-50s %-48s \t %2d:%02d %2s"
+    (format "%-50s %-50s \t %2d:%02d %2s"
 	    ;; truncate long titles in the playlist buffer
 	    (if (> title-length 50)
 		(concat
@@ -138,7 +140,9 @@ modeline.")
           (let* ((title (emms-track-get track 'info-title))
 		 (length (length title))
 		 (tocut (- length emms-max-title-chars))
-		 (radio (cdr (nth 1 track))))
+		 (radio (cdr (nth 1 track)))
+		 (fname (file-name-sans-extension
+			 (file-name-nondirectory (emms-track-name track)))))
             (if (not (null title))
 		(if (< emms-max-title-chars length)
 		    (let ((title-short
@@ -149,8 +153,13 @@ modeline.")
               (if (string= "streamlist" radio)
 		  (let* ((url (cdr (nth 2 track)))
 			 (name (replace-regexp-in-string ".*\/" "" url)))
-		    (format emms-mode-line-format (concat "Radio: " name)))
-                (format emms-mode-line-format "Unknown")))))))
+		    (format emms-mode-line-format (concat "Radio: " (file-name-sans-extension name)))))
+                (format emms-mode-line-format (if (> emms-max-title-chars (length fname))
+						  fname
+						(let ((fname-short
+						       (replace-regexp-in-string "[ \t\n]*\\'" ""
+										 (substring fname 0 (- tocut)))))
+						  (concat fname-short "…"))))))))))
 
 ;; ==================================================================
 ;; ˚˚ tag editor
@@ -325,8 +334,8 @@ If no file is found, lookup online."
 (define-key emms-tag-editor-mode-map (kbd "C-,") 'emms-tag-editor-prev-same-field)
 (define-key emms-tag-editor-mode-map (kbd "C-c C-c") 'emms-tag-editor-submit-and-exit-2)
 
-(global-set-key (kbd "M-p j") 'emms-rewind)
-(global-set-key (kbd "M-p k") 'emms-fast-forward)
+(global-set-key (kbd "M-p M-j") 'emms-rewind)
+(global-set-key (kbd "M-p M-k") 'emms-fast-forward)
 (global-set-key (kbd "M-p m") 'emms-open-music-directory)
 (global-set-key (kbd "M-p l") 'emms-default-playlist)
 
