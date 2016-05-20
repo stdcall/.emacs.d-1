@@ -26,8 +26,6 @@
 	  (tags-todo "-CANCELED/!"
 		     ((org-agenda-overriding-header "Stuck Projects")
 		      (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-          (tags "LEVEL=2+CATEGORY=\"appt\"+TIMESTAMP<\"<today>\"-repeat"
-                ((org-agenda-overriding-header "Past appointments")))
           (tags "TODO=\"DONE\"-exclude-CATEGORY={practice\\|garden}|+TODO=\"CANCELED\""
                 ((org-agenda-overriding-header "Tasks to Refile"))) ; to refile/archive in bulk, press m B
 	  (tags "LEVEL=2+CATEGORY=\"someday\""
@@ -36,7 +34,7 @@
 	  (org-agenda-show-inherited-tags nil)
 	  (org-agenda-skip-function nil)
 	  (org-agenda-compact-blocks t)
-	  (org-agenda-files '("~/Documents/org/todo.org"))))
+	  (org-agenda-files '("~/org/todo.org"))))
 
         ("n" "notes"
          ((tags "LEVEL=2+CATEGORY=\"notes\""

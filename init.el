@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-15>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-21>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -109,7 +109,7 @@ With a prefix ARG, prompt for a new font."
 
 ;; cycle through this set of themes
 
-(setq my-themes '(gotham bliss))
+(setq my-themes '(gotham zenburn))
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme (&optional arg)
@@ -188,7 +188,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (defun display-startup-echo-area-message ()
   (message ""))
 
-;; (setq debug-on-error t)
+(setq debug-on-error t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore)
 (setq require-final-newline t)
@@ -260,29 +260,10 @@ With a prefix ARG, cycle randomly through a list of available themes."
   (helm-autoresize-mode 1)
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
-  (setq helm-org-headings-fontify t)
   (setq helm-org-show-filename nil)
   (setq helm-autoresize-max-height 50)
   (setq helm-autoresize-min-height 25)
-  (bind-key "C-;" 'helm-org-in-buffer-headings org-mode-map)
-  (bind-keys :map helm-map
-	     ("C-r"   . helm-select-2nd-action)
-	     ("C-e" . helm-select-3rd-action))
-
-  (defun helm-select-2nd-action (arg)
-    "Select the 2nd action for the currently selected candidate."
-    (interactive "P")
-    (if arg
-	(setq bibtex-completion-number-of-optional-arguments 2)
-      (setq bibtex-completion-number-of-optional-arguments 1))
-    (let ((n 2))
-      (helm-select-nth-action (- n 1))))
-
-  (defun helm-select-3rd-action ()
-    "Select the 3rd action for the currently selected candidate."
-    (interactive)
-    (let ((n 3))
-      (helm-select-nth-action (- n 1)))))
+  (bind-key "C-;" 'helm-org-in-buffer-headings org-mode-map))
 
 (use-package helm-swoop
   :bind ("C-c s" . helm-swoop)
@@ -417,7 +398,6 @@ string."
   (setq ido-grid-mode-keys nil)
   (setq ido-grid-mode-prefix-scrolls t)
   (setq ido-grid-mode-prefix "=> ")
-  (set-face-foreground 'ido-first-match "lime green")
   ;; grid navigation
   (add-hook 'ido-setup-hook
             (lambda ()
@@ -930,12 +910,12 @@ The maximum frame height is defined by the variable
   :load-path "~/git/org-ref"
   :load-path "~/git/helm-bibtex"
   :init
+  (use-package org-ref-isbn)
   (use-package doi-utils
     :config
     (setq doi-utils-timestamp-format-function nil)
     (setq doi-utils-dx-doi-org-url "https://dx.doi.org/")
     (setq doi-utils-make-notes nil))
-  (use-package org-ref-isbn)
   (setq org-ref-bibliography-notes "~/org/annotation.org"
         org-ref-default-bibliography '("~/org/refs.bib")
         org-ref-pdf-directory "~/papers/")
@@ -983,17 +963,16 @@ The maximum frame height is defined by the variable
 
 (use-package helm-bibtex
   :load-path "~/git/helm-bibtex"
-  ;; :bind* ("C-c C-j" . helm-bibtex)
   :config
   (setq bibtex-completion-bibliography '("~/org/refs.bib"
 					 "~/org/misc.bib")
         bibtex-completion-library-path '("~/papers" "~/org/ANT1004/papers")
         bibtex-completion-notes-path "~/org/annotation.org")
   (setq helm-bibtex-full-frame nil)
-  (setq bibtex-completion-number-of-optional-arguments 1)
   (setq bibtex-completion-cite-default-as-initial-input t)
   (setq bibtex-completion-additional-search-fields '(keywords))
-  (setq bibtex-completion-notes-symbol "✓")
+  (setq bibtex-completion-notes-symbol "*")
+  (setq bibtex-completion-pdf-symbol "#")
   (setq bibtex-completion-notes-template-one-file
         "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\ncite:${=key=}\n")
   (setq bibtex-completion-fallback-options
@@ -1017,13 +996,9 @@ The maximum frame height is defined by the variable
   	(lambda (fpath)
   	  (call-process "open" nil 0 nil "-a" "Skim.app" fpath)))
 
-  ;; default action
-  (helm-delete-action-from-source "Open PDF file (if present)" helm-source-bibtex)
-  (helm-add-action-to-source "Open PDF file (if present)" 'helm-bibtex-open-pdf helm-source-bibtex 0)
-
   ;; format citation style
   (setq bibtex-completion-format-citation-functions
-	'((org-mode . bibtex-completion-format-citation-org-ref)
+	'((org-mode . power-ref-citation-format)
 	  (default  . bibtex-completion-format-citation-cite))))
 
 (use-package helm-bibtex-ext
@@ -1031,40 +1006,6 @@ The maximum frame height is defined by the variable
   :config
   (setq helm-bibtex-notes-headline-level 2
 	helm-bibtex-search-with "swiper"))
-
-;; prompt once and use org-ref syntax
-
-(defun bibtex-completion-format-citation-org-ref (keys)
-  "Formatter for `org-ref' citation commands.
-Prompt for the command and additional arguments if the commands can
-take any."
-  (let* ((initial (when bibtex-completion-cite-default-as-initial-input bibtex-completion-cite-default-command))
-         (default (unless bibtex-completion-cite-default-as-initial-input bibtex-completion-cite-default-command))
-         (default-info (if default (format " (default \"%s\")" default) ""))
-	 ;; (cite-command (helm-comp-read
-         ;;                (format "Cite command%s: " default-info)
-         ;;                bibtex-completion-cite-commands :must-match nil :initial-input initial)))
-         (cite-command (completing-read
-                        (format "Cite command%s: " default-info)
-                        bibtex-completion-cite-commands nil nil initial
-                        'bibtex-completion-cite-command-history default nil)))
-    (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
-        (format "%s:%s" cite-command (s-join "," keys))
-      (if (= bibtex-completion-number-of-optional-arguments 0)
-          (format "%s:%s" cite-command (s-join "," keys))
-        (if (= bibtex-completion-number-of-optional-arguments 1)
-            (let ((pos (if (= bibtex-completion-number-of-optional-arguments 1)
-                           (read-from-minibuffer "Postnote[1]: ") "")))
-              (if (and (= bibtex-completion-number-of-optional-arguments 1) (string= "" pos))
-                  (format "%s:%s" cite-command (s-join "," keys))
-                (format "[[%s:%s][%s]]" cite-command (s-join "," keys) pos)))
-          (let ((pre (if (= bibtex-completion-number-of-optional-arguments 2)
-                         (read-from-minibuffer "Prenote[1]: ") ""))
-                (pos (if (= bibtex-completion-number-of-optional-arguments 2)
-                         (read-from-minibuffer "Postnote[2]: ") "")))
-            (if (and (= bibtex-completion-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
-                (format "%s:%s" cite-command (s-join "," keys))
-              (format "[[%s:%s][%s::%s]]" cite-command (s-join "," keys) pre pos))))))))
 
 ;; browse and import bibliographic references from CrossRef, DBLP,
 ;; HAL, arXiv, Dissemin, and doi.org
@@ -1423,7 +1364,7 @@ take any."
   (setq exec-path (append exec-path '("/Applications/SuperCollider"  "/Applications/SuperCollider/SuperCollider.app/Contents/Resources" ))))
 
 (use-package clojure-mode
-  :mode ("\.clj$" . clojure-mode))
+  :mode ("\\.clj$" . clojure-mode))
 
 (use-package cider
   :commands (cider-mode)
@@ -1701,12 +1642,6 @@ Reposition the block to the top of the window."
 
 (setq org-todo-keywords
       '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)" "CANCELED(c)")))
-
-(setq org-todo-keyword-faces
-      '(("STARTED"  . (:foreground "SpringGreen2" :weight bold))
-        ("REVISE"  . (:foreground "#E0CF9F" :weight bold))
-        ("WAITING"  . (:foreground "#E0CF9F" :weight bold))
-        ("DEFERRED"  . (:foreground "#E0CF9F" :weight bold))))
 
 ;; org-capture templates
 
