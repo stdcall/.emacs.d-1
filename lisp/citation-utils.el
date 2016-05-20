@@ -14,8 +14,8 @@
     ("Insert citation       C-M-c"   . helm-bibtex-insert-citation)
     ("Edit notes            C-M-n"   . bibtex-completion-edit-notes)
     ("Add keywords          C-M-k"   . power-ref-tag-entries)
-    ("Insert notes template C-M-i\n" . power-ref-insert-notes-template)
-    ("Show entry"                    . bibtex-completion-show-entry)
+    ("Show entry            C-M-e"   . bibtex-completion-show-entry)
+    ("Insert notes template"         . power-ref-insert-notes-template)
     ("Open URL or DOI"               . helm-bibtex-open-url-or-doi)
     ("Insert reference"              . helm-bibtex-insert-reference)
     ("Copy key"                      . power-ref-copy-key)
@@ -25,7 +25,7 @@ The car of cons cell is the string describing the function. The cdr of
 the the cons cell is the function to use."
   :type '(alist :key-type string :value-type function))
 
-(defcustom power-ref-number-of-optional-arguments 2
+(defcustom power-ref-number-of-optional-arguments 1
   "The number of optional arguments (aka pre and postnotes)."
   :type 'integer)
 
@@ -106,7 +106,7 @@ keywords field."
 
 (defun power-ref-copy-key (candidates)
   "Add bibtex key to the kill-ring."
-  (let* ((key (helm-marked-candidates)))
+  (let ((key (helm-marked-candidates)))
     (kill-new (car key))))
 
 (defun power-ref-insert-figure ()
@@ -122,12 +122,6 @@ keywords field."
 		    " "))
     (org-cycle)
     (org-ref-helm-insert-label-link)))
-
-;; propertize candidates
- 
-(defun power-ref-propertize (candidates)
-  (cl-loop for i in candidates
-	   collect (concat (propertize i 'font-lock-face `(:foreground ,org-ref-cite-color)))))
 
 ;;;###autoload
 (defun power-ref-bad-citations ()
@@ -361,6 +355,7 @@ at the end of you file.
     (define-key map (kbd "C-M-c") 'power-ref-insert-citation)
     (define-key map (kbd "C-M-n") 'power-ref-edit-notes)
     (define-key map (kbd "C-M-k") 'power-ref-tag-entries)
+    (define-key map (kbd "C-M-e") 'power-ref-show-entry)
     map))
 
 (defun power-ref-open-pdf ()
@@ -386,6 +381,41 @@ With a prefix ARG, prompt for pre and postnotes. See
   (interactive)
   (helm-exit-and-execute-action 'org-ref-helm-tag-entries))
 
+(defun power-ref-show-entry ()
+  (interactive)
+  (helm-exit-and-execute-action 'bibtex-completion-show-entry))
+
+;; propertize candidates
+
+(defun power-ref-propertize (candidates)
+  (cl-loop for i in candidates
+	   collect (concat (propertize i 'font-lock-face `(:foreground ,org-ref-cite-color)))))
+
+(defun power-ref-citation-links ()
+  "Return a list of citation links and references in a helm buffer.
+With one prefix ARG, open utility functions. With two prefix
+arguments, validate the bibtex file and check for bad links."
+  (interactive)
+  (let ((keys '()))
+    (org-element-map (org-element-parse-buffer) 'link
+      (lambda (link)
+	(let ((plist (nth 1 link)))
+	  (when (-contains? org-ref-cite-types (plist-get plist ':type))
+	    (dolist (key
+		     (org-ref-split-and-strip-string (plist-get plist ':path)))
+	      (when (not (-contains? keys key))
+		(setq keys (append keys (list key)))))))))
+    (helm :sources `(((name . "Citation links")
+		      (candidates . ,(mapcar (lambda (x)
+					       (format "%s" x))
+					     (nreverse keys))) ; TODO sort by most cited
+		      (candidate-transformer power-ref-propertize)
+		      ;; TODO use org-ref-cite-candidates instead
+		      (action . ,power-ref-actions)))
+	  :buffer "*cite links*"
+	  :keymap power-ref-map
+	  :candidate-number-limit 1000)))
+
 ;;;###autoload
 (defun power-ref (&optional arg)
   "Return a list of citation links and references in a helm buffer.
@@ -398,34 +428,18 @@ arguments, validate the bibtex file and check for bad links."
    ((equal arg '(16))
     (power-ref-bad-citations))
    ((equal arg nil)
-      (let ((keys '()))
-	(org-element-map (org-element-parse-buffer) 'link
-	  (lambda (link)
-	    (let ((plist (nth 1 link)))
-	      (when (-contains? org-ref-cite-types (plist-get plist ':type))
-		(dolist (key
-			 (org-ref-split-and-strip-string (plist-get plist ':path)))
-		  (when (not (-contains? keys key))
-		    (setq keys (append keys (list key)))))))))
-	(helm :sources `(((name . "Citation links")
-			  (candidates . ,(mapcar (lambda (x)
-						   (format "%s" x))
-						 (nreverse keys))) ; TODO sort by most cited
-			  (candidate-transformer power-ref-propertize)
-			  ;; TODO use org-ref-cite-candidates instead
-			  (action . ,power-ref-actions))
-			 ((name . "BibTeX entries")
-			  (init . bibtex-completion-init)
-			  (candidates . bibtex-completion-candidates)
-			  (filtered-candidate-transformer . helm-bibtex-candidates-formatter)
-			  (action . ,power-ref-actions))
-			 ((name . "Fallback options")
-			  (match (lambda (_candidate) t))
-			  (candidates . bibtex-completion-fallback-candidates)
-			  (action . bibtex-completion-fallback-action)))
-	      :buffer "*power ref*"
-	      :keymap power-ref-map
-	      :candidate-number-limit 1000)))))
+    (helm :sources `(((name . "BibTeX entries")
+		      (init . bibtex-completion-init)
+		      (candidates . bibtex-completion-candidates)
+		      (filtered-candidate-transformer . helm-bibtex-candidates-formatter)
+		      (action . ,power-ref-actions))
+		     ((name . "Fallback options")
+		      (match (lambda (_candidate) t))
+		      (candidates . bibtex-completion-fallback-candidates)
+		      (action . bibtex-completion-fallback-action)))
+	  :buffer "*power ref*"
+	  :keymap power-ref-map
+	  :candidate-number-limit 1000))))
 
 (provide 'citation-utils)
 ;;; citation-utils.el ends here
