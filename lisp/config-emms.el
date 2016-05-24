@@ -8,18 +8,6 @@
 ;;; Code:
 
 (require 'emms-setup)
-(require 'emms-browser)
-(require 'emms-player-mplayer)
-(require 'emms-player-simple)
-(require 'emms-mode-line)
-(require 'emms-mode-line-icon)
-(require 'emms-playing-time)
-(require 'emms-tag-editor)
-(require 'emms-playlist-sort)
-(require 'emms-bookmarks)
-(require 'emms-streams)
-(require 'emms-lyrics)
-(require 'emms-mark)
 (require 'helm-emms)
 
 ;; ==================================================================
@@ -27,29 +15,26 @@
 ;; ==================================================================
 
 (emms-all)
-(emms-default-players)
-(emms-mode-line 1)
-(emms-lyrics 1)
-(emms-playing-time 1)
 
-(setq emms-playlist-buffer-name "*Playlist*"
-      emms-stream-buffer-name "*Streams*")
-
+(setq emms-playlist-buffer-name "*Playlist*")
+(setq emms-stream-buffer-name "*Streams*")
+(setq emms-info-asynchronously nil)
 (setq emms-playing-time-display-format "%s")
 (setq emms-tag-editor-rename-format "%t")
-(setq emms-player-list '(emms-player-mplayer-playlist
-			 emms-player-mplayer
-			 emms-player-mpg321))
 (setq emms-source-file-default-directory "~/Music/")
 (setq emms-player-mplayer-command-name "mplayer")
 (setq emms-lyrics-dir "~/Music/lyrics"
       emms-lyrics-display-on-modeline nil)
 
-(add-hook 'emms-playlist-mode-hook 'hl-line-mode)
+(if (executable-find "mplayer")
+    (setq emms-player-list '(emms-player-mplayer))
+  (emms-default-players))
 
 (when (executable-find "emms-print-metadata")
   (require 'emms-info-libtag)
   (setq emms-info-functions '(emms-info-libtag)))
+
+(add-hook 'emms-playlist-mode-hook 'hl-line-mode)
 
 ;; ==================================================================
 ;; ˚˚ speed and seeking
@@ -159,7 +144,7 @@ modeline.")
 						(let ((fname-short
 						       (replace-regexp-in-string "[ \t\n]*\\'" ""
 										 (substring fname 0 (- tocut)))))
-						  (concat fname-short "…"))))))))))
+						  (concat fname-short "…")))))))))
 
 ;; ==================================================================
 ;; ˚˚ tag editor
@@ -226,7 +211,7 @@ If no file is found, lookup online."
 	  "https://duckduckgo.com/?q=letra+%s+%s" title artist))))))
 
 (defun emms-lyrics-mode-quit ()
-  "Kill lyrics buffer and resume emms."
+  "Kill lyrics buffer and resume playlist buffer."
   (interactive)
   (kill-this-buffer)
   (emms-playlist-mode-go))
@@ -235,16 +220,21 @@ If no file is found, lookup online."
 ;; ˚˚ misc utils
 ;; ==================================================================
 
+(defun emms-go ()
+  "If playlist buffer exists, switch to it.
+Otherwise add default library to the playlist and go to it."
+  (interactive)
+  (if (mapcar #'(lambda (buf)
+		  (buffer-name buf))
+	      (emms-playlist-buffer-list))
+      (emms-playlist-mode-go)
+    (emms-add-directory-tree emms-source-file-default-directory)
+    (emms)))
+
 (defun emms-open-music-directory ()
   "Open music directory in a dired buffer."
   (interactive)
   (dired emms-source-file-default-directory))
-
-(defun emms-default-playlist ()
-  "Add music library to the playlist and go to it."
-  (interactive)
-  (emms-add-directory-tree emms-source-file-default-directory)
-  (emms))
 
 ;; add tracks from dired
 
@@ -299,26 +289,26 @@ If no file is found, lookup online."
 ;; ˚˚ key bindings
 ;; ==================================================================
 
-(global-set-key (kbd "M-p e") 'emms-playlist-mode-go)
+(global-set-key (kbd "M-p e") 'emms-go)
 (global-set-key (kbd "M-p h") 'helm-emms)
 (global-set-key (kbd "M-p b") 'emms-smart-browse)
-(global-set-key (kbd "M-p RET") 'emms-add-file)
-(global-set-key (kbd "M-p f") 'emms-add-directory)
+(global-set-key (kbd "M-p f") 'emms-add-file)
+(global-set-key (kbd "M-p RET") 'emms-add-directory)
+(global-set-key (kbd "M-p m") 'emms-open-music-directory)
+
 (global-set-key (kbd "M-p p") 'emms-start)
 (global-set-key (kbd "M-p s") 'emms-stop)
 (global-set-key (kbd "M-p SPC") 'emms-pause)
 (global-set-key (kbd "M-p M-]") 'emms-next)
 (global-set-key (kbd "M-p M-[") 'emms-previous)
+(global-set-key (kbd "M-p x") 'emms-shuffle)
+(global-set-key (kbd "M-p r") 'emms-toggle-repeat-track)
+(global-set-key (kbd "M-p o") 'emms-show-current-track)
 
 (global-set-key (kbd "M-p a") 'emms-bookmarks-add)
 (global-set-key (kbd "M-p ,") 'emms-bookmarks-prev)
 (global-set-key (kbd "M-p .") 'emms-bookmarks-next)
 (global-set-key (kbd "M-p c") 'emms-bookmarks-clear)
-
-(global-set-key (kbd "M-p o") 'emms-show-current-track)
-(global-set-key (kbd "M-p x") 'emms-shuffle)
-(global-set-key (kbd "M-p r") 'emms-toggle-repeat-track)
-(global-set-key (kbd "M-p R") 'emms-toggle-repeat-playlist)
 
 (global-set-key (kbd "M-p =") 'emms-volume-mode-plus)
 (global-set-key (kbd "M-p -") 'emms-volume-mode-minus)
@@ -336,9 +326,6 @@ If no file is found, lookup online."
 
 (global-set-key (kbd "M-p M-j") 'emms-rewind)
 (global-set-key (kbd "M-p M-k") 'emms-fast-forward)
-(global-set-key (kbd "M-p m") 'emms-open-music-directory)
-(global-set-key (kbd "M-p l") 'emms-default-playlist)
-
 (global-set-key (kbd "M-p u") 'emms-player-mplayer-speed-up)
 (global-set-key (kbd "M-p d") 'emms-player-mplayer-slow-down)
 
