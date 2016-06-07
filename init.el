@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-05-21>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-07>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -101,6 +101,9 @@ With a prefix ARG, prompt for a new font."
 	(my-first-font))
     (my-second-font)))
 
+(use-package gotham-theme
+  :load-path "~/git/gotham-theme")
+
 ;; disable current theme before new one is loaded
 
 (defadvice load-theme
@@ -170,7 +173,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 
 ;; keep custom settings separate
 
-(use-package custom
+(use-package cus-edit
   :config
   (setq custom-file
 	(expand-file-name "custom.el" user-emacs-directory))
@@ -255,15 +258,13 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (use-package helm
   :bind ("C-r" . helm-resume)
   :config
-  (use-package org)
   (use-package helm-config)
   (helm-autoresize-mode 1)
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
   (setq helm-org-show-filename nil)
   (setq helm-autoresize-max-height 50)
-  (setq helm-autoresize-min-height 25)
-  (bind-key "C-;" 'helm-org-in-buffer-headings org-mode-map))
+  (setq helm-autoresize-min-height 25))
 
 (use-package helm-swoop
   :bind ("C-c s" . helm-swoop)
@@ -535,6 +536,9 @@ If the *scratch* buffer does not exist, create one."
 ;; ˚˚ dired for managing directories
 ;; ==================================================================
 
+(setq dired-recursive-copies 'always
+      dired-recursive-deletes 'always)
+
 (use-package dired-x
   :config
   (setq dired-omit-mode t)
@@ -627,7 +631,6 @@ The app is chosen from your OS's preference."
 (bind-key "C-c R" 'rename-file-and-buffer)
 (bind-key "M-c" 'kill-ring-save)
 (bind-key "M-m" 'capitalize-word)
-(bind-key "M-v" 'yank)
 (bind-key "C-M-;" 'split-line)
 (bind-key "C-c x" 'calendar)
 (bind-key "C-c f" 'reveal-in-finder)
@@ -698,21 +701,10 @@ The app is chosen from your OS's preference."
 (bind-key "M-DEL" 'backward-delete-word)
 (bind-key "M-j" 'delete-backward-char)	; was indent-new-comment-line
 (bind-key "µ" 'indent-new-comment-line)	; alt-m
-(bind-key "C-M-p" 'org-toggle-link-display org-mode-map)
 
 ;; help commands
 
 (bind-key "C-h h" 'helm-apropos)
-
-;; avoid arrow keys when promoting and demoting lists
-
-(bind-keys :map org-mode-map
-	   ("∆" . org-metaup)		; alt-j
-	   ("˚" . org-metadown)		; alt-k
-	   ("˙" . org-shiftmetaleft)	; alt-h
-	   ("¬" . org-shiftmetaright)	; alt-l
-	   ("≤" . org-shiftleft)	; alt-,
-	   ("≥" . org-shiftright))	; alt-.
 
 ;;; transpose words, sentences and paragraphs
 ;; use M-t to transpose-words and C-x C-t to transpose-sentences; use
@@ -728,13 +720,6 @@ The app is chosen from your OS's preference."
 
 (unbind-key "M-o" ibuffer-mode-map)
 (unbind-key "C-o" ibuffer-mode-map)
-
-(unbind-key "M-h" org-mode-map)
-(unbind-key "C-'" org-mode-map)		; org-cycle-agenda-files
-(unbind-key "C-," org-mode-map)		; org-cycle-agenda-files
-(unbind-key "M-p" org-mode-map)		; org-shiftup
-(unbind-key "C-c [" org-mode-map)	; org-agenda-file-to-front
-(unbind-key "C-c C-j" org-mode-map)	; was org-goto
 
 (unbind-key "C-o" dired-mode-map)	; use C-m instead
 (unbind-key "M-p" dired-mode-map)
@@ -754,23 +739,7 @@ The app is chosen from your OS's preference."
   (key-chord-mode 1)
   (key-chord-define-global "jk" "Cape Town")
   (key-chord-define-global "jl" "South Africa")
-  (key-chord-define-global "jj" (lambda() (interactive) (find-file "~/org/todo.org")))
-  ;; avoid using the shift key
-  (key-chord-define-global "1q" "!")
-  (key-chord-define-global "2w" "@")
-  (key-chord-define-global "3e" "#")
-  (key-chord-define-global "4r" "$")
-  (key-chord-define-global "5t" "%")
-  (key-chord-define-global "6t" "^")
-  (key-chord-define-global "6y" "^")
-  (key-chord-define-global "7y" "&")
-  (key-chord-define-global "8u" "*")
-  (key-chord-define-global "9i" "(")
-  (key-chord-define-global "0o" ")")
-  (key-chord-define-global "-p" "_")
-  (key-chord-define-global "[=" "+")
-  (key-chord-define-global "./" "?")
-  (key-chord-define-global "p[" "{"))
+  (key-chord-define-global "jj" (lambda() (interactive) (find-file "~/org/todo.org"))))
 
 ;; add prefix map
 
@@ -1227,6 +1196,7 @@ The maximum frame height is defined by the variable
 ;; bookkeeping with ledger
 
 (use-package ledger-mode
+  :mode "\\.dat$"
   :config
   (setq ledger-reconcile-default-commodity "£")
   (setq ledger-use-iso-dates t)
@@ -1384,6 +1354,27 @@ The maximum frame height is defined by the variable
  ("C-c a" . org-agenda)
  ("C-c b" . org-iswitchb))
 
+(bind-keys :map org-mode-map
+	   ("C-;" . helm-org-in-buffer-headings)
+	   ("C-M-p" . org-toggle-link-display))
+
+;; avoid arrow keys when promoting and demoting lists
+
+(bind-keys :map org-mode-map
+	   ("∆" . org-metaup)		; alt-j
+	   ("˚" . org-metadown)		; alt-k
+	   ("˙" . org-shiftmetaleft)	; alt-h
+	   ("¬" . org-shiftmetaright)	; alt-l
+	   ("≤" . org-shiftleft)	; alt-,
+	   ("≥" . org-shiftright))	; alt-.
+
+(unbind-key "M-h" org-mode-map)
+(unbind-key "C-'" org-mode-map)		; org-cycle-agenda-files
+(unbind-key "C-," org-mode-map)		; org-cycle-agenda-files
+(unbind-key "M-p" org-mode-map)		; org-shiftup
+(unbind-key "C-c [" org-mode-map)	; org-agenda-file-to-front
+(unbind-key "C-c C-j" org-mode-map)	; was org-goto
+
 ;; load files automatically
 
 (use-package org-checklist)
@@ -1437,6 +1428,8 @@ The maximum frame height is defined by the variable
 (setq org-export-with-tags 'not-in-toc)
 (setq org-export-with-smart-quotes t)
 (setq org-export-with-todo-keywords nil)
+(setf org-latex-default-packages-alist
+      (remove '("" "hyperref" nil) org-latex-default-packages-alist))
 
 ;; org babel language support
 
@@ -1510,6 +1503,8 @@ The maximum frame height is defined by the variable
 			       "~/org/anth1004.org"
                                ;; "~/org/contacts.org"
 			       "~/org/analysis.org")))
+(setq org-agenda-sticky t)
+(setq org-agenda-start-on-weekday nil)
 (setq org-agenda-remove-tags t)
 (setq org-agenda-tags-column -125)
 (setq org-agenda-skip-function
@@ -1938,6 +1933,12 @@ asynchronously, in another process."
 
 (use-package writeroom-mode
   :bind ("C-c w" . writeroom-mode))
+
+;; margins
+
+(use-package centered-window-mode
+  :diminish centered-window-mode
+  :config (centered-window-mode t))
 
 ;; delete word without killing it
 ;; http://www.emacswiki.org/emacs/BackwardDeleteWord
