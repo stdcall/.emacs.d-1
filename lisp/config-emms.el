@@ -35,6 +35,7 @@
   (setq emms-info-functions '(emms-info-libtag)))
 
 (add-hook 'emms-playlist-mode-hook 'hl-line-mode)
+(setq helm-emms-use-track-description-function t)
 
 ;; ==================================================================
 ;; ˚˚ speed and seeking
@@ -238,7 +239,7 @@ Otherwise add default library to the playlist and go to it."
 
 ;; add tracks from dired
 
-(defun dired-add-to-emms-playlist nil
+(defun dired-add-to-emms-playlist ()
   "Add directory tree to the current EMMS playlist."
   (interactive)
   (let ((file (expand-file-name (dired-get-filename))))
@@ -292,8 +293,6 @@ Otherwise add default library to the playlist and go to it."
 (global-set-key (kbd "M-p e") 'emms-go)
 (global-set-key (kbd "M-p h") 'helm-emms)
 (global-set-key (kbd "M-p b") 'emms-smart-browse)
-(global-set-key (kbd "M-p f") 'emms-add-file)
-(global-set-key (kbd "M-p RET") 'emms-add-directory)
 (global-set-key (kbd "M-p m") 'emms-open-music-directory)
 
 (global-set-key (kbd "M-p p") 'emms-start)
