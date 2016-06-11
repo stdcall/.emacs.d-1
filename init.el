@@ -888,7 +888,7 @@ The maximum frame height is defined by the variable
     (setq doi-utils-make-notes nil))
   (setq org-ref-bibliography-notes "~/org/annotation.org"
         org-ref-default-bibliography '("~/org/refs.bib")
-        org-ref-pdf-directory '("~/papers/" "~/org/ANT1004/papers"))
+        org-ref-pdf-directory '("~/papers" "~/org/ANT1004/papers"))
   (setq org-ref-cite-onclick-function 'org-ref-cite-click-helm)
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
   (setq org-ref-show-citation-on-enter nil)
