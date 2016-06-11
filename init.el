@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-07>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-11>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -631,6 +631,7 @@ The app is chosen from your OS's preference."
 (bind-key "C-c R" 'rename-file-and-buffer)
 (bind-key "M-c" 'kill-ring-save)
 (bind-key "M-m" 'capitalize-word)
+(bind-key "M-v" 'yank)
 (bind-key "C-M-;" 'split-line)
 (bind-key "C-c x" 'calendar)
 (bind-key "C-c f" 'reveal-in-finder)
@@ -887,7 +888,7 @@ The maximum frame height is defined by the variable
     (setq doi-utils-make-notes nil))
   (setq org-ref-bibliography-notes "~/org/annotation.org"
         org-ref-default-bibliography '("~/org/refs.bib")
-        org-ref-pdf-directory "~/papers/")
+        org-ref-pdf-directory '("~/papers/" "~/org/ANT1004/papers"))
   (setq org-ref-cite-onclick-function 'org-ref-cite-click-helm)
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
   (setq org-ref-show-citation-on-enter nil)
@@ -909,18 +910,6 @@ The maximum frame height is defined by the variable
 	(lambda (thekey)
 	  (bibtex-completion-edit-notes (car (org-ref-get-bibtex-key-and-file thekey)))))
 
-  (defun my/org-ref-open-pdf-at-point ()
-    "Open the pdf for bibtex key under point if it exists."
-    (interactive)
-    (let* ((results (org-ref-get-bibtex-key-and-file))
-	   (key (car results))
-	   (pdf-file (car (bibtex-completion-find-pdf key))))
-      (if (f-file? pdf-file)
-	  (funcall bibtex-completion-pdf-open-function pdf-file)
-	(message "No PDF found for %s" key))))
-
-  (setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
-
   (defun retrieve-bibtex ()
     (doi-utils-add-entry-from-crossref-query
      helm-input
@@ -935,8 +924,8 @@ The maximum frame height is defined by the variable
   :config
   (setq bibtex-completion-bibliography '("~/org/refs.bib"
 					 "~/org/misc.bib")
-        bibtex-completion-library-path '("~/papers" "~/org/ANT1004/papers")
-        bibtex-completion-notes-path "~/org/annotation.org")
+        bibtex-completion-library-path org-ref-pdf-directory
+        bibtex-completion-notes-path org-ref-bibliography-notes)
   (setq helm-bibtex-full-frame nil)
   (setq bibtex-completion-cite-default-as-initial-input t)
   (setq bibtex-completion-additional-search-fields '(keywords))
