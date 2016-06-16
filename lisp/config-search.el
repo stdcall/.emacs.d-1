@@ -5,28 +5,32 @@
  (defhydra hydra-query (:color teal :columns 1)
    "
 "
-   ("j" search-duckduckgo "duckduckgo")
+   ("j" search-duckduckgo-or-browse-url "duckduckgo")
    ("k" search-github "github")
    ("l" search-gist "gist")
    (";" search-google-scholar "scholar")
    ("q" nil "quit")))
 
-(defun search-duckduckgo (&optional arg)
+(defun search-duckduckgo-or-browse-url (&optional arg)
   "Search selected region online.
-With a prefix ARG, enclose region in quotes. If nothing is selected,
-prompt for a string in the minibuffer."
+If `thing-at-point' matches url, open it with default browser. With a
+prefix ARG, enclose region in quotes. If nothing is selected, prompt
+for a string in the minibuffer."
   (interactive "P")
-  (let ((str (url-hexify-string (buffer-substring
+  (let ((str (url-hexify-string (buffer-substring-no-properties
 				 (region-beginning)
-				 (region-end)))))
-    (browse-url
-     (format
-      "https://duckduckgo.com/?q=%s"
-      (if (use-region-p)
-	  (if arg
-	      (concat "\"" (url-unhex-string str) "\"")
-	    str)
-	(read-from-minibuffer "DuckDuckGo: "))))))
+				 (region-end))))
+	(url (thing-at-point 'url)))
+    (if url
+	(browse-url url)
+      (browse-url
+       (format
+	"https://duckduckgo.com/?q=%s"
+	(if (use-region-p)
+	    (if arg
+		(concat "\"" (url-unhex-string str) "\"")
+	      str)
+	  (read-from-minibuffer "DuckDuckGo: ")))))))
 
 (defun search-github ()
   "Search github using emacs-lisp as the default language."
