@@ -10,16 +10,16 @@
 (require 'helm-bibtex)
 
 (defcustom power-ref-actions
-  '(("Open PDF              C-M-p"   . helm-bibtex-open-pdf)
-    ("Insert citation       C-M-c"   . helm-bibtex-insert-citation)
-    ("Edit notes            C-M-n"   . bibtex-completion-edit-notes)
-    ("Add keywords          C-M-k"   . power-ref-tag-entries)
-    ("Show entry            C-M-e"   . bibtex-completion-show-entry)
-    ("Insert notes template"         . power-ref-insert-notes-template)
-    ("Open URL or DOI"               . helm-bibtex-open-url-or-doi)
-    ("Insert reference"              . helm-bibtex-insert-reference)
-    ("Copy key"                      . power-ref-copy-key)
-    ("Attach PDF to email"           . helm-bibtex-add-PDF-attachment))
+  '(("Open PDF        `C-M-p'"  . helm-bibtex-open-pdf)
+    ("Insert citation `C-M-c'"  . helm-bibtex-insert-citation)
+    ("Edit notes      `C-M-n'"  . bibtex-completion-edit-notes)
+    ("Add keywords    `C-M-k'"  . power-ref-tag-entries)
+    ("Show entry      `C-M-e'"  . bibtex-completion-show-entry)
+    ("Insert notes template"    . power-ref-insert-notes-template)
+    ("Open URL or DOI"          . helm-bibtex-open-url-or-doi)
+    ("Insert reference"         . helm-bibtex-insert-reference)
+    ("Copy key"                 . power-ref-copy-key)
+    ("Attach PDF to email"      . helm-bibtex-add-PDF-attachment))
   "Cons cells of string and function to set the actions of `helm-bibtex' to.
 The car of cons cell is the string describing the function. The cdr of
 the the cons cell is the function to use."
@@ -92,7 +92,7 @@ keywords field."
    collect
    (cons (s-format "$0 $1 $2 $3 $4 $5 $6" 'elt
                    (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                              fields (list 25 (- width 65) 4 1 1 7 14)))
+                              fields (list 25 (- width 60) 4 1 1 7 14)))
          entry-key)))
 
 (defun power-ref-insert-notes-template (_)
@@ -414,6 +414,24 @@ With a prefix ARG, prompt for pre and postnotes. See
 	  :keymap power-ref-map
 	  :candidate-number-limit 1000)))
 
+;; sources
+
+(defvar power-ref-bibtex-source
+  (helm-build-sync-source "BibTeX entries"
+    :init 'bibtex-completion-init
+    :candidates 'bibtex-completion-candidates
+    :filtered-candidate-transformer  'helm-bibtex-candidates-formatter
+    :action power-ref-actions
+    ;; for keybindings to work after helm-resume, we need the keymap
+    ;; set to helm source instead of helm session
+    :keymap power-ref-map))
+
+(defvar power-ref-fallback-source
+  (helm-build-sync-source "Fallback options"
+    :candidates 'bibtex-completion-fallback-candidates
+    :match (lambda (_candidate) t)
+    :action 'bibtex-completion-fallback-action))
+
 ;;;###autoload
 (defun power-ref (&optional arg)
   "Return a list of references in a helm buffer.
@@ -426,17 +444,8 @@ arguments, validate the bibtex file and check for bad links."
    ((equal arg '(16))
     (power-ref-bad-citations))
    ((equal arg nil)
-    (helm :sources `(((name . "BibTeX entries")
-		      (init . bibtex-completion-init)
-		      (candidates . bibtex-completion-candidates)
-		      (filtered-candidate-transformer . helm-bibtex-candidates-formatter)
-		      (action . ,power-ref-actions))
-		     ((name . "Fallback options")
-		      (match (lambda (_candidate) t))
-		      (candidates . bibtex-completion-fallback-candidates)
-		      (action . bibtex-completion-fallback-action)))
+    (helm :sources '(power-ref-bibtex-source power-ref-fallback-source)
 	  :buffer "*power ref*"
-	  :keymap power-ref-map
 	  :candidate-number-limit 1000))))
 
 (provide 'citation-utils)
