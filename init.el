@@ -2090,6 +2090,49 @@ In `latex-mode', use `latex-word-count' instead."
 
 (bind-key "M-=" 'word-count)
 
+;; track writing progress
+
+(use-package org-tracktable
+  :config
+  (setq org-tracktable-daily-goal 380))
+
+(defun org-tracktable-log (beg end)
+  "Log the number of words between positions BEG and END.
+If a table is inserted with `org-tracktable-table-insert', show words
+written today. If `org-tracktable-daily-goal' is set to more than 0,
+show % of daily goal. Also show the percent completed."
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (list (point-min) (point-max))))
+  (let ((written (org-tracktable-word-count (point-min) (point-max))))
+    (message "logging...")
+    (let ((date (format-time-string "\n[%Y-%m-%d] "
+				    (time-subtract
+				     (current-time)
+				     ;; new day starts at 5am
+				     (seconds-to-time (* 60 60 org-tracktable-day-delay)))))
+	  (stats (format "%s" (concat (format "%d words in %s | "
+					      (org-tracktable-word-count beg end)
+					      (if (use-region-p) "reg" "buf"))
+				      (when (org-tracktable-tracktable-exists-p)
+					(format "%d words written today | " (org-tracktable-written-today)))
+				      (when (and (org-tracktable-tracktable-exists-p) (< 0 org-tracktable-daily-goal))
+					(format "%d%% of daily goal | "
+						(round (* 100 (/ (org-tracktable-written-today)
+								 (float org-tracktable-daily-goal)))))))))
+	  (completed (format "%d%% completed"
+			     (round (* 100 (/ written
+					      (float 80000)))))))
+      (find-file "~/org/log")
+      (goto-char (point-min))
+      (insert (format "%s%s%s" date stats completed))
+      (mark-whole-buffer)
+      (align-regexp (region-beginning) (region-end) "\\(\\s-*\\)|" 1 1 t)
+      (save-buffer)
+      (kill-buffer (current-buffer)))
+    (message "done")))
+
 ;; aspell for spell checking
 
 (use-package ispell
