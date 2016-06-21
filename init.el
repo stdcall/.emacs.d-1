@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-11>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-21>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -191,7 +191,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (defun display-startup-echo-area-message ()
   (message ""))
 
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore)
 (setq require-final-newline t)
@@ -1350,12 +1350,10 @@ The maximum frame height is defined by the variable
 ;; avoid arrow keys when promoting and demoting lists
 
 (bind-keys :map org-mode-map
-	   ("∆" . org-metaup)		; alt-j
-	   ("˚" . org-metadown)		; alt-k
-	   ("˙" . org-shiftmetaleft)	; alt-h
-	   ("¬" . org-shiftmetaright)	; alt-l
-	   ("≤" . org-shiftleft)	; alt-,
-	   ("≥" . org-shiftright))	; alt-.
+	   ("∆" . org-shiftmetaleft)	; alt-j
+	   ("˚" . org-shiftmetaup)	; alt-k
+	   ("¬" . org-shiftmetadown)	; alt-l
+	   ("…" . org-shiftmetaright))	; alt-;
 
 (unbind-key "M-h" org-mode-map)
 (unbind-key "C-'" org-mode-map)		; org-cycle-agenda-files
@@ -1448,24 +1446,35 @@ The maximum frame height is defined by the variable
 (setq ditaa-cmd "java -jar ~/.emacs.d/ditaa0_9/ditaa0_9.jar")
 (setq org-plantuml-jar-path "~/.emacs.d/plantuml.jar")
 
-;; speed commands
+;;; speed commands
+;; see `org-speed-commands-default' for a list of the default
+;; commands.
 
 (setq org-use-speed-commands t)
 
-(add-to-list 'org-speed-commands-user '("d" org-todo "DONE"))
-(add-to-list 'org-speed-commands-user '("x" org-todo "NEXT"))
-(add-to-list 'org-speed-commands-user '("k" org-todo ""))
-(add-to-list 'org-speed-commands-user '("s" call-interactively 'org-schedule))
-(add-to-list 'org-speed-commands-user '("r" call-interactively 'org-refile))
-(add-to-list 'org-speed-commands-user '("A" call-interactively 'org-archive-subtree-default))
-(add-to-list 'org-speed-commands-user '("D" call-interactively 'org-cut-subtree))
-(add-to-list 'org-speed-commands-user '("i" call-interactively 'org-clock-in))
-(add-to-list 'org-speed-commands-user '("o" call-interactively 'org-clock-out))
-(add-to-list 'org-speed-commands-user '("n" call-interactively 'org-narrow-to-subtree))
-(add-to-list 'org-speed-commands-user '("w" call-interactively 'widen))
-
-(bind-key "i" 'org-agenda-clock-in org-agenda-mode-map)
-(bind-key "o" 'org-agenda-clock-out org-agenda-mode-map)
+(setq org-speed-commands-user (quote
+			       ;; outline visibility
+			       (("i" . org-cycle)
+				("a" . org-narrow-to-subtree)
+				("w" . widen)
+				;; outline navigation
+				("g" . org-goto)
+				("r" . org-refile)
+				;; change state
+				("d" org-todo "DONE")
+				("x" org-todo "NEXT")
+				("0" org-todo "")
+				;; structure editing
+				("j" . org-shiftmetaleft)
+				(";" . org-shiftmetaright)
+				("k" . org-metaup)
+				("l" . org-metadown)
+				("A" . org-archive-subtree-default)
+				("K" . org-cut-subtree)
+				("m" progn
+				 (forward-char 1)
+				 (call-interactively 'org-insert-heading-respect-content))
+				("s" . org-schedule))))
 
 ;; http://is.gd/ROD35v
 
@@ -1489,6 +1498,7 @@ The maximum frame height is defined by the variable
                                "~/org/fieldwork.org"
                                "~/org/annotation.org"
                                "~/org/draft.org"
+			       "~/org/capes3.org"
 			       "~/org/anth1004.org"
                                ;; "~/org/contacts.org"
 			       "~/org/analysis.org")))
