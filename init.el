@@ -2071,7 +2071,7 @@ abc |ghi        <-- point still after white space after calling this function."
    ((eq major-mode 'latex-mode)
     (latex-word-count))
    ((eq major-mode 'org-mode)
-    (org-word-count))
+    (call-interactively 'org-word-count))
    (t
     (message "%d words" (if (use-region-p)
 			    (count-words-region (mark) (point))
