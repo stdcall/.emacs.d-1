@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-21>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-22>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -2062,15 +2062,20 @@ abc |ghi        <-- point still after white space after calling this function."
 
 ;; word count
 
+(use-package org-wc)
+
 (defun word-count ()
-  "Print total number of words in the current buffer or region.
-In `latex-mode', use `latex-word-count' instead."
+  "Print total number of words in the current buffer or region."
   (interactive)
-  (if (eq major-mode 'latex-mode)
-      (latex-word-count)
+  (cond
+   ((eq major-mode 'latex-mode)
+    (latex-word-count))
+   ((eq major-mode 'org-mode)
+    (org-word-count))
+   (t
     (message "%d words" (if (use-region-p)
 			    (count-words-region (mark) (point))
-			  (count-words (point-min) (point-max))))))
+			  (count-words (point-min) (point-max)))))))
 
 (defun latex-word-count ()
   "Print total number of words using texcount command line tool."
@@ -2093,6 +2098,7 @@ In `latex-mode', use `latex-word-count' instead."
 ;; track writing progress
 
 (use-package org-tracktable
+  :load-path "~/git/org-tracktable"
   :config
   (setq org-tracktable-daily-goal 380))
 
