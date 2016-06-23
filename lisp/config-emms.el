@@ -98,13 +98,18 @@ a positive number."
 		      (file-name-nondirectory name)))
 	 (title (or (emms-track-get track 'info-title) short-name))
 	 (title-length (length title)))
-    (format "%-50s %-50s \t %2d:%02d %2s"
+    (format "%-50s %s %-50s \t %2d:%02d %2s"
 	    ;; truncate long titles in the playlist buffer
 	    (if (> title-length 50)
 		(concat
 		 (replace-regexp-in-string "[ ]*\\'" ""
 					   (substring title 0 48)) "…")
 	      title)
+	    ;; indicate whether track has lyrics
+	    (if (f-file?
+		 (format "%s/%s.lrc" emms-lyrics-dir title))
+		"•"			; alt-8
+	      " ")
 	    artist
 	    (/ ptime 60)
 	    (% ptime 60)
@@ -200,7 +205,6 @@ If no file is found, lookup online."
 	 (lyrics (emms-lyrics-find-lyric title)))
     (if lyrics
 	(find-file lyrics)
-      ;; (emms-lyrics-visit-lyric)
       (if (y-or-n-p "Add new lyric?")
 	  (progn (find-file (format "%s/%s.lrc" emms-lyrics-dir title))
 		 (insert (format "%s - %s\n\n" title artist))
