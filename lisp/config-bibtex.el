@@ -186,15 +186,19 @@ move point to end of field."
 Result is shown as a comment on the top of the file. See
 `time-stamp-format' for possible string replacements."
   (save-excursion
-    (let ((time-stamp-format "%%%% %f. Last modified on %:y-%02m-%02d %02H:%02M,"))
+    (let* ((time-stamp-format "%%%% %f. Last modified on %:y-%02m-%02d %02H:%02M,")
+	   (fname (file-name-nondirectory (buffer-file-name)))
+	   (header (format "%%%% %s. Last modified on" fname)))
       (goto-char (point-min))
-      (delete-region
-       (point)
-       (save-excursion
-	 (move-end-of-line 1) (point)))
-      (insert (time-stamp-string))
-      (jag/bibtex-count-entries)
-      (set-buffer-modified-p nil))))
+      ;; add only if bob is an empty line or matches a header line
+      (when (looking-at (format "^$\\|%s" header))
+	(delete-region
+	 (point)
+	 (save-excursion
+	   (move-end-of-line 1) (point)))
+	(insert (time-stamp-string))
+	(jag/bibtex-count-entries)
+	(set-buffer-modified-p nil)))))
 
 (defun jag/bibtex-count-entries (&optional count-string-entries)
   "Insert the total number of entries in the current buffer.
