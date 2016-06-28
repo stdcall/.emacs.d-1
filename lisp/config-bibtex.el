@@ -179,6 +179,9 @@ move point to end of field."
 
 (add-hook 'bibtex-mode-hook
           (lambda ()
+	    (add-hook 'before-save-hook
+		      (lambda ()
+			(delete-trailing-whitespace)))
 	    (add-hook 'after-save-hook #'bibtex-last-update nil 'make-it-local)))
 
 (defun bibtex-last-update ()
