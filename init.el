@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-22>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-28>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -913,6 +913,11 @@ The maximum frame height is defined by the variable
   (defun retrieve-bibtex ()
     (doi-utils-add-entry-from-crossref-query
      helm-input
+     (car org-ref-default-bibliography)))
+
+  (defun retrieve-bibtex-from-doi ()
+    (doi-utils-add-bibtex-entry-from-doi
+     helm-input
      (car org-ref-default-bibliography))))
 
 ;;; helm-bibtex for managing bibliographies
@@ -937,6 +942,7 @@ The maximum frame height is defined by the variable
         (quote (("CrossRef                                  (doi-utils.el)" . retrieve-bibtex)
 		("CrossRef                                  (biblio.el)" lambda nil
 		 (biblio-lookup #'biblio-crossref-backend helm-pattern))
+		("Add from DOI" . retrieve-bibtex-from-doi)
 		("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
@@ -1227,8 +1233,8 @@ The maximum frame height is defined by the variable
 (use-package flycheck
   :diminish flycheck-mode
   :config
-  (add-hook 'markdown-mode-hook #'flycheck-mode)
   (add-hook 'text-mode-hook #'flycheck-mode)
+  (add-hook 'org-mode-hook #'flycheck-mode)
 
   (flycheck-define-checker proselint
     "A linter for prose."
@@ -1239,7 +1245,7 @@ The maximum frame height is defined by the variable
 	      (message (one-or-more not-newline)
 		       (zero-or-more "\n" (any " ") (one-or-more not-newline)))
 	      line-end))
-    :modes (text-mode markdown-mode gfm-mode))
+    :modes (text-mode org-mode))
   (add-to-list 'flycheck-checkers 'proselint))
 
 ;; modeline
@@ -1476,19 +1482,6 @@ The maximum frame height is defined by the variable
 				 (call-interactively 'org-insert-heading-respect-content))
 				("s" . org-schedule))))
 
-;; http://is.gd/ROD35v
-
-(defun my/org-return ()
-  "Disable org-return-follows-link if at bol or eol."
-  (interactive)
-  (let* ((follow org-return-follows-link)
-         (org-return-follows-link (and follow (not (or (bolp) (eolp))))))
-    (org-return)))
-
-(bind-keys :map org-mode-map
-	   ("C-m" . my/org-return)
-	   ("<return>" . my/org-return))
-
 ;; ==================================================================
 ;; ˚˚ org agenda settings
 ;; ==================================================================
@@ -1498,7 +1491,6 @@ The maximum frame height is defined by the variable
                                "~/org/fieldwork.org"
                                "~/org/annotation.org"
                                "~/org/draft.org"
-			       "~/org/capes3.org"
 			       "~/org/anth1004.org"
                                ;; "~/org/contacts.org"
 			       "~/org/analysis.org")))
@@ -2100,7 +2092,7 @@ abc |ghi        <-- point still after white space after calling this function."
 (use-package org-tracktable
   :load-path "~/git/org-tracktable"
   :config
-  (setq org-tracktable-daily-goal 380))
+  (setq org-tracktable-daily-goal 335))
 
 (defun org-tracktable-log (beg end)
   "Log the number of words between positions BEG and END.
