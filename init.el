@@ -856,11 +856,23 @@ The maximum frame height is defined by the variable
 
 (defun jag/scroll-other-window ()
   (interactive)
-  (smooth-scroll/scroll-other-window 2))
+  (let* ((wind (other-window-for-scrolling))
+         (mode (with-selected-window wind major-mode)))
+    (if (eq mode 'pdf-view-mode)
+        (with-selected-window wind
+	  (pdf-view-next-line-or-next-page 2))
+      (scroll-other-window 2))))
 
 (defun jag/scroll-other-window-down ()
   (interactive)
-  (smooth-scroll/scroll-other-window-down 2))
+  (let* ((wind (other-window-for-scrolling))
+         (mode (with-selected-window wind major-mode)))
+    (if (eq mode 'pdf-view-mode)
+	(with-selected-window wind
+	  (progn
+	    (pdf-view-previous-line-or-previous-page 2)
+	    (other-window 1)))
+      (scroll-other-window-down 2))))
 
 ;; ==================================================================
 ;; ˚˚ citation, bibliography and cross-reference
