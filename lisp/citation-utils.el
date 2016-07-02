@@ -436,17 +436,28 @@ With a prefix ARG, prompt for pre and postnotes. See
 (defun power-ref (&optional arg)
   "Return a list of references in a helm buffer.
 With one prefix ARG, open utility functions. With two prefix
-arguments, validate the bibtex file and check for bad links."
+arguments, validate the bibtex file and check for bad links.
+
+With three prefix arguments the cache is invalidated and the
+bibliography reread."
   (interactive "P")
-  (cond
-   ((equal arg '(4))
-    (power-ref-utils))
-   ((equal arg '(16))
-    (power-ref-bad-citations))
-   ((equal arg nil)
-    (helm :sources '(power-ref-bibtex-source power-ref-fallback-source)
-	  :buffer "*power ref*"
-	  :candidate-number-limit 1000))))
+  (let ((bibtex-completion-bibliography
+	 (if (or (eq major-mode 'latex-mode)
+		 (eq major-mode 'org-mode))
+	     (bibtex-completion--get-local-databases)
+	   bibtex-completion-bibliography)))
+    (when (equal arg '(64))
+      (setq bibtex-completion-bibliography-hash ""))
+    (cond
+     ((equal arg '(4))
+      (power-ref-utils))
+     ((equal arg '(16))
+      (power-ref-bad-citations))
+     ((or (equal arg nil)
+	  (equal arg '(64)))
+      (helm :sources '(power-ref-bibtex-source power-ref-fallback-source)
+	    :buffer "*power ref*"
+	    :candidate-number-limit 1000)))))
 
 (provide 'citation-utils)
 ;;; citation-utils.el ends here
