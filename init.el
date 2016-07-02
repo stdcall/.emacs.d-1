@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-06-28>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-02>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -370,6 +370,7 @@ string."
 
   ;; ignore buffers, files and directories, press C-a to toggle
   (add-to-list 'ido-ignore-files "\\auto/")
+  (add-to-list 'ido-ignore-files "^flycheck_*")
   (add-to-list 'ido-ignore-directories "\\auto/")
   (add-to-list 'ido-ignore-files "\\.log" "\\.out")
   (add-to-list 'ido-ignore-files "\\.DS_Store")
@@ -910,13 +911,18 @@ The maximum frame height is defined by the variable
 	(lambda (thekey)
 	  (bibtex-completion-edit-notes (car (org-ref-get-bibtex-key-and-file thekey)))))
 
-  (defun retrieve-bibtex ()
+  (defun retrieve-bibtex-from-crossref ()
     (doi-utils-add-entry-from-crossref-query
      helm-input
      (car org-ref-default-bibliography)))
 
   (defun retrieve-bibtex-from-doi ()
     (doi-utils-add-bibtex-entry-from-doi
+     helm-input
+     (car org-ref-default-bibliography)))
+
+  (defun retrieve-bibtex-from-isbn ()
+    (isbn-to-bibtex
      helm-input
      (car org-ref-default-bibliography))))
 
@@ -939,10 +945,11 @@ The maximum frame height is defined by the variable
   (setq bibtex-completion-notes-template-one-file
         "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\ncite:${=key=}\n")
   (setq bibtex-completion-fallback-options
-        (quote (("CrossRef                                  (doi-utils.el)" . retrieve-bibtex)
+        (quote (("CrossRef                                  (doi-utils.el)" . retrieve-bibtex-from-crossref)
 		("CrossRef                                  (biblio.el)" lambda nil
 		 (biblio-lookup #'biblio-crossref-backend helm-pattern))
 		("Add from DOI" . retrieve-bibtex-from-doi)
+		("Add from ISBN" . retrieve-bibtex-from-doi)
 		("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
@@ -1233,20 +1240,18 @@ The maximum frame height is defined by the variable
 (use-package flycheck
   :diminish flycheck-mode
   :config
-  (add-hook 'text-mode-hook #'flycheck-mode)
-  (add-hook 'org-mode-hook #'flycheck-mode)
-
-  (flycheck-define-checker proselint
-    "A linter for prose."
-    :command ("proselint" source-inplace)
-    :error-patterns
-    ((warning line-start (file-name) ":" line ":" column ": "
-	      (id (one-or-more (not (any " "))))
-	      (message (one-or-more not-newline)
-		       (zero-or-more "\n" (any " ") (one-or-more not-newline)))
-	      line-end))
-    :modes (text-mode org-mode))
-  (add-to-list 'flycheck-checkers 'proselint))
+  (when (executable-find "proselint")
+    (flycheck-define-checker proselint
+      "A linter for prose."
+      :command ("proselint" source-inplace)
+      :error-patterns
+      ((warning line-start (file-name) ":" line ":" column ": "
+		(id (one-or-more (not (any " "))))
+		(message (one-or-more not-newline)
+			 (zero-or-more "\n" (any " ") (one-or-more not-newline)))
+		line-end))
+      :modes (text-mode org-mode))
+    (add-to-list 'flycheck-checkers 'proselint)))
 
 ;; modeline
 
