@@ -15,10 +15,10 @@
     ("Edit notes      `C-M-n'"  . bibtex-completion-edit-notes)
     ("Add keywords    `C-M-k'"  . power-ref-tag-entries)
     ("Show entry      `C-M-e'"  . bibtex-completion-show-entry)
+    ("Annotate        `C-M-a'"  . power-ref-annotate)
     ("Insert notes template"    . power-ref-insert-notes-template)
     ("Open URL or DOI"          . helm-bibtex-open-url-or-doi)
     ("Insert reference"         . helm-bibtex-insert-reference)
-    ("Copy key"                 . power-ref-copy-key)
     ("Attach PDF to email"      . helm-bibtex-add-PDF-attachment))
   "Cons cells of string and function to set the actions of `helm-bibtex' to.
 The car of cons cell is the string describing the function. The cdr of
@@ -125,10 +125,17 @@ values."
 			'bibtex-completion-apa-get-value
 			entry)))))
 
-(defun power-ref-copy-key (candidates)
-  "Add bibtex key to the kill-ring."
-  (let ((key (helm-marked-candidates)))
-    (kill-new (car key))))
+(defun power-ref-annotate (_candidate)
+  "Prepare entry for annotation."
+  (let* ((key (helm-marked-candidates))
+	 (entry (bibtex-completion-get-entry (car key)))
+	 (pdf (car (bibtex-completion-find-pdf (car key)))))
+    (if pdf
+	(progn
+	  (split-window-below)
+	  (find-file pdf)
+	  (bibtex-completion-edit-notes (car key)))
+      (bibtex-completion-edit-notes (car key)))))
 
 (defun power-ref-insert-figure ()
   "Insert figure, caption and label at point."
@@ -377,6 +384,7 @@ at the end of you file.
     (define-key map (kbd "C-M-n") 'power-ref-edit-notes)
     (define-key map (kbd "C-M-k") 'power-ref-tag-entries)
     (define-key map (kbd "C-M-e") 'power-ref-show-entry)
+    (define-key map (kbd "C-M-a") 'power-ref-prepare-annotation)
     map))
 
 (defun power-ref-open-pdf ()
@@ -405,6 +413,10 @@ With a prefix ARG, prompt for pre and postnotes. See
 (defun power-ref-show-entry ()
   (interactive)
   (helm-exit-and-execute-action 'bibtex-completion-show-entry))
+
+(defun power-ref-prepare-annotation ()
+  (interactive)
+  (helm-exit-and-execute-action 'power-ref-annotate))
 
 ;; propertize candidates
 
