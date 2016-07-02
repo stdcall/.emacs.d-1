@@ -95,6 +95,27 @@ keywords field."
                               fields (list 25 (- width 60) 4 1 1 7 14)))
          entry-key)))
 
+;; revert escaped characters
+
+(defun bibtex-completion-clean-string (s)
+  "Removes quoting and superfluous white space from BibTeX field
+values."
+  (let* ((s (replace-regexp-in-string "[\n\t ]+" " " s))
+	 (s (replace-regexp-in-string "{\\\\'a}" "á" s))
+	 (s (replace-regexp-in-string "{\\\\~a}" "ã" s))
+	 (s (replace-regexp-in-string "{\\\\^a}" "â" s))
+	 (s (replace-regexp-in-string "{\\\\`a}" "à" s))
+	 (s (replace-regexp-in-string "{\\\\'e}" "é" s))
+	 (s (replace-regexp-in-string "{\\\\^e}" "ê" s))
+	 (s (replace-regexp-in-string "{\\\\'i}" "í" s))
+	 (s (replace-regexp-in-string "{\\\\'o}" "ó" s))
+	 (s (replace-regexp-in-string "{\\\\~o}" "õ" s))
+	 (s (replace-regexp-in-string "{\\\\^o}" "ô" s))
+	 (s (replace-regexp-in-string "{\\\\'u}" "ú" s))
+	 (s (replace-regexp-in-string "{\\\\c c}" "ç" s))
+	 (s (replace-regexp-in-string "[\\\.{}]+" "" s)))
+    (if s s nil)))
+
 (defun power-ref-insert-notes-template (_)
   "Insert notes template associated with key."
   (let* ((keys (helm-marked-candidates :with-wildcard t))
