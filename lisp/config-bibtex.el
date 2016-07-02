@@ -34,6 +34,12 @@
       bibtex-autokey-titlewords-stretch 0
       bibtex-autokey-titleword-ignore nil)
 
+(setq bibtex-user-optional-fields '(("annote" "Personal annotation")
+				    ("keywords" "Comma separated")
+				    ;; M-x `completion-at-point'
+				    ;; (C-M-i) to add crossref key
+				    ("crossref" "Cross-reference")))
+
 ;; cleanup entries
 
 (defun bibtex-cleanup-entry (&optional _)
