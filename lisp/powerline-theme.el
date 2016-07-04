@@ -37,6 +37,13 @@
                                      (powerline-narrow nil 'l)
                                      (powerline-raw " ")
                                      (funcall separator-left nil nil)
+				     ;; display pdf page numbers
+				     (when (eq major-mode 'pdf-view-mode)
+				       (powerline-raw '(" [" (:eval (number-to-string
+								     (pdf-view-current-page)))
+							"/"  (:eval (number-to-string
+								     (pdf-cache-number-of-pages)))
+							"]")))
                                      (powerline-vc nil 'r)
                                      (when (bound-and-true-p nyan-mode)
                                        (powerline-raw (list (nyan-create)) nil 'l))))
