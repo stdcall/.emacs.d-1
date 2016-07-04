@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-02>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-04>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -1946,7 +1946,18 @@ asynchronously, in another process."
 
 (use-package centered-window-mode
   :diminish centered-window-mode
-  :config (centered-window-mode t))
+  :config
+  (centered-window-mode t)
+  (setq cwm-ignore-buffer-predicates
+	(list #'cwm/special-buffer-p
+	      #'cwm/pdf-p))
+  
+  ;; pdfs have their own margins
+  (defun cwm/pdf-p (buff)
+    "Return non-nil if BUFF buffer name ends with \".pdf\"."
+    (let ((buffname (s-trim (buffer-name buff))))
+      (and buffname
+	   (s-ends-with-p ".pdf" buffname)))) )
 
 ;; delete word without killing it
 ;; http://www.emacswiki.org/emacs/BackwardDeleteWord
