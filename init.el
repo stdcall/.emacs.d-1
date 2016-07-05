@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-04>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-05>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -41,9 +41,9 @@
 
 ;; disable tool bar, scroll bar and tool tip
 
-(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-(if (fboundp 'tooltip-mode) (tooltip-mode -1))
+(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(when (fboundp 'tooltip-mode) (tooltip-mode -1))
 
 ;; font and frame settings
 
@@ -689,12 +689,6 @@ The app is chosen from your OS's preference."
  ("C-x <up>" . jag/shrink-frame)
  ("C-x <down>" . jag/maximize-frame))
 
-;; move forward and backward
-
-(bind-keys
- ("C-M-e" . jag/forward-paragraph)
- ("C-M-a" . jag/backward-paragraph))
-
 ;; avoid backspace and return keys; use C-m or C-j instead
 
 (bind-key "C-k" 'delete-line-no-kill)
@@ -882,11 +876,6 @@ The maximum frame height is defined by the variable
 
 (use-package config-bibtex)
 
-;; citation utilities
-
-(use-package citation-utils
-  :bind* ("C-c C-j" . power-ref))
-
 ;; org-ref for managing citations
 
 (use-package org-ref
@@ -901,7 +890,7 @@ The maximum frame height is defined by the variable
     (setq doi-utils-make-notes nil))
   (setq org-ref-bibliography-notes "~/org/annotation.org"
         org-ref-default-bibliography '("~/org/refs.bib")
-        org-ref-pdf-directory '("~/papers" "~/org/ANT1004/papers"))
+        org-ref-pdf-directory "~/papers")
   (setq org-ref-cite-onclick-function 'org-ref-cite-click-helm)
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
   (setq org-ref-show-citation-on-enter nil)
@@ -996,6 +985,11 @@ The maximum frame height is defined by the variable
 (use-package biblio
   :config
   (setq biblio-cleanup-bibtex-function #'bibtex-cleanup-entry))
+
+;; citation utilities
+
+(use-package citation-utils
+  :bind* ("C-c C-j" . power-ref))
 
 ;; ==================================================================
 ;; ˚˚ AUCTeX for managing (La)TeX files
@@ -1368,15 +1362,17 @@ The maximum frame height is defined by the variable
 
 (bind-keys :map org-mode-map
 	   ("C-;" . helm-org-in-buffer-headings)
-	   ("C-M-p" . org-toggle-link-display))
+	   ("C-M-p" . org-toggle-link-display)
+	   ("C-M-e" . jag/forward-paragraph)
+	   ("C-M-a" . jag/backward-paragraph))
 
 ;; avoid arrow keys when promoting and demoting lists
 
 (bind-keys :map org-mode-map
-	   ("∆" . org-shiftmetaleft)	; alt-j
-	   ("˚" . org-shiftmetaup)	; alt-k
-	   ("¬" . org-shiftmetadown)	; alt-l
-	   ("…" . org-shiftmetaright))	; alt-;
+	   ("∆" . org-metaup)		; alt-j
+	   ("˚" . org-metadown)		; alt-k
+	   ("˙" . org-shiftmetaleft)	; alt-h
+	   ("¬" . org-shiftmetaright))	; alt-l
 
 (unbind-key "M-h" org-mode-map)
 (unbind-key "C-'" org-mode-map)		; org-cycle-agenda-files
@@ -1488,10 +1484,10 @@ The maximum frame height is defined by the variable
 				("x" org-todo "NEXT")
 				("0" org-todo "")
 				;; structure editing
-				("j" . org-shiftmetaleft)
-				(";" . org-shiftmetaright)
-				("k" . org-metaup)
-				("l" . org-metadown)
+				("h" . org-shiftmetaleft)
+				("l" . org-shiftmetaright)
+				("j" . org-metaup)
+				("k" . org-metadown)
 				("A" . org-archive-subtree-default)
 				("K" . org-cut-subtree)
 				("m" progn
