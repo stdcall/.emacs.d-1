@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-05>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-06>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -1031,6 +1031,10 @@ The maximum frame height is defined by the variable
 ;; Emacs support library for PDF files
 
 (use-package pdf-tools
+  :bind (:map pdf-view-mode-map
+              ("C-s" . isearch-forward)
+	      ("C-r" . isearch-backward)
+	      ("C-c C-o" . pdf-occur))
   :config (pdf-tools-install))
 
 ;; set PATH
@@ -1501,16 +1505,11 @@ The maximum frame height is defined by the variable
 
 (setq org-agenda-files (quote ("~/org/todo.org"
                                "~/org/notes.org"
-                               "~/org/fieldwork.org"
-                               "~/org/annotation.org"
-                               "~/org/draft.org"
-			       "~/org/anth1004.org"
-                               ;; "~/org/contacts.org"
-			       "~/org/analysis.org")))
+                               "~/org/draft.org")))
 (setq org-agenda-sticky t)
 (setq org-agenda-start-on-weekday nil)
-(setq org-agenda-remove-tags t)
-(setq org-agenda-tags-column -125)
+(setq org-agenda-remove-tags t
+      org-agenda-tags-column -125)
 (setq org-agenda-skip-function
       '(org-agenda-skip-entry-if 'todo '("DONE" "CANCELED" "DEFERRED")))
 (setq org-deadline-warning-days 7)
