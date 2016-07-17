@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-06>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-17>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -256,6 +256,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 ;; helm for managing open files
 
 (use-package helm
+  ;; :load-path "~/git/helm"
   :bind ("C-r" . helm-resume)
   :config
   (use-package helm-config)
@@ -508,9 +509,11 @@ If the *scratch* buffer does not exist, create one."
 (defun kill-buffer-and-its-frame ()
   "Kill the current buffer and delete its frame."
   (interactive)
-  (kill-buffer)
-  (quit-window)
-  (delete-frame))
+  (let ((buf (buffer-name (current-buffer))))
+    (unless (string= "*scratch*" buf)
+      (kill-buffer)
+      (quit-window)
+      (delete-frame))))
 
 ;; kill buffer and its windows
 
@@ -707,10 +710,6 @@ The app is chosen from your OS's preference."
 ;; alt-j / alt-k to transpose paragraphs in org-mode
 
 (bind-key "C-x C-t" 'transpose-sentences) ; was transpose-lines
-
-;; time and date
-
-(bind-key "C-c i" 'insert-date)
 
 ;; unbind
 
@@ -964,9 +963,9 @@ The maximum frame height is defined by the variable
 	(swiper input))))
 
   ;; open with deafult pdf viewer
-  (setq bibtex-completion-pdf-open-function
-  	(lambda (fpath)
-  	  (call-process "open" nil 0 nil "-a" "Skim.app" fpath)))
+  ;; (setq bibtex-completion-pdf-open-function
+  ;; 	(lambda (fpath)
+  ;; 	  (call-process "open" nil 0 nil "-a" "Skim.app" fpath)))
 
   ;; format citation style
   (setq bibtex-completion-format-citation-functions
@@ -1035,7 +1034,17 @@ The maximum frame height is defined by the variable
               ("C-s" . isearch-forward)
 	      ("C-r" . isearch-backward)
 	      ("C-c C-o" . pdf-occur))
-  :config (pdf-tools-install))
+  :init (pdf-tools-install)
+  (bind-keys :map pdf-view-mode-map
+	     ("C-n" . (lambda () (interactive)
+			(pdf-view-next-line-or-next-page 2)))
+	     ("C-p" . (lambda () (interactive)
+			(pdf-view-previous-line-or-previous-page 2))))
+  (bind-keys :map pdf-view-mode-map
+	     ("C-M-j" . (lambda () (interactive)
+			  (pdf-view-previous-line-or-previous-page 5)))
+	     ("C-M-k" . (lambda () (interactive)
+			  (pdf-view-next-line-or-next-page 5)))))
 
 ;; set PATH
 
@@ -1060,6 +1069,13 @@ The maximum frame height is defined by the variable
 		 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
   (add-to-list 'org-latex-classes
+	       '("report" "\\documentclass{report}"
+		 ("\\chapter{%s}" . "\\chapter*{%s}")
+		 ("\\section{%s}" . "\\section*{%s}")
+		 ("\\subsection{%s}" . "\\subsection*{%s}")
+		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+
+  (add-to-list 'org-latex-classes
              '("koma-article"
                "\\documentclass{scrartcl}"
                ("\\section{%s}" . "\\section*{%s}")
@@ -1070,14 +1086,14 @@ The maximum frame height is defined by the variable
 
   (add-to-list 'org-latex-classes
 	       '("koma-report"
-		 "\\documentclass{scrreprt}
+		 "\\documentclass{scrreport}
 \\usepackage[utf8]{inputenc}
 \\usepackage[T1]{fontenc}
 \\usepackage{graphicx}
 \\usepackage{amsmath}
 [NO-DEFAULT-PACKAGES]
 [EXTRA]"
-		 ("\\chapter{%s}" . "\\chapter*{%s}")
+                 ("\\chapter{%s}" . "\\chapter*{%s}")
 		 ("\\section{%s}" . "\\section*{%s}")
 		 ("\\subsection{%s}" . "\\subsection*{%s}")
 		 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -1946,7 +1962,7 @@ asynchronously, in another process."
   (setq cwm-ignore-buffer-predicates
 	(list #'cwm/special-buffer-p
 	      #'cwm/pdf-p))
-  
+
   ;; pdfs have their own margins
   (defun cwm/pdf-p (buff)
     "Return non-nil if BUFF buffer name ends with \".pdf\"."
