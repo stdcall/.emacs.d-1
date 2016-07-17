@@ -34,11 +34,13 @@
       bibtex-autokey-titlewords-stretch 0
       bibtex-autokey-titleword-ignore nil)
 
-(setq bibtex-user-optional-fields '(("annote" "Personal annotation")
-				    ("keywords" "Comma separated")
-				    ;; M-x `completion-at-point'
-				    ;; (C-M-i) to add crossref key
-				    ("crossref" "Cross-reference")))
+(setq bibtex-user-optional-fields
+      '(("annote" "field for personal annotation")
+	("keywords" "field for comma separated tags and keywords")
+	("url" "field for web addresses")
+	;; M-x `completion-at-point'
+	;; (C-M-i) to add crossref key
+	("crossref" "field for cross references")))
 
 ;; cleanup entries
 
@@ -48,7 +50,7 @@
   (bibtex-beginning-of-entry)
   (save-excursion
     (bibtex-downcase-entry-type)
-    (bibtex-replace-nonascii)
+    ;; (bibtex-replace-nonascii)
     (bibtex-replace-naked-ampersand)
     (bibtex-last-comma)
     (bibtex-clean-entry t)
@@ -57,18 +59,18 @@
 	(message "Formatting %s (done)" key)))))
 
 (add-hook 'bibtex-mode-hook
-     (lambda ()
-      (define-key bibtex-mode-map (kbd "C-c C-c") #'bibtex-cleanup-entry)))
-
-(setq bibtex-autokey-before-presentation-function 'bibtex-capitalize-key)
+	  (lambda ()
+	    (define-key bibtex-mode-map (kbd "C-c C-c") #'bibtex-cleanup-entry)))
 
 (defun bibtex-capitalize-key (key)
   "Capitalize bibtex KEY before generated key is presented.
 See `bibtex-autokey-before-presentation-function'."
   (save-excursion
-    (let ((cap-key (capitalize key)))
-      (bibtex-search-entry cap-key)
-      (message "%s" cap-key))))
+    (let ((capkey (capitalize key)))
+      (bibtex-search-entry capkey)
+      (message "%s" capkey))))
+
+(setq bibtex-autokey-before-presentation-function 'bibtex-capitalize-key)
 
 (defun bibtex-downcase-entry-type ()
   "Downcase entry types.
@@ -83,21 +85,24 @@ See `bibtex-autokey-before-presentation-function'."
 
 (setq bibtex-nonascii-latex-replacements
       '(("á" . "{\\\\'a}")
+	("Á" . "{\\\\'A}")
 	("ã" . "{\\\\~a}")
 	("â" . "{\\\\^a}")
 	("à" . "{\\\\`a}")
 	("é" . "{\\\\'e}")
+	("É" . "{\\\\'E}")
 	("ê" . "{\\\\^e}")
+	("Ê" . "{\\\\^Ê}")
 	("í" . "{\\\\'i}")
+	("í" . "{\\\\'\\\\i}")
+	("Í" . "{\\\\'Í}")
 	("ó" . "{\\\\'o}")
 	("õ" . "{\\\\~o}")
 	("ô" . "{\\\\^o}")
+	("Ô" . "{\\\\^O}")
 	("ú" . "{\\\\'u}")
-	("ç" . "{\\\\c c}")
-	("‘" . "'")
-	("’" . "'")
-	("“" . "\"")
-	("”" . "\"")))
+	("ç" . "{\\\\c{c}}")
+	("ç" . "{\\\\c c}")))
 
 (defun bibtex-replace-nonascii ()
   "Replace non-ascii characters in a bibtex entry."
@@ -109,6 +114,29 @@ See `bibtex-autokey-before-presentation-function'."
       (while (re-search-forward char nil t)
 	(replace-match (cdr (assoc char bibtex-nonascii-latex-replacements))))
       (goto-char (point-min)))))
+
+(defun bibtex-escape-or-unescape-characters (arg)
+  "Escape special characters and unescape with a prefix ARG.
+For example: Jos{\'e} => José => Jos{\'e}. See
+`bibtex-nonascii-latex-replacements' for a list of string
+replacements."
+  (interactive "P")
+  (save-excursion
+    (if arg
+	;; unescape
+	(dolist (char (mapcar (lambda (x)
+				(cdr x))
+			      bibtex-nonascii-latex-replacements))
+	  (goto-char (point-min))
+	  (while (re-search-forward char nil t)
+	    (replace-match (car (rassoc char bibtex-nonascii-latex-replacements)))))
+      ;; escape
+      (dolist (char (mapcar (lambda (x)
+			      (car x))
+			    bibtex-nonascii-latex-replacements))
+	(goto-char (point-min))
+	(while (re-search-forward char nil t)
+	  (replace-match (cdr (assoc char bibtex-nonascii-latex-replacements))))))))
 
 (defun bibtex-replace-naked-ampersand ()
   "Replace naked ampersand with its corresponding LaTeX equivalent."
@@ -203,10 +231,10 @@ Result is shown as a comment on the top of the file. See
 	 (save-excursion
 	   (move-end-of-line 1) (point)))
 	(insert (time-stamp-string))
-	(jag/bibtex-count-entries)
+	(bibtex-count-entries)
 	(set-buffer-modified-p nil)))))
 
-(defun jag/bibtex-count-entries (&optional count-string-entries)
+(defun bibtex-count-entries (&optional count-string-entries)
   "Insert the total number of entries in the current buffer.
 See `bibtex-count-entries'. Optional argument COUNT-STRING-ENTRIES
 counts all entries."
@@ -217,41 +245,6 @@ counts all entries."
       (if mark-active (narrow-to-region (region-beginning) (region-end)))
       (bibtex-map-entries (lambda (_key _beg _end) (setq number (1+ number)))))
     (insert (format " with %d entries." number))))
-
-(defun bibtex-set-field (field value &optional nodelim)
-  "Set FIELD to VALUE in bibtex file. Create field if it does not exist.
-Optional argument NODELIM see `bibtex-make-field'."
-  (interactive "sField: \nsValue: ")
-  (bibtex-beginning-of-entry)
-  (let ((found))
-    (if (setq found (bibtex-search-forward-field field t))
-	;; we found a field
-	(progn
-	  (goto-char (car (cdr found)))
-	  (when value
-	    (bibtex-kill-field)
-	    (bibtex-make-field field nil nil nodelim)
-	    (backward-char)
-	    (insert value)))
-      ;; make a new field
-      (message "new field being made")
-      (bibtex-beginning-of-entry)
-      (forward-line) (beginning-of-line)
-      (bibtex-next-field nil)
-      (forward-char)
-      (bibtex-make-field field nil nil nodelim)
-      (backward-char)
-      (insert value))))
-
-(defun bibtex-get-doi ()
-  "Search DOI online."
-  (interactive)
-  (save-excursion
-    (bibtex-beginning-of-entry)
-    (let ((author (bibtex-autokey-get-field "author"))
-	  (title (bibtex-autokey-get-field "title")))
-      	(browse-url
-	 (format "http://search.crossref.org/?q=%s %s" author title)))))
 
 (provide 'config-bibtex)
 ;;; config-bibtex.el ends here
