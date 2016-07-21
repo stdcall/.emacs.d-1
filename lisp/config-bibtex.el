@@ -3,7 +3,7 @@
 ;;; Tips:
 ;; - capitalization of titles is determined by the bibliography style
 ;; - to ensure that capitalization is maintained you should enclose the first (upper case) letter in braces
-;; - check nonstandard author names, e.g. Paulo {dos Santos}
+;; - check nonstandard author names, e.g. "{Steele Jr.}, Guy L."
 ;; - separate names of authors with "and", not commas
 
 ;;; Useful commands:
@@ -19,6 +19,7 @@
 ;;; See also:
 ;; http://www.jonathanleroux.org/bibtex-mode.html
 ;; https://github.com/jkitchin/org-ref/blob/master/org-ref-bibtex.el
+;; http://nwalsh.com/tex/texhelp/bibtx-23.html
 
 ;;; generate key automatically
 ;; ie. Smith2015s (author's last name / year / first letter of the
@@ -231,10 +232,10 @@ Result is shown as a comment on the top of the file. See
 	 (save-excursion
 	   (move-end-of-line 1) (point)))
 	(insert (time-stamp-string))
-	(bibtex-count-entries)
+	(jag/bibtex-count-entries)
 	(set-buffer-modified-p nil)))))
 
-(defun bibtex-count-entries (&optional count-string-entries)
+(defun jag/bibtex-count-entries (&optional count-string-entries)
   "Insert the total number of entries in the current buffer.
 See `bibtex-count-entries'. Optional argument COUNT-STRING-ENTRIES
 counts all entries."
@@ -244,7 +245,8 @@ counts all entries."
     (save-restriction
       (if mark-active (narrow-to-region (region-beginning) (region-end)))
       (bibtex-map-entries (lambda (_key _beg _end) (setq number (1+ number)))))
-    (insert (format " with %d entries." number))))
+    (insert (format " with %d entries." number))
+    (message "Buffer contains %d entries." number)))
 
 (provide 'config-bibtex)
 ;;; config-bibtex.el ends here
