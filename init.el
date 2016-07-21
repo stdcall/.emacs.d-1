@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-17>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-21>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -253,19 +253,23 @@ With a prefix ARG, cycle randomly through a list of available themes."
 ;; ˚˚ files, projects, searches and commands
 ;; ==================================================================
 
-;; helm for managing open files
+;; incremental completion
 
 (use-package helm
   ;; :load-path "~/git/helm"
   :bind ("C-r" . helm-resume)
+  :diminish helm-mode
   :config
   (use-package helm-config)
-  (helm-autoresize-mode 1)
+  (helm-mode 1)
+  (add-to-list
+   'helm-completing-read-handlers-alist '(find-file . ido))
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
   (setq helm-org-show-filename nil)
-  (setq helm-autoresize-max-height 50)
-  (setq helm-autoresize-min-height 25))
+  (helm-autoresize-mode 1)
+  (setq helm-autoresize-max-height 50
+	helm-autoresize-min-height 25))
 
 (use-package helm-swoop
   :bind ("C-c s" . helm-swoop)
@@ -359,7 +363,7 @@ string."
 (use-package ido
   :config
   (ido-mode t)
-  (setq ido-everywhere t)
+  ;; (setq ido-everywhere t)
   (setq ido-enable-flex-matching t)
   (setq org-completion-use-ido t)
   (setq org-outline-path-complete-in-steps nil)
@@ -400,7 +404,6 @@ string."
   (ido-grid-mode 1)
   (setq ido-grid-mode-keys nil)
   (setq ido-grid-mode-prefix-scrolls t)
-  (setq ido-grid-mode-prefix "=> ")
   ;; grid navigation
   (add-hook 'ido-setup-hook
             (lambda ()
@@ -630,7 +633,7 @@ The app is chosen from your OS's preference."
 ;; ˚˚ key bindings
 ;; ==================================================================
 
-(bind-key "C-o" 'ido-find-file)
+(bind-key "C-o" 'find-file)
 (bind-key "C-x C-k" 'kill-or-bury-this-buffer)
 (bind-key "C-c R" 'rename-file-and-buffer)
 (bind-key "M-c" 'kill-ring-save)
@@ -892,6 +895,7 @@ The maximum frame height is defined by the variable
         org-ref-pdf-directory "~/papers")
   (setq org-ref-cite-onclick-function 'org-ref-cite-click-helm)
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
+  (setq org-ref-nonascii-latex-replacements nil)
   (setq org-ref-show-citation-on-enter nil)
   (setq org-ref-note-title-format
         "\n** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
@@ -910,6 +914,18 @@ The maximum frame height is defined by the variable
   (setq org-ref-notes-function
 	(lambda (thekey)
 	  (bibtex-completion-edit-notes (car (org-ref-get-bibtex-key-and-file thekey)))))
+
+  (defun my/org-ref-open-pdf-at-point ()
+    "Open the pdf for bibtex key under point if it exists."
+    (interactive)
+    (let* ((results (org-ref-get-bibtex-key-and-file))
+	   (key (car results))
+	   (pdf-file (funcall org-ref-get-pdf-filename-function key)))
+      (if (file-exists-p pdf-file)
+	  (find-file pdf-file)
+	(message "No PDF found for %s" key))))
+
+  (setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
 
   (defun retrieve-bibtex-from-crossref ()
     (doi-utils-add-entry-from-crossref-query
@@ -940,8 +956,8 @@ The maximum frame height is defined by the variable
   (setq helm-bibtex-full-frame nil)
   (setq bibtex-completion-cite-default-as-initial-input t)
   (setq bibtex-completion-additional-search-fields '(keywords))
-  (setq bibtex-completion-notes-symbol "*")
-  (setq bibtex-completion-pdf-symbol "#")
+  (setq bibtex-completion-notes-symbol "*"
+	bibtex-completion-pdf-symbol "#")
   (setq bibtex-completion-notes-template-one-file
         "\n** $${author} (${year}) ${title}\n   :PROPERTIES:\n   :Custom_ID: ${=key=}\n   :END:\ncite:${=key=}\n")
   (setq bibtex-completion-fallback-options
@@ -1013,7 +1029,7 @@ The maximum frame height is defined by the variable
   ;;; use Skim as default pdf viewer
   ;; option -b highlights the current line; option -g opens Skim in the background
   (setq TeX-view-program-list
-        '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline %n %o %b")))
+        '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b %n %o %b")))
   (setq TeX-view-program-selection '((output-pdf "PDF Viewer"))))
 
 (use-package server
@@ -1124,7 +1140,8 @@ The maximum frame height is defined by the variable
 (defun org-latex-ignore-heading-filter-headline (headline backend info)
   "Strip headline from HEADLINE. Ignore BACKEND and INFO."
   (when (and (org-export-derived-backend-p backend 'latex)
-             (string-match "\\`.*ignoreheading.*\n" headline))
+	     (or (string-match "\\`.*ignore.*\n" headline)
+		 (string-match "\\`.*ignoreheading.*\n" headline)))
     (replace-match "" nil nil headline)))
 (add-to-list 'org-export-filter-headline-functions
              'org-latex-ignore-heading-filter-headline)
@@ -1856,19 +1873,6 @@ asynchronously, in another process."
 		 (if force nil org-publish-use-timestamps-flag)))
 	    (org-publish-file file)))))))
 
-;; embbed youtube videos with org-mode links
-
-(org-add-link-type
- "yt"
- (lambda (handle)
-   (browse-url (concat "https://www.youtube.com/embed/" handle)))
- (lambda (path desc backend)
-   (cl-case backend
-     ;; You may want to change your width and height.
-     (html (format "<iframe width=\"440\" height=\"335\" src=\"https://www.youtube.com/embed/%s\" frameborder=\"0\" allowfullscreen>%s</iframe>"
-                   path (or desc "")))
-     (latex (format "\href{%s}{%s}" path (or desc "video"))))))
-
 ;; toggle inline images
 
 (add-hook 'org-mode-hook
@@ -1883,12 +1887,12 @@ asynchronously, in another process."
 (defun save-org-mode-files ()
   (dolist (buf (buffer-list))
     (with-current-buffer buf
-      (when (and (eq major-mode 'org-mode)
-		 (buffer-modified-p)
-		 (buffer-file-name))
-	(save-buffer)))))
+      (when (or (eq major-mode 'org-mode)
+		(eq major-mode 'bibtex-mode))
+        (when (and (buffer-modified-p) (buffer-file-name))
+	  (save-buffer))))))
 
-(run-with-idle-timer 50 t 'save-org-mode-files)
+(run-with-idle-timer 30 t 'save-org-mode-files)
 
 ;; ==================================================================
 ;; ˚˚ writing, editing and version control
@@ -2342,6 +2346,11 @@ Append a date to it using date2name."
      (concat "cd ~/downloads/youtube/tmp && youtube-dl -o '%(title)s.%(ext)s' -x --audio-format mp3 --add-metadata " str "--restrict-filenames" "\n"
              "date2name -c *.mp3" "\n"
              "mv *.mp3 ~/downloads/youtube" "\n"))))
+
+(defun youtube-stream (url)
+  (interactive "sURL: ")
+  (shell-command
+   (format "youtube-dl  -o - \"%s\" | mplayer -" url)))
 
 ;; unlink org mode link
 
