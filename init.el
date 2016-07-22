@@ -2073,17 +2073,19 @@ abc |ghi        <-- point still after white space after calling this function."
   (interactive)
   (org-backward-sentence))
 
-;; unfill paragraph undoes M-q
+;; fill and unfill paragraph with M-q
 
-(defun unfill-paragraph ()
+(defun toggle-fill-paragraph ()
+  "Like `fill-paragraph', but unfill if called used twice."
   (interactive)
-  (let ((fill-column (point-max)))
-    (fill-paragraph nil)))
+  (let ((fill-column
+         (if (eq last-command 'toggle-fill-paragraph)
+             (progn (setq this-command nil)
+                    (point-max))
+           fill-column)))
+    (call-interactively #'fill-paragraph)))
 
-(defun unfill-region ()
-  (interactive)
-  (let ((fill-column (point-max)))
-    (fill-region (region-beginning) (region-end) nil)))
+(global-set-key [remap fill-paragraph] #'toggle-fill-paragraph)
 
 ;; upcase (M-u), lowercase (m-l) and capitalize (M-m) word or region
 ;; https://github.com/snosov1/dot-emacs
