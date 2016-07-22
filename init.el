@@ -695,7 +695,7 @@ The app is chosen from your OS's preference."
  ("C-x <up>" . jag/shrink-frame)
  ("C-x <down>" . jag/maximize-frame))
 
-;; avoid backspace and return keys; use C-m or C-j instead
+;; writing and editing
 
 (bind-key "C-k" 'delete-line-no-kill)
 (bind-key "M-h" 'backward-delete-word) ; use C-DEL to backward-kill-word
@@ -703,6 +703,9 @@ The app is chosen from your OS's preference."
 (bind-key "M-DEL" 'backward-delete-word)
 (bind-key "M-j" 'delete-backward-char)	; was indent-new-comment-line
 (bind-key "µ" 'indent-new-comment-line)	; alt-m
+(bind-keys
+ ("C-M-;" . jag/split-line)
+ ("C-M-'" . jag/split-word))
 
 ;; help commands
 
@@ -2019,6 +2022,22 @@ With ARG, do this that many times."
    (point)
    (save-excursion (move-end-of-line 1) (point)))
   (delete-char 1))
+
+;; split line without moving the point
+
+(defun jag/split-line ()
+  "Split the current line without moving the point.
+The text to the right of the point is pushed down one line.
+Press \\[delete-char] to bring the text back up."
+  (interactive)
+  (save-excursion
+    (newline)))
+
+(defun jag/split-word ()
+  "Split the current word without moving the point."
+  (interactive)
+  (save-excursion
+    (insert " ")))
 
 ;; adjust space when killing or deleting words
 ;; https://github.com/kaushalmodi/.emacs.d/blob/master/setup-files/setup-editing.el
