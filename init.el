@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-21>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-22>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -825,6 +825,28 @@ The maximum frame height is defined by the variable
 	  ((<= (window-size) quarter-size)
 	   (scroll-down 1)))))
 
+;; fixes: https://github.com/politza/pdf-tools/issues/55
+
+(defun jag/scroll-other-window ()
+  (interactive)
+  (let* ((wind (other-window-for-scrolling))
+         (mode (with-selected-window wind major-mode)))
+    (if (eq mode 'pdf-view-mode)
+        (with-selected-window wind
+	  (pdf-view-next-line-or-next-page 2))
+      (scroll-other-window 2))))
+
+(defun jag/scroll-other-window-down ()
+  (interactive)
+  (let* ((wind (other-window-for-scrolling))
+         (mode (with-selected-window wind major-mode)))
+    (if (eq mode 'pdf-view-mode)
+	(with-selected-window wind
+	  (progn
+	    (pdf-view-previous-line-or-previous-page 2)
+	    (other-window 1)))
+      (scroll-other-window-down 2))))
+
 (bind-keys
  ("C-M-k" . jag/scroll-up)
  ("C-M-j" . jag/scroll-down))
@@ -849,26 +871,6 @@ The maximum frame height is defined by the variable
 (bind-keys
  ("C-v" . jag/scroll-other-window)
  ("C-M-v" . jag/scroll-other-window-down))
-
-(defun jag/scroll-other-window ()
-  (interactive)
-  (let* ((wind (other-window-for-scrolling))
-         (mode (with-selected-window wind major-mode)))
-    (if (eq mode 'pdf-view-mode)
-        (with-selected-window wind
-	  (pdf-view-next-line-or-next-page 2))
-      (scroll-other-window 2))))
-
-(defun jag/scroll-other-window-down ()
-  (interactive)
-  (let* ((wind (other-window-for-scrolling))
-         (mode (with-selected-window wind major-mode)))
-    (if (eq mode 'pdf-view-mode)
-	(with-selected-window wind
-	  (progn
-	    (pdf-view-previous-line-or-previous-page 2)
-	    (other-window 1)))
-      (scroll-other-window-down 2))))
 
 ;; ==================================================================
 ;; ˚˚ citation, bibliography and cross-reference
@@ -1305,6 +1307,16 @@ The maximum frame height is defined by the variable
   (setq battery-mode-line-format "[%p%%%%]")
   (setq powerline-default-separator nil
 	powerline-display-hud nil))
+
+;; enable notifications
+
+(use-package alert
+  :config
+  (progn
+    (cond ((eq system-type 'darwin)
+	   (setq alert-default-style 'notifier))
+	  ((eq system-type 'gnu/linux)
+	   (setq alert-default-style 'notifications)))))
 
 ;; ==================================================================
 ;; ˚˚ news and mail
@@ -1777,12 +1789,14 @@ Reposition the block to the top of the window."
 ;; pomodoro technique
 
 (use-package org-pomodoro
+  :load-path "~/git/org-pomodoro"
   :bind ("∏" . org-pomodoro) ; S-alt-p
   :config
   (setq org-pomodoro-long-break-frequency 4
 	org-pomodoro-long-break-length 20)
   (setq org-pomodoro-show-number t)
   (setq org-pomodoro-expiry-time 180)
+  (setq org-pomodoro-alert-style 'message)
   (setq org-pomodoro-audio-player "mplayer")
   (setq org-pomodoro-finished-sound-args "-volume 0.5"
 	org-pomodoro-long-break-sound-args "-volume 0.5"
@@ -1973,6 +1987,11 @@ asynchronously, in another process."
     (let ((buffname (s-trim (buffer-name buff))))
       (and buffname
 	   (s-ends-with-p ".pdf" buffname)))) )
+
+(use-package olivetti
+  :diminish olivetti-mode
+  :config
+  (setq olivetti-body-width 100))
 
 ;; delete word without killing it
 ;; http://www.emacswiki.org/emacs/BackwardDeleteWord
