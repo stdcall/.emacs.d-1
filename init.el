@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-22>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-26>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -262,8 +262,8 @@ With a prefix ARG, cycle randomly through a list of available themes."
   :config
   (use-package helm-config)
   (helm-mode 1)
-  (add-to-list
-   'helm-completing-read-handlers-alist '(find-file . ido))
+  (add-to-list 'helm-completing-read-handlers-alist '(find-file . ido))
+  (add-to-list 'helm-completing-read-handlers-alist '(basic-save-buffer . ido))
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
   (setq helm-org-show-filename nil)
@@ -456,6 +456,9 @@ string."
 		 ("Dired" (mode . dired-mode))
 		 ("Magit" (name . "\*magit"))))))
 
+  (unbind-key "M-o" ibuffer-mode-map)
+  (unbind-key "C-o" ibuffer-mode-map)
+
   (add-hook 'ibuffer-mode-hook
             '(lambda ()
                (ibuffer-switch-to-saved-filter-groups "default")
@@ -566,6 +569,8 @@ If the *scratch* buffer does not exist, create one."
   (setq diredp-wrap-around-flag nil))
 
 ;; reload dired buffer after making changes
+
+(use-package dash)
 
 (--each '(dired-do-rename
           dired-do-copy
@@ -719,9 +724,6 @@ The app is chosen from your OS's preference."
 
 ;; unbind
 
-(unbind-key "M-o" ibuffer-mode-map)
-(unbind-key "C-o" ibuffer-mode-map)
-
 (unbind-key "C-o" dired-mode-map)	; use C-m instead
 (unbind-key "M-p" dired-mode-map)
 (unbind-key "M-c" dired-mode-map)
@@ -752,8 +754,7 @@ The app is chosen from your OS's preference."
 	   ("u"   . boxquote-unbox)
 	   ("w"   . display-time-world-and-focus)
 	   ("f"   . switch-font)
-	   ("M-j" . switch-to-scratch-and-back)
-	   ("M-q" . unfill-paragraph))
+	   ("M-j" . switch-to-scratch-and-back))
 
 ;; quickly switch between dictionaries
 
@@ -1350,7 +1351,10 @@ The maximum frame height is defined by the variable
 ;; enable multimedia support
 
 (use-package emms
-  :config (use-package config-emms))
+  :config (use-package config-emms
+	    :bind (("M-p e" . emms-go)
+		   ("M-p h" . helm-emms)
+		   ("M-p b" . emms-smart-browse))))
 
 ;; timer
 
@@ -1435,8 +1439,12 @@ The maximum frame height is defined by the variable
 
 ;; load files automatically
 
+(use-package org-habit
+  :config
+  (setq org-habit-graph-column 55)
+  (setq org-habit-preceding-days 14))
+
 (use-package org-checklist)
-(use-package org-habit)
 (use-package org-id)
 (use-package org-mouse)
 (use-package ox-beamer)
@@ -1445,7 +1453,7 @@ The maximum frame height is defined by the variable
 ;; (use-package 'org-contacts)
 
 (setq org-confirm-babel-evaluate nil)
-(setq org-tags-column -50)
+;; (setq org-tags-column -50)
 (setq org-reverse-note-order t)
 (setq org-return-follows-link t)
 (setq org-src-tab-acts-natively t)
@@ -1455,8 +1463,6 @@ The maximum frame height is defined by the variable
 (setq org-id-method (quote uuidgen))
 (setq org-id-link-to-org-use-id
       'create-if-interactive-and-no-custom-id) ; C-c l/C-c C-l
-(setq org-habit-graph-column 55)
-(setq org-habit-preceding-days 14)
 (setq org-highlight-latex-and-related '(latex entities))
 (setq org-link-frame-setup
       '((file . find-file)))
