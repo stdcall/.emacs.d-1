@@ -90,29 +90,18 @@ keywords field."
                         (list (or (bibtex-completion-get-value "keywords" entry)
                                   "")))
    collect
-   (cons (s-format "$0 $1 $2 $3 $4 $5 $6" 'elt
+   (cons (s-format "$2 $0 $1 $3 $4 $5 $6" 'elt
                    (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
                               fields (list 25 (- width 60) 4 1 1 7 14)))
          entry-key)))
 
-;; revert escaped characters
+;; unescape characters
 
 (defun bibtex-completion-clean-string (s)
   "Removes quoting and superfluous white space from BibTeX field
 values."
   (let* ((s (replace-regexp-in-string "[\n\t ]+" " " s))
-	 (s (replace-regexp-in-string "{\\\\'a}" "á" s))
-	 (s (replace-regexp-in-string "{\\\\~a}" "ã" s))
-	 (s (replace-regexp-in-string "{\\\\^a}" "â" s))
-	 (s (replace-regexp-in-string "{\\\\`a}" "à" s))
-	 (s (replace-regexp-in-string "{\\\\'e}" "é" s))
-	 (s (replace-regexp-in-string "{\\\\^e}" "ê" s))
-	 (s (replace-regexp-in-string "{\\\\'i}" "í" s))
-	 (s (replace-regexp-in-string "{\\\\'o}" "ó" s))
-	 (s (replace-regexp-in-string "{\\\\~o}" "õ" s))
-	 (s (replace-regexp-in-string "{\\\\^o}" "ô" s))
-	 (s (replace-regexp-in-string "{\\\\'u}" "ú" s))
-	 (s (replace-regexp-in-string "{\\\\c c}" "ç" s))
+	 (s (replace-regexp-in-string "\\\\&" "&" s))
 	 (s (replace-regexp-in-string "[\\\.{}]+" "" s)))
     (if s s nil)))
 
@@ -150,6 +139,159 @@ values."
 		    " "))
     (org-cycle)
     (org-ref-helm-insert-label-link)))
+
+;; ==================================================================
+;; ˚˚ local database
+;; ==================================================================
+
+(defun bibtex-completion--get-local-databases ()
+  "Return a list of .bib files associated with the current file.
+This function searches the current file or its master file for a
+`\\bibliography' or `\\addbibresource' command and returns the
+associated .bib file(s). If no files are found locally, return the
+files specified in the variable `bibtex-completion-bibliography'."
+  (let ((texfile nil)
+	(dir (file-name-directory (buffer-file-name)))
+	(cb (current-buffer)))
+    (when (and (boundp 'TeX-master)
+	       (stringp TeX-master))
+      (setq texfile (if (file-name-extension TeX-master)
+			TeX-master
+		      (concat TeX-master ".tex"))))
+    (with-temp-buffer
+      (if (and texfile (file-readable-p texfile))
+	  (insert-file-contents texfile)
+	(insert-buffer-substring cb))
+      (save-match-data
+	(goto-char (point-min))
+	(cond
+	 ;; bibtex
+	 ((re-search-forward "\\\\\\(?:no\\)*bibliography{\\(.*?\\)}" nil t)
+	  (mapcar (lambda (fname)
+		    (if (file-name-extension fname)
+			(format "%s%s" dir fname)
+		      (format "%s%s.bib" dir fname)))
+		  (split-string (match-string-no-properties 1) ",[ ]*")))
+	 ;; biblatex
+	 ((re-search-forward "\\\\addbibresource\\(\\[.*?\\]\\)?{\\(.*?\\)}" nil t)
+	  (mapcar (lambda (fname)
+		    (if (file-name-extension fname)
+			(format "%s%s" dir fname)
+		      (format "%s%s.bib" dir fname)))
+		  (let ((option (match-string 1))
+			(file (match-string-no-properties 2)))
+		    (unless (and option (string-match-p "location=remote" option))
+		      (split-string file ",[ ]*")))))
+	 (t
+	  bibtex-completion-bibliography))))))
+
+
+;; ==================================================================
+;; ˚˚ labels and cross-referencing
+;; ==================================================================
+
+;;;###autoload
+(defun power-ref-utils ()
+  (interactive)
+  (let ((labels (org-ref-get-labels)))
+    (helm :sources `(,(helm-build-sync-source "Existing labels"
+			:candidates labels
+			:action `(("Insert ref link" .
+				   (lambda (label)
+				     (let* ((object (org-element-context))
+					    (last-char
+					     (save-excursion
+					       (goto-char (org-element-property :end object))
+					       (backward-char)
+					       (if (looking-at " ")
+						   " "
+						 ""))))
+				       (if (-contains? '("ref" "eqref" "pageref" "nameref")
+						       (org-element-property :type object))
+					   ;; we are on a link, so replace it.
+					   (setf
+					    (buffer-substring
+					     (org-element-property :begin object)
+					     (org-element-property :end object))
+					    (concat
+					     (replace-regexp-in-string
+					      (org-element-property :path object)
+					      label
+					      (org-element-property :raw-link object))
+					     last-char))
+					 (insert
+					  (concat
+					   "ref:" label))))))
+				  ("Insert alternate link" .
+				   (lambda (label)
+				     (insert
+				      (helm :sources (helm-build-sync-source "Ref link types"
+						       :candidates '("ref" "vref" "pageref"
+								     "nameref" "eqref")
+						       :action (lambda (x)
+								 ;; here we try to emulate vref behaviour
+								 (if (string= x "vref")
+								     (format "ref:%s on page pageref:%s"
+									     label label)
+								   (concat x ":" label))))))))
+				  ("Insert custom-id link" .
+				   (lambda (label)
+				     (insert
+				      (format "[[#%s]]" label))))))
+		     ,(helm-build-dummy-source "Create new label"
+			:action (lambda (label)
+				  (with-helm-current-buffer
+				    (insert (concat "label:" label)))))
+		     ,(helm-build-sync-source "Utilities"
+			:candidates '(("Insert glossary" . org-ref-insert-glossary-link)
+				      ("Insert figure" . power-ref-insert-figure)
+				      ;; FIXME: latex fragments in caption
+				      ("List of figures" . org-ref-list-of-figures)
+				      ("List of tables" . org-ref-list-of-tables))
+			:action (lambda (x)
+                                  (funcall x))))
+	  :buffer "*helm utils*")))
+
+
+;; ==================================================================
+;; ˚˚ utils
+;; ==================================================================
+
+;;;###autoload
+(defun power-ref-bad-keys ()
+  "Check for bad keys in both pdf directory and notes file."
+  (interactive)
+  (let ((keys '())
+	(pkeys (mapcar (lambda (x)
+			 (replace-regexp-in-string "\\.pdf$" "" x))
+		       (directory-files org-ref-pdf-directory nil "\\.pdf$")))
+	(bibkeys (bibtex-completion-candidates)))
+    (setq allkeys (mapcar (lambda (x)
+			    (cdr (assoc "=key=" x)))
+			  bibkeys))
+    (setq badkeys (set-difference pkeys allkeys :test 'equal))
+    (with-temp-buffer
+      (insert-file-contents org-ref-bibliography-notes)
+      (save-restriction
+	(goto-char (point-min))
+	(while (re-search-forward "^[ \t]*:Custom_ID: \\(.+\\)$" nil t)
+	  (when (thing-at-point 'symbol)
+	    (let ((key (thing-at-point 'symbol t)))
+	      (when (not (-contains? allkeys key))
+		(push (cons key (point)) keys))))))
+      (helm :sources `(,(helm-build-sync-source "Bad pdf keys"
+			  :candidates (if badkeys badkeys '("No bad keys"))
+			  :action (lambda (candidate)
+				    (dired
+				     (concat org-ref-pdf-directory "/" candidate "\.pdf"))))
+		       ,(helm-build-sync-source "Bad note keys"
+			  :candidates (lambda ()
+					(if keys keys '("No bad keys")))
+			  :action (lambda (marker)
+				    (switch-to-buffer
+				     (find-file-noselect org-ref-bibliography-notes))
+				    (goto-char marker)
+				    (org-show-entry))))))))
 
 ;;;###autoload
 (defun power-ref-bad-citations ()
@@ -262,7 +404,7 @@ at the end of you file.
                                   (goto-char marker)
 				  (org-show-entry))))
                      ;;
-                     ((name . "Multiply defined labels")
+                     ((name . "Multiple labels")
                       (candidates . ,bad-labels)
                       (action . (lambda (marker)
                                   (switch-to-buffer (marker-buffer marker))
@@ -289,91 +431,10 @@ at the end of you file.
                                   (switch-to-buffer ,cb)
                                   (funcall x))))))))
 
-;;;###autoload
-(defun power-ref-utils ()
-  "A few useful functions from org-ref."
-  (interactive)
-  (let* ((labels (org-ref-get-labels))
-         (cb (current-buffer)))
-    (helm :sources `(((name . "Existing labels")
-                      (candidates . ,labels)
-                      ;; default action is to open to the label
-                      (action . (lambda (label)
-                                  ;; unfortunately I do not have markers here
-                                  (org-open-link-from-string
-                                   (format "ref:%s" label))))
-                      ;; if you select a label, replace current one
-                      (action . (lambda (label)
-                                  (switch-to-buffer ,cb)
-                                  (cond
-                                   ;;  no prefix or on a link
-                                   ((equal helm-current-prefix-arg nil)
-                                    (let* ((object (org-element-context))
-                                           (last-char
-					    (save-excursion
-					      (goto-char (org-element-property :end object))
-					      (backward-char)
-					      (if (looking-at " ")
-						  " "
-						""))))
-                                      (when (-contains?
-					     '("label")
-					     (org-element-property :type object))
-                                        ;; we are on a link, so replace it.
-                                        (setf
-                                         (buffer-substring
-                                          (org-element-property :begin object)
-                                          (org-element-property :end object))
-                                         (concat
-                                          (replace-regexp-in-string
-                                           (org-element-property :path object)
-                                           label
-                                           (org-element-property :raw-link object))
-                                          last-char)))))))))
-                     ;; no matching selection creates a new label
-                     ((name . "Create new label")
-                      (dummy)
-                      ;; default action creates a new label, or replaces old one
-                      (action . (lambda (label)
-                                  (switch-to-buffer ,cb)
-                                  (let* ((object (org-element-context))
-                                         (last-char
-					  (save-excursion
-					    (goto-char (org-element-property :end object))
-					    (backward-char)
-					    (if (looking-at " ")
-						" "
-					      ""))))
-                                    (if (-contains? '("label")
-                                                    (org-element-property :type object))
-                                        ;; we are on a link, so replace it.
-                                        (setf
-                                         (buffer-substring
-                                          (org-element-property :begin object)
-                                          (org-element-property :end object))
-                                         (concat
-                                          (replace-regexp-in-string
-                                           (org-element-property :path object)
-                                           helm-pattern
-                                           (org-element-property :raw-link object))
-                                          last-char))
-                                      ;; new link
-                                      (insert
-                                       (concat
-                                        "label:"
-                                        (or label
-                                            helm-pattern))))))))
-		     ((name . "Utilities")
-		      (candidates . (("Insert ref link" . org-ref-helm-insert-ref-link)
-				     ("Insert figure" . power-ref-insert-figure)
-				     ("List of figures" . org-ref-list-of-figures)
-				     ("List of tables" . org-ref-list-of-tables)))
-		      (action . (lambda (x)
-                                  (switch-to-buffer ,cb)
-                                  (funcall x)))))
-	  :buffer "*power ref utils*")))
 
-;; keymap
+;; ==================================================================
+;; ˚˚ keymap
+;; ==================================================================
 
 (defvar power-ref-map
   (let ((map (make-sparse-keymap)))
@@ -387,9 +448,19 @@ at the end of you file.
     (define-key map (kbd "C-M-a") 'power-ref-prepare-annotation)
     map))
 
-(defun power-ref-open-pdf ()
-  (interactive)
-  (helm-exit-and-execute-action 'helm-bibtex-open-pdf))
+(defun power-ref-process-key ()
+  "Remove counter from key."
+  (replace-regexp-in-string "^[0-9]+? " "" (car (helm-marked-candidates))))
+
+(defun power-ref-open-pdf (arg)
+  (interactive "P")
+  (power-ref-process-key)
+  (if arg
+      (let* ((key (car (helm-marked-candidates)))
+	     (pdf (car (bibtex-completion-find-pdf-in-library key))))
+	(when pdf
+	  (helm-exit-and-execute-action (browse-url pdf))))
+    (helm-exit-and-execute-action 'helm-bibtex-open-pdf)))
 
 (defun power-ref-insert-citation (arg)
   "Insert citation at point.
@@ -404,7 +475,11 @@ With a prefix ARG, prompt for pre and postnotes. See
 
 (defun power-ref-edit-notes ()
   (interactive)
-  (helm-exit-and-execute-action 'bibtex-completion-edit-notes))
+  (helm-exit-and-execute-action
+   (lambda (key)
+     (let* ((cand (car (helm-marked-candidates)))
+     	    (key (replace-regexp-in-string "^[0-9]+? " "" cand)))
+       (bibtex-completion-edit-notes key)))))
 
 (defun power-ref-tag-entries ()
   (interactive)
@@ -412,11 +487,21 @@ With a prefix ARG, prompt for pre and postnotes. See
 
 (defun power-ref-show-entry ()
   (interactive)
-  (helm-exit-and-execute-action 'bibtex-completion-show-entry))
+  (power-ref-process-key)
+  (helm-exit-and-execute-action
+   (lambda (key)
+     (let* ((cand (car (helm-marked-candidates)))
+	    (key (replace-regexp-in-string "^[0-9]+? " "" cand)))
+       (bibtex-completion-show-entry key)))))
 
 (defun power-ref-prepare-annotation ()
   (interactive)
+  (power-ref-process-key)
   (helm-exit-and-execute-action 'power-ref-annotate))
+
+;; ==================================================================
+;; ˚˚ browser
+;; ==================================================================
 
 ;; propertize candidates
 
@@ -424,36 +509,104 @@ With a prefix ARG, prompt for pre and postnotes. See
   (cl-loop for i in candidates
 	   collect (concat (propertize i 'font-lock-face `(:foreground ,org-ref-cite-color)))))
 
-(defun power-ref-citation-links ()
-  "Return a list of citation links in a helm buffer."
+;; browse labels
+
+(defun org-ref-browse-labels ()
+  "Browse existing labels in the current buffer."
+  (let ((labels (org-ref-get-labels)))
+    (helm :sources `(,(helm-build-sync-source "Browse labels"
+			:follow 1
+			:candidates labels
+			:action (lambda (label)
+				  (with-helm-current-buffer
+				    (org-open-link-from-string
+				     (format "ref:%s" label)))))
+			:persistent-action (lambda (label)
+					     (with-helm-current-buffer
+					       (org-open-link-from-string
+						(format "ref:%s" label)))
+					     (helm-highlight-current-line nil nil nil nil 'pulse)))
+	  :buffer "*helm labels*")))
+
+;; browse citation links
+
+(defun org-ref-browser-open-menu (candidate)
+  (goto-char
+   (cdr (assoc candidate alist1)))
+  (org-open-at-point))
+
+(defun org-ref-browser-transformer (candidates)
+  "Add counter to candidates."
+  (let ((counter 0))
+    (cl-loop for i in candidates
+	     collect (format "%s %s" (cl-incf counter) i))))
+
+(defun org-ref-browser-display (candidate)
+  "Strip counter from candidates."
+  (replace-regexp-in-string "^[0-9]+? " "" candidate))
+
+;;;###autoload
+(defun org-ref-browser-goto-citation-links (&optional bibkey)
+  "Quickly browse citation links in the current buffer.
+With an optional BIBKEY argument, narrow to citation links that share
+the same key."
   (interactive)
-  (let ((keys '()))
+  (let ((keys nil)
+	(alist nil))
+    (widen)
+    (show-all)
     (org-element-map (org-element-parse-buffer) 'link
       (lambda (link)
 	(let ((plist (nth 1 link)))
 	  (when (-contains? org-ref-cite-types (plist-get plist ':type))
-	    (dolist (key
-		     (org-ref-split-and-strip-string (plist-get plist ':path)))
-	      (when (not (-contains? keys key))
-		(setq keys (append keys (list key)))))))))
-    (helm :sources `(((name . "Citation links")
-		      (candidates . ,(mapcar (lambda (x)
-					       (format "%s" x))
-					     (nreverse keys))) ; TODO sort by most cited
-		      (candidate-transformer power-ref-propertize)
-		      ;; TODO use org-ref-cite-candidates instead
-		      (action . ,power-ref-actions)))
-	  :buffer "*cite links*"
-	  :keymap power-ref-map
-	  :candidate-number-limit 1000)))
+	    (let ((start (org-element-property :begin link)))
+	      (dolist (key
+		       (org-ref-split-and-strip-string (plist-get plist ':path)))
+		;; when called from org-ref-browser, narrow to
+		;; citation links matching the current candidate.
+		;; Otherwise use all keys as candidates.
+		(if bibkey
+		    (when (string= key bibkey)
+		      (setq keys (append keys (list key)))
+		      (setq alist (append alist (list (cons key start)))))
+		  (setq keys (append keys (list key)))
+		  (setq alist (append alist (list (cons key start)))))))))))
+    (let ((counter 0))
+      ;; the idea here is to create an alist with ("counter key" .
+      ;; position) to produce unique candidates
+      (setq count-key-pos (mapcar (lambda (x)
+				    (cons
+				     (format "%s %s" (cl-incf counter) (car x)) (cdr x)))
+				  alist)))
+    ;; push mark to restore position with C-u C-SPC
+    (push-mark (point))
+    ;; move point to the first citation link in the buffer
+    (goto-char (cdr (assoc (caar alist) alist)))
+    (helm :sources
+	  (helm-build-sync-source "Browse citation links"
+	    :follow 1
+	    :candidates keys
+	    :candidate-transformer 'org-ref-browser-transformer
+	    :real-to-display 'org-ref-browser-display
+	    :persistent-action (lambda (candidate)
+				 (helm-goto-char
+				  (cdr (assoc candidate count-key-pos)))
+				 (helm-highlight-current-line nil nil nil nil 'pulse))
+	    :action `(("Open menu" . ,(lambda (candidate)
+					(helm-goto-char
+					 (cdr (assoc candidate count-key-pos)))
+					(org-open-at-point)))))
+	  :buffer "*helm goto links*")))
 
-;; sources
+;; ==================================================================
+;; ˚˚ sources
+;; ==================================================================
 
 (defvar power-ref-bibtex-source
   (helm-build-sync-source "BibTeX entries"
     :init 'bibtex-completion-init
     :candidates 'bibtex-completion-candidates
-    :filtered-candidate-transformer  'helm-bibtex-candidates-formatter
+    :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
     :action power-ref-actions
     ;; for keybindings to work after helm-resume, we need the keymap
     ;; set to helm source instead of helm session
