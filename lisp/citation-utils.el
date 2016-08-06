@@ -221,7 +221,7 @@ files specified in the variable `bibtex-completion-bibliography'."
 					     last-char))
 					 (insert
 					  (concat
-					   "ref:" label))))))
+					   " ref:" label))))))
 				  ("Insert alternate link" .
 				   (lambda (label)
 				     (insert
@@ -231,9 +231,9 @@ files specified in the variable `bibtex-completion-bibliography'."
 						       :action (lambda (x)
 								 ;; here we try to emulate vref behaviour
 								 (if (string= x "vref")
-								     (format "ref:%s on page pageref:%s"
+								     (format " ref:%s on page pageref:%s"
 									     label label)
-								   (concat x ":" label))))))))
+								   (format " %s:%s" x label))))))))
 				  ("Insert custom-id link" .
 				   (lambda (label)
 				     (insert
