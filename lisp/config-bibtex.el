@@ -51,6 +51,7 @@
   (bibtex-beginning-of-entry)
   (save-excursion
     (bibtex-downcase-entry-type)
+    (org-ref-sort-bibtex-entry)
     ;; (bibtex-replace-nonascii)
     (bibtex-replace-naked-ampersand)
     (bibtex-last-comma)
