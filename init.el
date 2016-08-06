@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-07-26>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-06>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -264,6 +264,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
   (helm-mode 1)
   (add-to-list 'helm-completing-read-handlers-alist '(find-file . ido))
   (add-to-list 'helm-completing-read-handlers-alist '(basic-save-buffer . ido))
+  (add-to-list 'helm-completing-read-handlers-alist '(kill-buffer-and-its-windows . ido))
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
   (setq helm-org-show-filename nil)
@@ -445,6 +446,7 @@ string."
                  ("Org" (or
 			 (mode . org-mode)
 			 (name . "^\\*Org Agenda")))
+		 ("PDF" (mode . pdf-view-mode))
                  ("LaTeX" (or
 			   (mode . latex-mode)
 			   (mode . bibtex-mode)))
@@ -895,7 +897,8 @@ The maximum frame height is defined by the variable
     :config
     (setq doi-utils-timestamp-format-function nil)
     (setq doi-utils-dx-doi-org-url "https://dx.doi.org/")
-    (setq doi-utils-make-notes nil))
+    (setq doi-utils-make-notes nil
+	  doi-utils-download-pdf nil))
   (setq org-ref-bibliography-notes "~/org/annotation.org"
         org-ref-default-bibliography '("~/org/refs.bib")
         org-ref-pdf-directory "~/papers")
@@ -1354,7 +1357,19 @@ The maximum frame height is defined by the variable
   :config (use-package config-emms
 	    :bind (("M-p e" . emms-go)
 		   ("M-p h" . helm-emms)
-		   ("M-p b" . emms-smart-browse))))
+		   ("M-p b" . emms-smart-browse)))
+
+  (defun dired-add-to-emms-playlist ()
+  "Add directory tree to the current EMMS playlist."
+  (interactive)
+  (let ((file (expand-file-name (dired-get-filename))))
+    (if (and file (file-directory-p file))
+        (emms-add-directory-tree file)
+      (emms-add-file file))))
+  (add-hook 'dired-mode-hook 'my-dired-mode-hook)
+
+  (defun my-dired-mode-hook ()
+    (define-key dired-mode-map (kbd "e") 'dired-add-to-emms-playlist)))
 
 ;; timer
 
