@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-06>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-11>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -901,7 +901,7 @@ The maximum frame height is defined by the variable
 	  doi-utils-download-pdf nil))
   (setq org-ref-bibliography-notes "~/org/annotation.org"
         org-ref-default-bibliography '("~/org/refs.bib")
-        org-ref-pdf-directory "~/papers")
+        org-ref-pdf-directory "~/papers/")
   (setq org-ref-cite-onclick-function 'org-ref-cite-click-helm)
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
   (setq org-ref-nonascii-latex-replacements nil)
@@ -1464,8 +1464,8 @@ The maximum frame height is defined by the variable
 (use-package org-mouse)
 (use-package ox-beamer)
 ;; (use-package ox-org)
-;; (use-package 'ox-odt)
-;; (use-package 'org-contacts)
+;; (use-package ox-odt)
+;; (use-package org-contacts)
 
 (setq org-confirm-babel-evaluate nil)
 ;; (setq org-tags-column -50)
