@@ -11,7 +11,7 @@
 (require 'helm-emms)
 
 ;; ==================================================================
-;; ˚˚ default settings
+;;;; default settings
 ;; ==================================================================
 
 (emms-all)
@@ -38,7 +38,7 @@
 (setq helm-emms-use-track-description-function t)
 
 ;; ==================================================================
-;; ˚˚ speed and seeking
+;;;; speed and seeking
 ;; ==================================================================
 
 ;; adding af=scaletempo to the .mplayer config file makes the pitch
@@ -80,7 +80,7 @@ a positive number."
 		       (format "speed_incr %f\n" (- 0 emms-player-mplayer-speed-increment))))
 
 ;; ==================================================================
-;; ˚˚ track and modeline display
+;;;; track and modeline display
 ;; ==================================================================
 
 ;; track display
@@ -153,7 +153,7 @@ modeline.")
 						  (concat fname-short "…")))))))))
 
 ;; ==================================================================
-;; ˚˚ tag editor
+;;;; tag editor
 ;; ==================================================================
 
 ;; http://www.emacswiki.org/emacs/emms-extension.el
@@ -188,7 +188,7 @@ buffer."
   (delete-other-windows))
 
 ;; ==================================================================
-;; ˚˚ lyrics
+;;;; lyrics
 ;; ==================================================================
 
 (add-to-list 'auto-mode-alist '("\\.lrc$" . emms-lyrics-mode))
@@ -222,7 +222,7 @@ If no file is found, lookup online."
   (emms-playlist-mode-go))
 
 ;; ==================================================================
-;; ˚˚ misc utils
+;;;; misc utils
 ;; ==================================================================
 
 (defun emms-go ()
@@ -291,7 +291,7 @@ Otherwise add default library to the playlist and go to it."
       (message (format "%s" filename)))))
 
 ;; ==================================================================
-;; ˚˚ key bindings
+;;;; key bindings
 ;; ==================================================================
 
 (global-set-key (kbd "M-p e") 'emms-go)

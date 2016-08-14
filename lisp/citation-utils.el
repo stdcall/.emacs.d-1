@@ -141,7 +141,7 @@ values."
     (org-ref-helm-insert-label-link)))
 
 ;; ==================================================================
-;; ˚˚ local database
+;;;; local database
 ;; ==================================================================
 
 (defun bibtex-completion--get-local-databases ()
@@ -187,7 +187,7 @@ files specified in the variable `bibtex-completion-bibliography'."
 
 
 ;; ==================================================================
-;; ˚˚ labels and cross-referencing
+;;;; labels and cross-referencing
 ;; ==================================================================
 
 ;;;###autoload
@@ -254,7 +254,7 @@ files specified in the variable `bibtex-completion-bibliography'."
 
 
 ;; ==================================================================
-;; ˚˚ utils
+;;;; utils
 ;; ==================================================================
 
 ;;;###autoload
@@ -433,7 +433,7 @@ at the end of you file.
 
 
 ;; ==================================================================
-;; ˚˚ keymap
+;;;; keymap
 ;; ==================================================================
 
 (defvar power-ref-map
@@ -500,7 +500,7 @@ With a prefix ARG, prompt for pre and postnotes. See
   (helm-exit-and-execute-action 'power-ref-annotate))
 
 ;; ==================================================================
-;; ˚˚ browser
+;;;; browser
 ;; ==================================================================
 
 ;; propertize candidates
@@ -599,7 +599,7 @@ the same key."
 	  :buffer "*helm goto links*")))
 
 ;; ==================================================================
-;; ˚˚ sources
+;;;; sources
 ;; ==================================================================
 
 (defvar power-ref-bibtex-source

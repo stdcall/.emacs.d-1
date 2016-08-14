@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-11>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-14>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -36,7 +36,7 @@
   (require 'use-package))
 
 ;; ==================================================================
-;; ˚˚ appearance
+;;;; appearance
 ;; ==================================================================
 
 ;; disable tool bar, scroll bar and tool tip
@@ -161,7 +161,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (bind-key "C-c t" 'select-theme)
 
 ;; ==================================================================
-;; ˚˚ directory and load paths
+;;;; directory and load paths
 ;; ==================================================================
 
 (setq user-emacs-directory (file-truename "~/.emacs.d/"))
@@ -185,7 +185,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (use-package private)
 
 ;; ==================================================================
-;; ˚˚ default settings
+;;;; default settings
 ;; ==================================================================
 
 (defun display-startup-echo-area-message ()
@@ -250,7 +250,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
       (concat ";; GNU Emacs " emacs-version "\n\n"))
 
 ;; ==================================================================
-;; ˚˚ files, projects, searches and commands
+;;;; files, projects, searches and commands
 ;; ==================================================================
 
 ;; incremental completion
@@ -299,9 +299,9 @@ search the regexp using `swiper'."
       (with-temp-buffer
 	(insert-file-contents file)
 	(goto-char (point-min))
-	(let ((val (count-matches "^;; ˚+ ")))
+	(let ((val (count-matches "^;;;; ")))
 	  (setq ivy-height (+ val 1))))
-      (swiper "^;; ˚+ ")))
+      (swiper "^;;;; ")))
 
   (defun jag/swiper (&optional arg)
     "Search selected region using `swiper'.
@@ -431,7 +431,7 @@ string."
 	  (avy-goto-line   . (?j ?k ?l ?\; ?a ?s)))))
 
 ;; ==================================================================
-;; ˚˚ buffer settings
+;;;; buffer settings
 ;; ==================================================================
 
 ;; manage open buffers
@@ -545,7 +545,7 @@ If the *scratch* buffer does not exist, create one."
   (switch-to-buffer (other-buffer (current-buffer) 1)))
 
 ;; ==================================================================
-;; ˚˚ dired for managing directories
+;;;; dired for managing directories
 ;; ==================================================================
 
 (setq dired-recursive-copies 'always
@@ -637,7 +637,7 @@ The app is chosen from your OS's preference."
         (mapc (lambda (fPath) (let ((process-connection-type nil)) (start-process "" nil "xdg-open" fPath)) ) myFileList) ) ) ) ) )
 
 ;; ==================================================================
-;; ˚˚ key bindings
+;;;; key bindings
 ;; ==================================================================
 
 (bind-key "C-o" 'find-file)
@@ -879,7 +879,7 @@ The maximum frame height is defined by the variable
  ("C-M-v" . jag/scroll-other-window-down))
 
 ;; ==================================================================
-;; ˚˚ citation, bibliography and cross-reference
+;;;; citation, bibliography and cross-reference
 ;; ==================================================================
 
 ;; edit and validate BibTeX entries
@@ -1016,7 +1016,7 @@ The maximum frame height is defined by the variable
   :bind* ("C-c C-j" . power-ref))
 
 ;; ==================================================================
-;; ˚˚ AUCTeX for managing (La)TeX files
+;;;; AUCTeX for managing (La)TeX files
 ;; ==================================================================
 
 (use-package tex-site
@@ -1156,7 +1156,7 @@ The maximum frame height is defined by the variable
              'org-latex-ignore-heading-filter-headline)
 
 ;; ==================================================================
-;; ˚˚ useful packages and modes
+;;;; useful packages and modes
 ;; ==================================================================
 
 ;; smartparens
@@ -1326,7 +1326,7 @@ The maximum frame height is defined by the variable
 	   (setq alert-default-style 'notifications)))))
 
 ;; ==================================================================
-;; ˚˚ news and mail
+;;;; news and mail
 ;; ==================================================================
 
 ;; newsreader client
@@ -1348,7 +1348,7 @@ The maximum frame height is defined by the variable
   :config (epa-file-enable))
 
 ;; ==================================================================
-;; ˚˚ music and audio
+;;;; music and audio
 ;; ==================================================================
 
 ;; enable multimedia support
@@ -1418,7 +1418,7 @@ The maximum frame height is defined by the variable
   :config (add-hook 'cider-mode-hook #'eldoc-mode))
 
 ;; ==================================================================
-;; ˚˚ org-mode for managing notes, tasks and documents
+;;;; org-mode for managing notes, tasks and documents
 ;; ==================================================================
 
 (use-package org)
@@ -1569,7 +1569,7 @@ The maximum frame height is defined by the variable
 				("s" . org-schedule))))
 
 ;; ==================================================================
-;; ˚˚ org agenda settings
+;;;; org agenda settings
 ;; ==================================================================
 
 (setq org-agenda-files (quote ("~/org/todo.org"
@@ -1704,7 +1704,7 @@ Reposition the block to the top of the window."
         next-headline))))
 
 ;; ==================================================================
-;; ˚˚ GTD settings
+;;;; GTD settings
 ;; ==================================================================
 
 (setq org-todo-keywords
@@ -1795,7 +1795,7 @@ Reposition the block to the top of the window."
 	  ("I" ((in-file . "orientation.org"))))))
 
 ;; ==================================================================
-;; ˚˚ org mode extension
+;;;; org mode extension
 ;; ==================================================================
 
 ;; deft for browsing org files
@@ -1933,7 +1933,7 @@ asynchronously, in another process."
 (run-with-idle-timer 30 t 'save-org-mode-files)
 
 ;; ==================================================================
-;; ˚˚ writing, editing and version control
+;;;; writing, editing and version control
 ;; ==================================================================
 
 ;; keep track of revisions
@@ -2258,7 +2258,7 @@ show % of daily goal. Also show the percent completed."
   (add-to-list 'ispell-skip-region-alist '("\\(cite.:[[:upper:]]+[0-9]+[a-z]\\)")))
 
 ;; ==================================================================
-;; ˚˚ dictionary, thesaurus and translation tools
+;;;; dictionary, thesaurus and translation tools
 ;; ==================================================================
 
 (key-chord-define-global
@@ -2375,7 +2375,7 @@ If region is active, use that instead."
       (thing-at-point 'word)))))
 
 ;; ==================================================================
-;; ˚˚ useful functions
+;;;; useful functions
 ;; ==================================================================
 
 ;;; download and watch youtube videos from emacs
@@ -2466,7 +2466,7 @@ With a prefix ARG, display both date and time."
     (setq display-time-format " %R ")))
 
 ;; ==================================================================
-;; ˚˚ frame and window
+;;;; frame and window
 ;; ==================================================================
 
 ;; move point to the new window
