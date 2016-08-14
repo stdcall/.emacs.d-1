@@ -12,7 +12,7 @@
 (require 'bbdb-loaddefs "~/.emacs.d/bbdb/bbdb-loaddefs.el")
 
 ;; ==================================================================
-;; ˚˚ basic configuration
+;;;; basic configuration
 ;; ==================================================================
 
 (setq mu4e-maildir "~/Maildir")
@@ -115,7 +115,7 @@
   (imagemagick-register-types))
 
 ;; ==================================================================
-;; ˚˚ appearance
+;;;; appearance
 ;; ==================================================================
 
 ;; the headers to show in the headers list -- a pair of a field and
@@ -137,7 +137,7 @@
 		(add-text-properties (match-beginning 1) (match-end 1) '(face font-lock-variable-name-face))))))
 
 ;; ==================================================================
-;; ˚˚ spell-checking
+;;;; spell checking
 ;; ==================================================================
 
 ;; enable spell checking when composing a message
@@ -188,7 +188,7 @@ bound to \\[message-goto-body] in the message buffer."
 	(setq y (pop x))))))
 
 ;; ==================================================================
-;; ˚˚ replying
+;;;; replying
 ;; ==================================================================
 
 ;; 1) messages To:me@foo.com should be replied with From:me@foo.com
@@ -213,11 +213,10 @@ bound to \\[message-goto-body] in the message buffer."
 		       (t "xxxx@autistici.org")))))))
 
 ;; ==================================================================
-;; ˚˚ key bindings
+;;;; key bindings
 ;; ==================================================================
 
 (global-set-key (kbd "∫") 'mu4e-headers-search-bookmark) ; that's alt-b
-(global-set-key (kbd "ø") 'helm-mu)	; that's alt-o
 (global-set-key (kbd "C-x M") 'mu4e-email-region)
 
 (define-key mu4e-compose-mode-map (kbd "C-c s") nil)
@@ -241,7 +240,7 @@ bound to \\[message-goto-body] in the message buffer."
 	("/archive" . ?a)))
 
 ;; ==================================================================
-;; ˚˚ encryption
+;;;; encryption
 ;; ==================================================================
 
 ;;; PGP/MIME
@@ -258,7 +257,7 @@ bound to \\[message-goto-body] in the message buffer."
 (add-hook 'mu4e-view-mode-hook 'epa-mail-mode)
 
 ;; ==================================================================
-;; ˚˚ bookmarks
+;;;; bookmarks
 ;; ==================================================================
 
 (setq mu4e-bookmarks
@@ -280,7 +279,7 @@ bound to \\[message-goto-body] in the message buffer."
 	       "Old messages" ?o) t)
 
 ;; ==================================================================
-;; ˚˚ actions
+;;;; actions
 ;; ==================================================================
 
 (setq mu4e-view-actions
@@ -291,7 +290,8 @@ bound to \\[message-goto-body] in the message buffer."
 	("hold" . mu4e-action-tag-hold)
 	("untagHold" . mu4e-action-untag-hold)
 	("Search sender" . search-for-sender)
-	("view in browser" . mu4e-action-view-in-browser)))
+	("view in browser" . mu4e-action-view-in-browser)
+	("preview attachment" . mu4e-preview-attachments)))
 
 (setq mu4e-headers-actions
       '(("capture action" . jag/mu4e-capture-message)
@@ -324,7 +324,7 @@ bound to \\[message-goto-body] in the message buffer."
   (org-capture nil "^"))
 
 ;; ==================================================================
-;; ˚˚ address book
+;;;; address book
 ;; ==================================================================
 
 ;; BBDB contact management
@@ -356,7 +356,7 @@ bound to \\[message-goto-body] in the message buffer."
   :load-path "~/git/helm-bbdb")
 
 ;; ==================================================================
-;; ˚˚ citation
+;;;; citation
 ;; ==================================================================
 
 ;; use Supercite for citation
@@ -382,15 +382,14 @@ bound to \\[message-goto-body] in the message buffer."
   "Nil if date string is invalid.")
 
 (defun sc-message-header-on-wrote ()
-  ">>>>> On <date> at <time>, <from> wrote:"
+  "On <date> at <time>, <from> wrote:"
   (setq sc-message-safe-time-val
 	(safe-date-to-time (sc-mail-field "date")))
   (let ((sc-mumble "")
 	(whofrom (sc-whofrom)))
     (if whofrom
-	(insert "\n" sc-reference-tag-string
-		(sc-hdr "On "
-			(format-time-string "%d %b %Y at %R" sc-message-safe-time-val) ", ")
+	(insert "\n" (sc-hdr "On "
+			     (format-time-string "%d %b %Y at %R" sc-message-safe-time-val) ", ")
 		whofrom " wrote:\n\n"))))
 
 (defun sc-message-header-on-wrote-pt ()
@@ -401,13 +400,12 @@ bound to \\[message-goto-body] in the message buffer."
 	(whofrom (sc-whofrom))
 	(system-time-locale "pt_BR"))
     (if whofrom
-	(insert "\n" sc-reference-tag-string
-		(sc-hdr "Em "
-			(format-time-string "%d de %b de %Y às %R" sc-message-safe-time-val) ", ")
+	(insert "\n" (sc-hdr "Em "
+			     (format-time-string "%d de %b de %Y às %R" sc-message-safe-time-val) ", ")
 		whofrom " escreveu:\n\n"))))
 
 ;; ==================================================================
-;; ˚˚ extensions
+;;;; extensions
 ;; ==================================================================
 
 (defun mu4e-shorten-url (url)
@@ -415,7 +413,7 @@ bound to \\[message-goto-body] in the message buffer."
 See URL `https://is.gd/apishorteningreference.php' for additional parameters."
   (interactive "sShorten URL: ")
   (let ((buf (url-retrieve-synchronously
-	      (format "http://is.gd/create.php?format=simple&url=%s" url))))
+	      (format "https://is.gd/create.php?format=simple&url=%s" url))))
     (set-buffer buf)
     (let ((str (thing-at-point 'url)))
       (goto-line 11)
