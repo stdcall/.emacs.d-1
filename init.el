@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-14>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-18>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -368,6 +368,7 @@ string."
   (setq ido-enable-flex-matching t)
   (setq org-completion-use-ido t)
   (setq org-outline-path-complete-in-steps nil)
+  (setq ido-auto-merge-delay-time 5)
   (setq-default read-buffer-completion-ignore-case t)
 
   ;; ido sort order priority
