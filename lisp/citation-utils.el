@@ -16,6 +16,7 @@
     ("Add keywords    `C-M-k'"  . power-ref-tag-entries)
     ("Show entry      `C-M-e'"  . bibtex-completion-show-entry)
     ("Annotate        `C-M-a'"  . power-ref-annotate)
+    ("Rename PDF"               . power-ref-rename-pdf)
     ("Insert notes template"    . power-ref-insert-notes-template)
     ("Open URL or DOI"          . helm-bibtex-open-url-or-doi)
     ("Insert reference"         . helm-bibtex-insert-reference)
@@ -140,6 +141,16 @@ values."
     (org-cycle)
     (org-ref-helm-insert-label-link)))
 
+(defun power-ref-rename-pdf (_candidate)
+  "Prompt for pdf associated with CANDIDATE and rename it."
+  (let* ((key (car (helm-marked-candidates)))
+	 (fname (concat org-ref-pdf-directory key ".pdf")))
+    (if (file-exists-p fname)
+	(message "A file named %s already exists." (file-name-nondirectory fname))
+      (let ((file (read-file-name "File: ")))
+	(rename-file file fname)
+	(message (format "Created file %s" fname))))))
+
 ;; ==================================================================
 ;;;; local database
 ;; ==================================================================
@@ -243,7 +254,7 @@ files specified in the variable `bibtex-completion-bibliography'."
 				  (with-helm-current-buffer
 				    (insert (concat "label:" label)))))
 		     ,(helm-build-sync-source "Utilities"
-			:candidates '(("Insert glossary" . org-ref-insert-glossary-link)
+			:candidates '(("Insert glossary" . org-glossary)
 				      ("Insert figure" . power-ref-insert-figure)
 				      ;; FIXME: latex fragments in caption
 				      ("List of figures" . org-ref-list-of-figures)
