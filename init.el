@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-18>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-22>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -1844,6 +1844,7 @@ Reposition the block to the top of the window."
   :config
   (wrap-region-mode t)
   (add-hook 'org-mode-hook 'wrap-region-mode)
+  (wrap-region-add-wrapper "@@latex:" "@@" "@" 'org-mode)
   (wrap-region-add-wrapper "*" "*" nil 'org-mode)
   (wrap-region-add-wrapper "/" "/" nil 'org-mode)
   (wrap-region-add-wrapper "_" "_" nil 'org-mode)
