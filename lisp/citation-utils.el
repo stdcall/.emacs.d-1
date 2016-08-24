@@ -142,14 +142,19 @@ values."
     (org-ref-helm-insert-label-link)))
 
 (defun power-ref-rename-pdf (_candidate)
-  "Prompt for pdf associated with CANDIDATE and rename it."
+  "Prompt for pdf associated with CANDIDATE and rename it.
+In `dired-mode', rename pdf file at point."
   (let* ((key (car (helm-marked-candidates)))
 	 (fname (concat org-ref-pdf-directory key ".pdf")))
     (if (file-exists-p fname)
 	(message "A file named %s already exists." (file-name-nondirectory fname))
-      (let ((file (read-file-name "File: ")))
-	(rename-file file fname)
-	(message (format "Created file %s" fname))))))
+      (let ((file (if (and (eq major-mode 'dired-mode)
+			   (s-ends-with? ".pdf" (car (dired-get-marked-files))))
+		      (car (dired-get-marked-files))
+		    (read-file-name "File: "))))
+	(when (yes-or-no-p "Rename file?")
+	  (rename-file file fname)
+	  (message (format "Created file %s" fname)))))))
 
 ;; ==================================================================
 ;;;; local database
