@@ -37,6 +37,15 @@
 (add-hook 'emms-playlist-mode-hook 'hl-line-mode)
 (setq helm-emms-use-track-description-function t)
 
+;; midi support
+
+(when (executable-find "timidity")
+  (add-to-list 'emms-player-list 'emms-player-timidity t))
+
+(define-emms-simple-player timidity '(file)
+  (emms-player-simple-regexp "midi" "mid" "rmi" "rcp" "r36" "g18" "g36" "mfi")
+  "timidity")
+
 ;; ==================================================================
 ;;;; speed and seeking
 ;; ==================================================================
