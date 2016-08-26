@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-22>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-26>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -989,9 +989,9 @@ The maximum frame height is defined by the variable
 	(swiper input))))
 
   ;; open with deafult pdf viewer
-  ;; (setq bibtex-completion-pdf-open-function
-  ;; 	(lambda (fpath)
-  ;; 	  (call-process "open" nil 0 nil "-a" "Skim.app" fpath)))
+  (setq bibtex-completion-pdf-open-function
+  	(lambda (fpath)
+  	  (call-process "open" nil 0 nil "-a" "Skim.app" fpath)))
 
   ;; format citation style
   (setq bibtex-completion-format-citation-functions

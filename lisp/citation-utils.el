@@ -469,14 +469,15 @@ at the end of you file.
   (replace-regexp-in-string "^[0-9]+? " "" (car (helm-marked-candidates))))
 
 (defun power-ref-open-pdf (arg)
+  "Open pdf externally.
+With a prefix ARG, open it using `find-file'."
   (interactive "P")
   (power-ref-process-key)
-  (if arg
-      (let* ((key (car (helm-marked-candidates)))
-	     (pdf (car (bibtex-completion-find-pdf-in-library key))))
-	(when pdf
-	  (helm-exit-and-execute-action (browse-url pdf))))
-    (helm-exit-and-execute-action 'helm-bibtex-open-pdf)))
+  (let* ((key (car (helm-marked-candidates)))
+	 (pdf (car (bibtex-completion-find-pdf-in-library key))))
+    (if arg
+	(helm-exit-and-execute-action `(lambda (_) (find-file ,pdf)))
+      (helm-exit-and-execute-action (bibtex-completion-open-pdf key)))))
 
 (defun power-ref-insert-citation (arg)
   "Insert citation at point.
