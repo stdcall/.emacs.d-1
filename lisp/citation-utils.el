@@ -7,20 +7,18 @@
 ;;; Code:
 
 (require 'org-ref)
-(require 'helm-bibtex)
 
 (defcustom power-ref-actions
-  '(("Open PDF        `C-M-p'"  . helm-bibtex-open-pdf)
-    ("Insert citation `C-M-c'"  . helm-bibtex-insert-citation)
-    ("Edit notes      `C-M-n'"  . bibtex-completion-edit-notes)
-    ("Add keywords    `C-M-k'"  . power-ref-tag-entries)
-    ("Show entry      `C-M-e'"  . bibtex-completion-show-entry)
-    ("Annotate        `C-M-a'"  . power-ref-annotate)
-    ("Rename PDF"               . power-ref-rename-pdf)
-    ("Insert notes template"    . power-ref-insert-notes-template)
-    ("Open URL or DOI"          . helm-bibtex-open-url-or-doi)
-    ("Insert reference"         . helm-bibtex-insert-reference)
-    ("Attach PDF to email"      . helm-bibtex-add-PDF-attachment))
+  '(("Open PDF        `C-c C-p'"  . helm-bibtex-open-pdf)
+    ("Insert citation `C-c C-c'"  . helm-bibtex-insert-citation)
+    ("Edit notes      `C-c C-n'"  . bibtex-completion-edit-notes)
+    ("Add keywords    `C-C C-k'"  . power-ref-tag-entries)
+    ("Show entry      `C-c C-e'"  . bibtex-completion-show-entry)
+    ("Annotate        `C-c C-a'"  . power-ref-annotate)
+    ("Rename PDF      `C-c C-r'"  . power-ref-rename-pdf)
+    ("Insert notes template"      . power-ref-insert-notes-template)
+    ("Open URL or DOI"            . helm-bibtex-open-url-or-doi)
+    ("Insert reference"           . helm-bibtex-insert-reference))
   "Cons cells of string and function to set the actions of `helm-bibtex' to.
 The car of cons cell is the string describing the function. The cdr of
 the the cons cell is the function to use."
@@ -61,9 +59,9 @@ take any. To use this formatter, add it to
                 (format "[[%s:%s][%s]]" cite-command (s-join "," keys) pos)))
 
           (let ((pre (if (= power-ref-number-of-optional-arguments 2)
-                         (read-from-minibuffer "Prenote[1]: ") ""))
+                         (read-from-minibuffer "Prenote[2]: ") ""))
                 (pos (if (= power-ref-number-of-optional-arguments 2)
-                         (read-from-minibuffer "Postnote[2]: ") "")))
+                         (read-from-minibuffer "Postnote[1]: ") "")))
             (if (and (= power-ref-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
                 (format "%s:%s" cite-command (s-join "," keys))
               (format "[[%s:%s][%s::%s]]" cite-command (s-join "," keys) pre pos))))))))
@@ -456,12 +454,13 @@ at the end of you file.
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map helm-map)
     ;; mnemonics
-    (define-key map (kbd "C-M-p") 'power-ref-open-pdf)
-    (define-key map (kbd "C-M-c") 'power-ref-insert-citation)
-    (define-key map (kbd "C-M-n") 'power-ref-edit-notes)
-    (define-key map (kbd "C-M-k") 'power-ref-tag-entries)
-    (define-key map (kbd "C-M-e") 'power-ref-show-entry)
-    (define-key map (kbd "C-M-a") 'power-ref-prepare-annotation)
+    (define-key map (kbd "C-c C-p") 'power-ref-open-pdf)
+    (define-key map (kbd "C-c C-c") 'power-ref-insert-citation)
+    (define-key map (kbd "C-c C-n") 'power-ref-edit-notes)
+    (define-key map (kbd "C-c C-k") 'power-ref-tag-entries)
+    (define-key map (kbd "C-c C-e") 'power-ref-show-entry)
+    (define-key map (kbd "C-c C-a") 'power-ref-prepare-annotation)
+    (define-key map (kbd "C-c C-r") 'power-ref-rename-pdf)
     map))
 
 (defun power-ref-process-key ()
