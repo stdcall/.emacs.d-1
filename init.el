@@ -278,7 +278,20 @@ With a prefix ARG, cycle randomly through a list of available themes."
   (setq helm-org-show-filename nil)
   (helm-autoresize-mode 1)
   (setq helm-autoresize-max-height 50
-	helm-autoresize-min-height 25))
+  	helm-autoresize-min-height 25)
+
+  ;; enter search pattern in the header line
+  (setq helm-echo-input-in-header-line t)
+
+  (defun helm-hide-minibuffer-maybe ()
+    "Hide minibuffer during a Helm session."
+    (when (with-helm-buffer helm-echo-input-in-header-line)
+      (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+	(overlay-put ov 'window (selected-window))
+	(overlay-put ov 'face (let ((bg-color (face-background 'default nil)))
+				`(:background ,bg-color :foreground ,bg-color)))
+	(setq-local cursor-type nil))))
+  (add-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe) )
 
 (use-package helm-swoop
   :bind ("C-c s" . helm-swoop)
