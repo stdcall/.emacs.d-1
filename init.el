@@ -205,6 +205,14 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq mouse-wheel-progressive-speed nil)
 (setq frame-resize-pixelwise t)
 
+;; default encoding
+
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(setq-default buffer-file-coding-system 'utf-8)
+
 ;; backup settings
 
 (setq backup-directory-alist '(("." . "~/org/.backups")))
