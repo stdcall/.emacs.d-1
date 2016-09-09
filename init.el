@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-08-26>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-09-09>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -1222,6 +1222,14 @@ The maximum frame height is defined by the variable
   (setq bookmark-completion-ignore-case nil)
   (setq bookmark-save-flag 1)
   (bookmark-maybe-load-default-file))
+
+(use-package bm
+  :bind (("M-i M-i" . bm-toggle)
+	 ("M-i M-r" . bm-remove-all-current-buffer)
+         ("M-i M-o" . bm-next)
+         ("M-i M-u" . bm-previous))
+  :config
+  (setq bm-highlight-style 'bm-highlight-only-fringe))
 
 ;; visual line mode
 
