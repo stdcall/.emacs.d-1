@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-09-09>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-09-27>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -52,7 +52,7 @@
 (setq my-fonts '((1 "Courier New" . ((set-face-attribute 'default nil :font "Courier New" :height 180)
 				     (set-frame-size (selected-frame) 1256 747 t)))
 		 (2 "Inconsolata" . ((set-face-attribute 'default nil :font "Inconsolata" :height 190)
-				     (set-frame-size (selected-frame) 1258 747 t)))))
+				     (set-frame-size (selected-frame) 1260 747 t)))))
 
 (when window-system
   (if my-default-font
@@ -265,8 +265,8 @@ With a prefix ARG, cycle randomly through a list of available themes."
 
 (use-package helm
   ;; :load-path "~/git/helm"
-  :bind ("C-r" . helm-resume)
   :diminish helm-mode
+  :bind ("C-r" . helm-resume)
   :config
   (use-package helm-config)
   (helm-mode 1)
@@ -2185,7 +2185,8 @@ abc |ghi        <-- point still after white space after calling this function."
     (interactive "*P")
     (if (equal current-prefix-arg '(4))
         (comment-region-as-kill (region-beginning) (region-end))
-      (comment-dwim arg))))
+      (comment-dwim arg))
+    (font-lock-fontify-buffer)))
 
 ;; word count
 
