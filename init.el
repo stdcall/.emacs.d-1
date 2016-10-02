@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-09-27>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-09-28>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -1493,6 +1493,7 @@ The maximum frame height is defined by the variable
 (use-package org-id)
 (use-package org-mouse)
 (use-package ox-beamer)
+(use-package ox-bibtex)
 ;; (use-package ox-org)
 ;; (use-package ox-odt)
 ;; (use-package org-contacts)
@@ -1915,9 +1916,9 @@ Reposition the block to the top of the window."
   :config
   (setq org-publish-project-alist
       '(("org"
-         :base-directory "~/web"
+         :base-directory "~/git/jagrg.github.io"
          :base-extension "org"
-         :publishing-directory "~/web"
+         :publishing-directory "~/git/jagrg.github.io"
          :publishing-function org-html-publish-to-html
          :recursive t
          :headline-levels 3
