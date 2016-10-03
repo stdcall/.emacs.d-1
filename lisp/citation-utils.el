@@ -68,7 +68,7 @@ take any. To use this formatter, add it to
 
 ;; small alignment changes
 
-(defun bibtex-completion-candidates-formatter (candidates width)
+(defun helm-bibtex-candidates-formatter (candidates width)
   "Formats BibTeX entries for display in results list.
 Adapted from the function in `bibtex-completion' to include additional
 keywords field."
