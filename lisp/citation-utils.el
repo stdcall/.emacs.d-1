@@ -650,7 +650,7 @@ bibliography reread."
   (let* ((bibtex-completion-bibliography-type 'local)
 	 (bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (when (equal arg '(64))
-      (setq bibtex-completion-bibliography-hash ""))
+      (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)) ""))
     (cond
      ((equal arg '(4))
       (power-ref-utils))
