@@ -11,9 +11,9 @@
 (defcustom power-ref-actions
   '(("Open PDF        `C-c C-p'"  . helm-bibtex-open-pdf)
     ("Insert citation `C-c C-c'"  . helm-bibtex-insert-citation)
-    ("Edit notes      `C-c C-n'"  . bibtex-completion-edit-notes)
+    ("Edit notes      `C-c C-n'"  . helm-bibtex-edit-notes)
     ("Add keywords    `C-C C-k'"  . power-ref-tag-entries)
-    ("Show entry      `C-c C-e'"  . bibtex-completion-show-entry)
+    ("Show entry      `C-c C-e'"  . helm-bibtex-show-entry)
     ("Annotate        `C-c C-a'"  . power-ref-annotate)
     ("Rename PDF      `C-c C-r'"  . power-ref-rename-pdf)
     ("Insert notes template"      . power-ref-insert-notes-template)
@@ -122,8 +122,8 @@ values."
 	(progn
 	  (split-window-below)
 	  (find-file pdf)
-	  (bibtex-completion-edit-notes (car key)))
-      (bibtex-completion-edit-notes (car key)))))
+	  (helm-bibtex-edit-notes (car key)))
+      (helm-bibtex-edit-notes (car key)))))
 
 (defun power-ref-insert-figure ()
   "Insert figure, caption and label at point."
@@ -495,7 +495,7 @@ With a prefix ARG, prompt for pre and postnotes. See
    (lambda (key)
      (let* ((cand (car (helm-marked-candidates)))
      	    (key (replace-regexp-in-string "^[0-9]+? " "" cand)))
-       (bibtex-completion-edit-notes key)))))
+       (helm-bibtex-edit-notes key)))))
 
 (defun power-ref-tag-entries ()
   (interactive)
@@ -508,7 +508,7 @@ With a prefix ARG, prompt for pre and postnotes. See
    (lambda (key)
      (let* ((cand (car (helm-marked-candidates)))
 	    (key (replace-regexp-in-string "^[0-9]+? " "" cand)))
-       (bibtex-completion-show-entry key)))))
+       (helm-bibtex-show-entry key)))))
 
 (defun power-ref-prepare-annotation ()
   (interactive)
