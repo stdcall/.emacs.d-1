@@ -632,7 +632,7 @@ the same key."
   (helm-build-sync-source "Fallback options"
     :candidates 'bibtex-completion-fallback-candidates
     :match (lambda (_candidate) t)
-    :action 'bibtex-completion-fallback-action))
+    :action (lambda (candidate) (bibtex-completion-fallback-action candidate helm-pattern))))
 
 ;;;###autoload
 (defun power-ref (&optional arg)
