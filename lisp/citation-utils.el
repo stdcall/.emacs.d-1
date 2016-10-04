@@ -15,7 +15,7 @@
     ("Add keywords    `C-C C-k'"  . power-ref-tag-entries)
     ("Show entry      `C-c C-e'"  . helm-bibtex-show-entry)
     ("Annotate        `C-c C-a'"  . power-ref-annotate)
-    ("Rename PDF      `C-c C-r'"  . power-ref-rename-pdf)
+    ("Rename PDF      `C-c C-r'"  . power-ref-run-rename-pdf)
     ("Insert notes template"      . power-ref-insert-notes-template)
     ("Open URL or DOI"            . helm-bibtex-open-url-or-doi)
     ("Insert reference"           . helm-bibtex-insert-reference))
@@ -460,7 +460,7 @@ at the end of you file.
     (define-key map (kbd "C-c C-k") 'power-ref-tag-entries)
     (define-key map (kbd "C-c C-e") 'power-ref-show-entry)
     (define-key map (kbd "C-c C-a") 'power-ref-prepare-annotation)
-    (define-key map (kbd "C-c C-r") 'power-ref-rename-pdf)
+    (define-key map (kbd "C-c C-r") 'power-ref-run-rename-pdf)
     map))
 
 (defun power-ref-process-key ()
@@ -514,6 +514,10 @@ With a prefix ARG, prompt for pre and postnotes. See
   (interactive)
   (power-ref-process-key)
   (helm-exit-and-execute-action 'power-ref-annotate))
+
+(defun power-ref-run-rename-pdf ()
+  (interactive)
+  (helm-exit-and-execute-action 'power-ref-rename-pdf))
 
 ;; ==================================================================
 ;;;; browser
