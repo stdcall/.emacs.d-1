@@ -400,6 +400,25 @@ at the end of you file.
                                   (funcall x))))))))
 
 
+;; preview notes in follow-mode
+
+(helm-bibtex-helmify-action bibtex-completion-preview-notes helm-bibtex-preview-notes)
+
+(defun bibtex-completion-preview-notes (keys)
+  "Preview notes associated with the selected entry."
+    (dolist (key keys)
+      (unless (and bibtex-completion-notes-path
+	       (f-directory? bibtex-completion-notes-path))
+	(find-file bibtex-completion-notes-path)
+	(widen)
+	(show-all)
+	(goto-char (point-min))
+	(when (re-search-forward (format bibtex-completion-notes-key-pattern key) nil t)
+	  (org-narrow-to-subtree)
+	  (re-search-backward "^\*+ " nil t)
+	  (org-cycle-hide-drawers nil)
+	  (bibtex-completion-notes-mode 1)))))
+
 ;; ==================================================================
 ;;;; keymap
 ;; ==================================================================
