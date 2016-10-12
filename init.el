@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-09-28>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-10-10>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -50,7 +50,7 @@
 (defvar my-default-font t "Initial font setting.")
 
 (setq my-fonts '((1 "Courier New" . ((set-face-attribute 'default nil :font "Courier New" :height 180)
-				     (set-frame-size (selected-frame) 1256 747 t)))
+				     (set-frame-size (selected-frame) 1260 747 t)))
 		 (2 "Inconsolata" . ((set-face-attribute 'default nil :font "Inconsolata" :height 190)
 				     (set-frame-size (selected-frame) 1260 747 t)))))
 
@@ -246,10 +246,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 
 ;; remember point position
 
-(use-package saveplace
-  :config
-  (setq-default save-place t)
-  (setq save-place-file "~/.emacs.d/saved-places"))
+(save-place-mode 1)
 
 ;; scratch buffer mode and message
 
@@ -276,7 +273,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
   (setq helm-buffers-fuzzy-matching t)
   (setq helm-ff-skip-boring-files t)
   (setq helm-org-show-filename nil)
-  (helm-autoresize-mode 1)
+  ;; (helm-autoresize-mode 1)
   (setq helm-autoresize-max-height 50
   	helm-autoresize-min-height 25)
 
@@ -958,17 +955,17 @@ The maximum frame height is defined by the variable
 
   (setq org-ref-open-pdf-function 'my/org-ref-open-pdf-at-point)
 
-  (defun retrieve-bibtex-from-crossref ()
+  (defun retrieve-bibtex-from-crossref (_)
     (doi-utils-add-entry-from-crossref-query
      helm-input
      (car org-ref-default-bibliography)))
 
-  (defun retrieve-bibtex-from-doi ()
+  (defun retrieve-bibtex-from-doi (_)
     (doi-utils-add-bibtex-entry-from-doi
      helm-input
      (car org-ref-default-bibliography)))
 
-  (defun retrieve-bibtex-from-isbn ()
+  (defun retrieve-bibtex-from-isbn (_)
     (isbn-to-bibtex
      helm-input
      (car org-ref-default-bibliography))))
@@ -1493,7 +1490,7 @@ The maximum frame height is defined by the variable
 (use-package org-id)
 (use-package org-mouse)
 (use-package ox-beamer)
-(use-package ox-bibtex)
+;; (use-package ox-bibtex)
 ;; (use-package ox-org)
 ;; (use-package ox-odt)
 ;; (use-package org-contacts)
@@ -2556,8 +2553,8 @@ With a prefix ARG, display both date and time."
   (interactive)
   (let ((frame (selected-frame)))
     (if my-default-font
-	(set-frame-size frame 1258 200 t)
-      (set-frame-size frame 1256 200 t))))
+	(set-frame-size frame 1260 200 t)
+      (set-frame-size frame 1260 200 t))))
 
 (defun jag/toggle-fullscreen ()
   "Toggle full screen, time and battery mode."
