@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-10-10>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-10-12>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -204,6 +204,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq display-time-24hr-format t)
 (setq mouse-wheel-progressive-speed nil)
 (setq frame-resize-pixelwise t)
+(setq text-quoting-style 'grave)
 
 ;; default encoding
 
