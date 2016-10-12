@@ -9,7 +9,7 @@
 (require 'org-ref)
 
 (defcustom power-ref-actions
-  '(("Open PDF        `C-c C-p'"  . helm-bibtex-open-pdf)
+  '(("Open PDF        `C-c C-p'"  . helm-bibtex-open-any)
     ("Insert citation `C-c C-c'"  . helm-bibtex-insert-citation)
     ("Edit notes      `C-c C-n'"  . helm-bibtex-edit-notes)
     ("Add keywords    `C-C C-k'"  . power-ref-tag-entries)
@@ -430,7 +430,7 @@ With a prefix ARG, open it using `find-file'."
 	 (pdf (car (bibtex-completion-find-pdf-in-library key))))
     (if arg
 	(helm-exit-and-execute-action `(lambda (_) (find-file ,pdf)))
-      (helm-exit-and-execute-action (bibtex-completion-open-pdf key)))))
+      (helm-exit-and-execute-action (bibtex-completion-open-any (list key))))))
 
 (defun power-ref-insert-citation (arg)
   "Insert citation at point.
@@ -576,12 +576,15 @@ the same key."
 ;;;; sources
 ;; ==================================================================
 
-(defvar power-ref-bibtex-source
+(setq power-ref-bibtex-source
   (helm-build-sync-source "BibTeX entries"
     :init 'bibtex-completion-init
     :candidates 'bibtex-completion-candidates
     :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
     :action power-ref-actions
+    :persistent-action (lambda (candidate)
+			 ;; preview notes
+			 (helm-bibtex-preview-notes candidate))
     ;; for keybindings to work after helm-resume, we need the keymap
     ;; set to helm source instead of helm session
     :keymap power-ref-map))
