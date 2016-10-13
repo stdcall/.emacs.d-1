@@ -623,10 +623,9 @@ arguments, validate the bibtex file and check for bad links.
 With three prefix arguments the cache is invalidated and the
 bibliography reread."
   (interactive "P")
-  (let* ((bibtex-completion-bibliography-type 'local)
-	 (bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
+  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (when (equal arg '(64))
-      (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)) ""))
+      (bibtex-completion-clear-cache))
     (cond
      ((equal arg '(4))
       (power-ref-utils))
@@ -634,7 +633,8 @@ bibliography reread."
       (power-ref-bad-citations))
      ((or (equal arg nil)
 	  (equal arg '(64)))
-      (helm :sources '(power-ref-bibtex-source power-ref-fallback-source)
+      (helm :sources (list power-ref-bibtex-source power-ref-fallback-source)
+	    :candidate-number-limit 500
 	    :buffer "*power ref*")))))
 
 (provide 'citation-utils)
