@@ -15,10 +15,11 @@
 					     'deadline 'scheduled 'timestamp))))
 	  (tags-todo "LEVEL=2|LEVEL=3-CATEGORY={practice}/!NEXT"
 		     ((org-agenda-overriding-header "Next Action")
-		      (org-agenda-compact-blocks t))))
+		      (org-agenda-compact-blocks t)
+		      (org-agenda-prefix-format " %b %-4e "))))
 	 ((org-agenda-remove-tags nil)
 	  (org-agenda-show-inherited-tags nil)
-	  (org-agenda-prefix-format " %i %-10:c %-4e ")))
+	  (org-agenda-prefix-format " %i %-2:c %-4e ")))
 
 	("w" "review"
 	 ((todo "WAITING"
