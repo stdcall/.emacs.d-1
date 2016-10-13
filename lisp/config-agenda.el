@@ -5,7 +5,7 @@
 
 	("a" "agenda"
 	 ((agenda ""
-		  ((org-agenda-prefix-format " %i %-12:c%?-12t% s %e ")
+		  ((org-agenda-prefix-format " %-12:c%?-12t% s %e ")
 		   (org-agenda-remove-tags t)))
 	  (tags "LEVEL=2+CATEGORY=\"task\"/!"
 		((org-agenda-overriding-header "Unscheduled Tasks")
@@ -19,7 +19,7 @@
 		      (org-agenda-prefix-format " %b %-4e "))))
 	 ((org-agenda-remove-tags nil)
 	  (org-agenda-show-inherited-tags nil)
-	  (org-agenda-prefix-format " %i %-2:c %-4e ")))
+	  (org-agenda-prefix-format " %-2:c %-4e ")))
 
 	("w" "review"
 	 ((todo "WAITING"
@@ -173,7 +173,7 @@
 	     '("h" "habit"
 	       ((agenda ""))
 	       ((org-agenda-overriding-header "Habit report")
-		(org-agenda-prefix-format " %i %-2:c%?-12t% s %e ")
+		(org-agenda-prefix-format " %-2:c%?-12t% s %e ")
 		(org-agenda-ndays 1)
 		(org-habit-show-all-today t)
 		(org-habit-graph-column 45)
