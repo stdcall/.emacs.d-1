@@ -89,7 +89,7 @@ keywords field."
                         (list (or (bibtex-completion-get-value "keywords" entry)
                                   "")))
    collect
-   (cons (s-format "$2 $0 $1 $3 $4 $5 $6" 'elt
+   (cons (s-format "$0 $1 $2 $3 $4 $5 $6" 'elt
                    (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
                               fields (list 25 (- width 60) 4 1 1 7 14)))
          entry-key)))
@@ -164,6 +164,11 @@ In `dired-mode', rename pdf file at point."
   (let ((labels (org-ref-get-labels)))
     (helm :sources `(,(helm-build-sync-source "Existing labels"
 			:candidates labels
+			:persistent-action (lambda (label)
+					     (with-selected-window (selected-window)
+					       (org-open-link-from-string
+						(format "ref:%s" label))))
+			:persistent-help "\\[helm-follow-mode] to navigate"
 			:action `(("Insert ref link" .
 				   (lambda (label)
 				     (let* ((object (org-element-context))
@@ -481,7 +486,7 @@ With a prefix ARG, prompt for pre and postnotes. See
    (lambda (key)
      (let* ((cand (car (helm-marked-candidates)))
 	    (key (replace-regexp-in-string "^[0-9]+? " "" cand)))
-       (helm-bibtex-show-entry key)))))
+       (helm-bibtex-show-entry (list key))))))
 
 (defun power-ref-prepare-annotation ()
   (interactive)
