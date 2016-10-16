@@ -943,7 +943,8 @@ The maximum frame height is defined by the variable
 
   (setq org-ref-notes-function
 	(lambda (thekey)
-	  (bibtex-completion-edit-notes (car (org-ref-get-bibtex-key-and-file thekey)))))
+	  (bibtex-completion-edit-notes
+	   (list (car (org-ref-get-bibtex-key-and-file thekey))))))
 
   (defun my/org-ref-open-pdf-at-point ()
     "Open the pdf for bibtex key under point if it exists."
