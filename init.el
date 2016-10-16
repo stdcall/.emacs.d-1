@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-10-12>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-10-16>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -112,7 +112,7 @@ With a prefix ARG, prompt for a new font."
 
 ;; cycle through this set of themes
 
-(setq my-themes '(gotham zenburn))
+(setq my-themes '(gotham cyberpunk))
 (setq my-cur-theme nil)
 
 (defun cycle-my-theme (&optional arg)
@@ -205,6 +205,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq mouse-wheel-progressive-speed nil)
 (setq frame-resize-pixelwise t)
 (setq text-quoting-style 'grave)
+(setq enable-recursive-minibuffers t)
 
 ;; default encoding
 
@@ -279,7 +280,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
   	helm-autoresize-min-height 25)
 
   ;; enter search pattern in the header line
-  (setq helm-echo-input-in-header-line t)
+  ;; (setq helm-echo-input-in-header-line t)
 
   (defun helm-hide-minibuffer-maybe ()
     "Hide minibuffer during a Helm session."
@@ -980,8 +981,8 @@ The maximum frame height is defined by the variable
   :config
   (setq bibtex-completion-bibliography '("~/org/refs.bib"
 					 "~/org/misc.bib")
-        bibtex-completion-library-path org-ref-pdf-directory
-        bibtex-completion-notes-path org-ref-bibliography-notes)
+        bibtex-completion-library-path "~/papers/"
+        bibtex-completion-notes-path "~/org/annotation.org")
   (setq helm-bibtex-full-frame nil)
   (setq bibtex-completion-cite-default-as-initial-input t)
   (setq bibtex-completion-additional-search-fields '(keywords))
@@ -999,7 +1000,7 @@ The maximum frame height is defined by the variable
 		("Search notes" . helm-bibtex-search-notes-fallback))))
 
   ;; press C-o to go to the next source
-  (defun helm-bibtex-search-notes-fallback ()
+  (defun helm-bibtex-search-notes-fallback (_)
     "Search notes file."
     (let ((input (format "%s" helm-pattern)))
       (when (f-file? bibtex-completion-notes-path)
@@ -1496,6 +1497,7 @@ The maximum frame height is defined by the variable
 ;; (use-package ox-odt)
 ;; (use-package org-contacts)
 
+(setq org-latex-prefer-user-labels t)
 (setq org-confirm-babel-evaluate nil)
 ;; (setq org-tags-column -50)
 (setq org-reverse-note-order t)
