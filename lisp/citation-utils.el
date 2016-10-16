@@ -404,7 +404,6 @@ at the end of you file.
                                   (switch-to-buffer ,cb)
                                   (funcall x))))))))
 
-
 ;; preview notes in follow-mode
 
 (helm-bibtex-helmify-action bibtex-completion-preview-notes helm-bibtex-preview-notes)
@@ -423,6 +422,32 @@ at the end of you file.
 	  (re-search-backward "^\*+ " nil t)
 	  (org-cycle-hide-drawers nil)
 	  (bibtex-completion-notes-mode 1)))))
+
+;; navigate notes back and forth
+
+(defun bibtex-completion-notes-previous ()
+  (interactive)
+  (widen)
+  (let ((object (org-element-context)))
+    (if (and (equal (org-element-type object) 'headline)
+	     (org-entry-get (point) "CUSTOM_ID"))
+	(progn
+	  (org-forward-heading-same-level 1)
+	  (org-narrow-to-subtree))
+      (outline-up-heading 1)
+      (org-narrow-to-subtree))))
+
+(defun bibtex-completion-notes-next ()
+  (interactive)
+  (widen)
+  (let ((object (org-element-context)))
+    (if (and (equal (org-element-type object) 'headline)
+	     (org-entry-get (point) "CUSTOM_ID"))
+	(progn
+	  (org-backward-heading-same-level 1)
+	  (org-narrow-to-subtree))
+      (org-next-visible-heading 1)
+      (org-narrow-to-subtree))))
 
 ;; ==================================================================
 ;;;; keymap
