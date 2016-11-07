@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-10-16>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-11-07>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -134,7 +134,8 @@ With a prefix ARG, cycle randomly through a list of available themes."
       (disable-theme my-cur-theme)
       (setq my-themes (append my-themes (list my-cur-theme))))
     (setq my-cur-theme (pop my-themes))
-    (load-theme my-cur-theme t)))
+    (load-theme my-cur-theme t)
+    (message (format "%s" my-cur-theme))))
 
 (when window-system
   (cycle-my-theme))
@@ -927,8 +928,8 @@ The maximum frame height is defined by the variable
   (setq org-ref-insert-cite-function 'org-ref-helm-insert-cite-link)
   (setq org-ref-nonascii-latex-replacements nil)
   (setq org-ref-show-citation-on-enter nil)
-  (setq org-ref-note-title-format
-        "\n** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
+  ;; (setq org-ref-note-title-format
+  ;;       "\n** $%a (%y) %t\n   :PROPERTIES:\n   :Custom_ID: %k\n   :END:\n")
 
   ;; custom open notes function
   (setq org-ref-open-notes-function
@@ -1166,16 +1167,20 @@ The maximum frame height is defined by the variable
 	       (secondary-closing :utf-8 "’" :html "&rdquo;" :latex "''" :texinfo "''")
 	       (apostrophe :utf-8 "’" :html "&rsquo;")))
 
-;; ignore headings tagged with `ignoreheading' when exporting to latex
+;; ignore headline tagged with the 'ignore' tag when exporting to latex
 
-(defun org-latex-ignore-heading-filter-headline (headline backend info)
-  "Strip headline from HEADLINE. Ignore BACKEND and INFO."
-  (when (and (org-export-derived-backend-p backend 'latex)
-	     (or (string-match "\\`.*ignore.*\n" headline)
-		 (string-match "\\`.*ignoreheading.*\n" headline)))
-    (replace-match "" nil nil headline)))
-(add-to-list 'org-export-filter-headline-functions
-             'org-latex-ignore-heading-filter-headline)
+(use-package ox-extra
+  :config
+  (ox-extras-activate '(ignore-headlines)))
+
+;; (defun org-latex-ignore-heading-filter-headline (headline backend info)
+;;   "Strip headline from HEADLINE. Ignore BACKEND and INFO."
+;;   (when (and (org-export-derived-backend-p backend 'latex)
+;; 	     (or (string-match "\\`.*ignore.*\n" headline)
+;; 		 (string-match "\\`.*ignoreheading.*\n" headline)))
+;;     (replace-match "" nil nil headline)))
+;; (add-to-list 'org-export-filter-headline-functions
+;;              'org-latex-ignore-heading-filter-headline)
 
 ;; ==================================================================
 ;;;; useful packages and modes
@@ -1452,6 +1457,7 @@ The maximum frame height is defined by the variable
 ;; ==================================================================
 
 (use-package org)
+;; (use-package org-plus-contrib)
 
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
@@ -1503,6 +1509,7 @@ The maximum frame height is defined by the variable
 ;; (setq org-tags-column -50)
 (setq org-reverse-note-order t)
 (setq org-return-follows-link t)
+(setq org-src-fontify-natively t)
 (setq org-src-tab-acts-natively t)
 (setq org-src-preserve-indentation t)
 (setq org-log-into-drawer t)
@@ -1545,20 +1552,20 @@ The maximum frame height is defined by the variable
 ;; org babel language support
 
 (org-babel-do-load-languages
- (quote org-babel-load-languages)
- (quote ((emacs-lisp . t)
-         (dot . t)
-         (ditaa . t)
-         (R . t)
-         (python . t)
-         (gnuplot . t)
-         (sh . t)
-         (org . t)
-         (ledger . t)
-         (lilypond . t)
-         (plantuml . t)
-         (clojure . t)
-         (latex . t))))
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (dot . t)
+   (ditaa . t)
+   (python . t)
+   (gnuplot . t)
+   (sh . t)
+   (org . t)
+   (ledger . t)
+   (lilypond . t)
+   (plantuml . t)
+   (clojure . t)
+   ;; (R . t)
+   (latex . t)))
 
 ;; make babel results block lowercase
 
