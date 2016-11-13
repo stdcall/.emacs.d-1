@@ -1398,10 +1398,10 @@ The maximum frame height is defined by the variable
 
 ;; mail client
 
-(when (eq system-type 'darwin)
-  (use-package mu4e
-    :init (use-package config-mu4e)
-    :bind ("M-M"   . mu4e)))
+;; (when (eq system-type 'darwin)
+(use-package mu4e
+  :init (use-package config-mu4e)
+  :bind ("M-M"   . mu4e))
 
 ;; enable encryption
 
