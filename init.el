@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-11-07>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-11-13>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -47,43 +47,47 @@
 
 ;; font and frame settings
 
-(defvar my-default-font t "Initial font setting.")
+(cond ((eq system-type 'gnu/linux)
+       (set-face-attribute 'default nil :font "Inconsolata" :height 150)
+       (set-frame-size (selected-frame) 1910 970 t))
+      ((eq system-type 'darwin)
+       (defvar my-default-font t "Initial font setting.")
 
-(setq my-fonts '((1 "Courier New" . ((set-face-attribute 'default nil :font "Courier New" :height 180)
-				     (set-frame-size (selected-frame) 1260 747 t)))
-		 (2 "Inconsolata" . ((set-face-attribute 'default nil :font "Inconsolata" :height 190)
-				     (set-frame-size (selected-frame) 1260 747 t)))))
+       (setq my-fonts '((1 "Courier New" . ((set-face-attribute 'default nil :font "Courier New" :height 180)
+					    (set-frame-size (selected-frame) 1260 747 t)))
+			(2 "Inconsolata" . ((set-face-attribute 'default nil :font "Inconsolata" :height 190)
+					    (set-frame-size (selected-frame) 1260 747 t)))))
 
-(when window-system
-  (if my-default-font
-      (let ((font-two (nth 2 (assoc 2 my-fonts)))
-	    (frame-size (nth 3 (assoc 2 my-fonts))))
-	(eval-expression font-two)
-	(eval-expression frame-size)
-	(setq my-default-font t))
-    (let ((font-one (nth 2 (assoc 1 my-fonts)))
-	  (frame-size (nth 3 (assoc 1 my-fonts))))
-      (eval-expression font-one)
-      (eval-expression frame-size)
-      (setq my-default-font nil))))
+       (when window-system
+	 (if my-default-font
+	     (let ((font-two (nth 2 (assoc 2 my-fonts)))
+		   (frame-size (nth 3 (assoc 2 my-fonts))))
+	       (eval-expression font-two)
+	       (eval-expression frame-size)
+	       (setq my-default-font t))
+	   (let ((font-one (nth 2 (assoc 1 my-fonts)))
+		 (frame-size (nth 3 (assoc 1 my-fonts))))
+	     (eval-expression font-one)
+	     (eval-expression frame-size)
+	     (setq my-default-font nil))))
 
-(defun my-first-font ()
-  (let ((fontname   (nth 1 (assoc 1 my-fonts)))
-	(font-one   (nth 2 (assoc 1 my-fonts)))
-	(frame-size (nth 3 (assoc 1 my-fonts))))
-    (eval-expression font-one)
-    (eval-expression frame-size)
-    (setq my-default-font nil)
-    (message "%s (done)" fontname)))
+       (defun my-first-font ()
+	 (let ((fontname   (nth 1 (assoc 1 my-fonts)))
+	       (font-one   (nth 2 (assoc 1 my-fonts)))
+	       (frame-size (nth 3 (assoc 1 my-fonts))))
+	   (eval-expression font-one)
+	   (eval-expression frame-size)
+	   (setq my-default-font nil)
+	   (message "%s (done)" fontname)))
 
-(defun my-second-font ()
-  (let ((fontname   (nth 1 (assoc 2 my-fonts)))
-	(font-two   (nth 2 (assoc 2 my-fonts)))
-	(frame-size (nth 3 (assoc 2 my-fonts))))
-    (eval-expression font-two)
-    (eval-expression frame-size)
-    (setq my-default-font t)
-    (message "%s (done)" fontname)))
+       (defun my-second-font ()
+	 (let ((fontname   (nth 1 (assoc 2 my-fonts)))
+	       (font-two   (nth 2 (assoc 2 my-fonts)))
+	       (frame-size (nth 3 (assoc 2 my-fonts))))
+	   (eval-expression font-two)
+	   (eval-expression frame-size)
+	   (setq my-default-font t)
+	   (message "%s (done)" fontname)))))
 
 (defun switch-font (&optional arg)
   "Toggle between two fonts.
@@ -169,8 +173,9 @@ With a prefix ARG, cycle randomly through a list of available themes."
 (setq default-directory "~/org/")
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 (add-to-list 'load-path "~/.emacs.d/site-lisp/")
-(setq delete-by-moving-to-trash t
-      trash-directory "~/.Trash/emacs")
+(setq delete-by-moving-to-trash t)
+(when (eq system-type 'darwin)
+  (setq trash-directory "~/.Trash/emacs"))
 
 ;; keep custom settings separate
 
@@ -616,9 +621,10 @@ If the *scratch* buffer does not exist, create one."
 
 ;; preview images in dired using qlmanage
 
-(bind-key "<SPC>" (lambda () (interactive)
-		    (start-process "preview" nil "qlmanage" "-p"
-				   (dired-get-file-for-visit))) dired-mode-map)
+(when (eq system-type 'darwin)
+  (bind-key "<SPC>" (lambda () (interactive)
+		      (start-process "preview" nil "qlmanage" "-p"
+				     (dired-get-file-for-visit))) dired-mode-map))
 
 ;; unmount disk from dired http://is.gd/ZILXy2
 
@@ -1011,9 +1017,14 @@ The maximum frame height is defined by the variable
 	(swiper input))))
 
   ;; open with deafult pdf viewer
-  (setq bibtex-completion-pdf-open-function
-  	(lambda (fpath)
-  	  (call-process "open" nil 0 nil "-a" "Skim.app" fpath)))
+(cond ((eq system-type 'darwin)
+       (setq bibtex-completion-pdf-open-function
+	     (lambda (fpath)
+	       (call-process "open" nil 0 nil "-a" "Skim.app" fpath))))
+      ((eq system-type 'gnu/linux)
+       (setq bibtex-completion-pdf-open-function
+	     (lambda (fpath)
+	       (call-process "okular" nil 0 nil fpath)))))
 
   ;; format citation style
   (setq bibtex-completion-format-citation-functions
@@ -1060,9 +1071,24 @@ The maximum frame height is defined by the variable
 
   ;;; use Skim as default pdf viewer
   ;; option -b highlights the current line; option -g opens Skim in the background
-  (setq TeX-view-program-list
-        '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b %n %o %b")))
-  (setq TeX-view-program-selection '((output-pdf "PDF Viewer"))))
+  (cond ((eq system-type 'darwin)
+	 (setq TeX-view-program-list
+	       '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b %n %o %b")))
+	 (setq TeX-view-program-selection
+	       '((output-pdf "PDF Viewer"))))
+	((eq system-type 'gnu/linux)
+	 ;; Enable synctex correlation
+	 (setq TeX-source-correlate-method 'synctex)
+	 ;; Enable synctex generation. Even though the command shows
+	 ;; as "latex" pdflatex is actually called
+	 (custom-set-variables '(LaTeX-command "latex -synctex=1"))
+	 ;; Use Okular as the pdf viewer. Build okular
+	 ;; command, so that Okular jumps to the current line
+	 ;; in the viewer.
+	 (setq TeX-view-program-selection
+	       '((output-pdf "PDF Viewer")))
+	 (setq TeX-view-program-list
+	       '(("PDF Viewer" "okular --unique %o#src:%n%b"))))))
 
 (use-package server
   :config
@@ -1372,9 +1398,10 @@ The maximum frame height is defined by the variable
 
 ;; mail client
 
-(use-package mu4e
-  :init (use-package config-mu4e)
-  :bind ("M-M"   . mu4e))
+(when (eq system-type 'darwin)
+  (use-package mu4e
+    :init (use-package config-mu4e)
+    :bind ("M-M"   . mu4e)))
 
 ;; enable encryption
 
@@ -1425,16 +1452,22 @@ The maximum frame height is defined by the variable
 (use-package lilypond-mode
   :mode ("\\.ly$" . LilyPond-mode)
   :init
+  (when (eq system-type 'darwin)
+    ;; press C-c C-s to view pdf
+    (setq LilyPond-pdf-command "open -a 'Skim'")
+    (setenv "PATH" (concat "/Applications/LilyPond.app/Contents/Resources/bin:/usr/bin" (getenv "PATH") ))
+    (push "/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp" load-path)
+    (eval-after-load "LilyPond-mode"
+      '(progn
+	 (load-library "/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/ac-lilypond.el")
+	 (bind-key [C-tab] 'LilyPond-autocompletion LilyPond-mode-map))))
+
+  (when (eq system-type 'gnu/linux)
+    (setq load-path (append (list (expand-file-name
+				   "/home/jag/lilypond/usr/share/emacs/site-lisp")) load-path)))
+
   (autoload 'LilyPond-mode "lilypond-mode" "LilyPond Editing Mode" t)
-  (add-hook 'LilyPond-mode-hook (lambda () (turn-on-font-lock)))
-  (setenv "PATH" (concat "/Applications/LilyPond.app/Contents/Resources/bin:/usr/bin" (getenv "PATH") ))
-  (push "/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp" load-path)
-  (eval-after-load "LilyPond-mode"
-    '(progn
-       (load-library "/Applications/LilyPond.app/Contents/Resources/share/emacs/site-lisp/ac-lilypond.el")
-       (bind-key [C-tab] 'LilyPond-autocompletion LilyPond-mode-map)))
-  ;; press C-c C-s to view pdf
-  (setq LilyPond-pdf-command "open -a 'Skim'"))
+  (add-hook 'LilyPond-mode-hook (lambda () (turn-on-font-lock))))
 
 ;; music programming with overtone
 
@@ -1442,8 +1475,9 @@ The maximum frame height is defined by the variable
   :defer t
   :load-path "~/.emacs.d/scel/el"
   :config
-  (setenv "PATH" (concat (getenv "PATH") ":/Applications/SuperCollider:/Applications/SuperCollider/SuperCollider.app/Contents/Resources"))
-  (setq exec-path (append exec-path '("/Applications/SuperCollider"  "/Applications/SuperCollider/SuperCollider.app/Contents/Resources" ))))
+  (when (eq system-type 'darwin)
+    (setenv "PATH" (concat (getenv "PATH") ":/Applications/SuperCollider:/Applications/SuperCollider/SuperCollider.app/Contents/Resources"))
+    (setq exec-path (append exec-path '("/Applications/SuperCollider"  "/Applications/SuperCollider/SuperCollider.app/Contents/Resources" )))))
 
 (use-package clojure-mode
   :mode ("\\.clj$" . clojure-mode))
@@ -2055,7 +2089,7 @@ asynchronously, in another process."
 (use-package olivetti
   :diminish olivetti-mode
   :config
-  (setq olivetti-body-width 100))
+  (setq olivetti-body-width 80))
 
 ;; delete word without killing it
 ;; http://www.emacswiki.org/emacs/BackwardDeleteWord
@@ -2284,7 +2318,10 @@ show % of daily goal. Also show the percent completed."
    ("M-5" . ispell-region)
    ("M-6" . ispell-buffer))
   :init
-  (setq-default ispell-program-name "/usr/local/bin/aspell")
+  (cond ((eq system-type 'darwin)
+	 (setq-default ispell-program-name "/usr/local/bin/aspell"))
+	((eq system-type 'gnu/linux)
+	 (setq ispell-program-name "/usr/bin/aspell")))
   (setq-default ispell-list-command "list")
   (setq ispell-local-dictionary "british")
   (setq ispell-extra-args '("--sug-mode=ultra"))
@@ -2550,32 +2587,33 @@ With a prefix ARG, display both date and time."
   (let ((frame (selected-frame)))
     (set-frame-size frame 1256 747 t)))
 
-(defun jag/maximize-frame ()
-  "Maximize frame."
-  (interactive)
-  (if my-default-font
-      (let ((frame-size (nth 3 (assoc 2 my-fonts))))
-	(eval-expression frame-size))
-    (let ((frame-size (nth 3 (assoc 1 my-fonts))))
-      (eval-expression frame-size))))
-
-(defun jag/shrink-frame ()
-  "Shrink frame up."
-  (interactive)
-  (let ((frame (selected-frame)))
+(when (eq system-type 'darwin)
+  (defun jag/maximize-frame ()
+    "Maximize frame."
+    (interactive)
     (if my-default-font
-	(set-frame-size frame 1260 200 t)
-      (set-frame-size frame 1260 200 t))))
+	(let ((frame-size (nth 3 (assoc 2 my-fonts))))
+	  (eval-expression frame-size))
+      (let ((frame-size (nth 3 (assoc 1 my-fonts))))
+	(eval-expression frame-size))))
 
-(defun jag/toggle-fullscreen ()
-  "Toggle full screen, time and battery mode."
-  (interactive)
-  (toggle-frame-fullscreen)
-  (if (frame-parameter nil 'fullscreen)
-      (progn
-	(display-time-mode 1)
-	(display-battery-mode 1))
-    (display-time-mode 0)
-    (display-battery-mode 0)))
+  (defun jag/shrink-frame ()
+    "Shrink frame up."
+    (interactive)
+    (let ((frame (selected-frame)))
+      (if my-default-font
+	  (set-frame-size frame 1260 200 t)
+	(set-frame-size frame 1260 200 t))))
+
+  (defun jag/toggle-fullscreen ()
+    "Toggle full screen, time and battery mode."
+    (interactive)
+    (toggle-frame-fullscreen)
+    (if (frame-parameter nil 'fullscreen)
+	(progn
+	  (display-time-mode 1)
+	  (display-battery-mode 1))
+      (display-time-mode 0)
+      (display-battery-mode 0))))
 
 (use-package test)
