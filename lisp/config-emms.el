@@ -30,9 +30,15 @@
     (setq emms-player-list '(emms-player-mplayer))
   (emms-default-players))
 
-(when (executable-find "emms-print-metadata")
-  (require 'emms-info-libtag)
-  (setq emms-info-functions '(emms-info-libtag)))
+(if (executable-find "emms-print-metadata")
+    (progn
+      (require 'emms-info-libtag)
+      (setq emms-info-functions '(emms-info-libtag)))
+  (executable-find "mp3info")
+  (require 'emms-info-mp3info)
+  (setq emms-info-auto-update nil)
+  (add-to-list 'emms-info-functions 'emms-info-mp3info)
+  (setq emms-info-functions '(emms-info-mp3info)))
 
 (add-hook 'emms-playlist-mode-hook 'hl-line-mode)
 (setq helm-emms-use-track-description-function t)
