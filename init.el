@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration file. Time-stamp: <2016-11-13>
+;;; init.el --- Emacs configuration file. Time-stamp: <2016-11-14>
 
 ;; Copyright (c) 2012-2016 Jonathan Gregory
 
@@ -46,6 +46,9 @@
 (when (fboundp 'tooltip-mode) (tooltip-mode -1))
 
 ;; font and frame settings
+
+(when (eq system-type 'gnu/linux)
+  (setq frame-title-format "%b"))
 
 (cond ((eq system-type 'gnu/linux)
        (set-face-attribute 'default nil :font "Inconsolata" :height 150)
@@ -2583,37 +2586,46 @@ With a prefix ARG, display both date and time."
 (defun jag/make-frame ()
   "Return a newly created frame displaying the current buffer."
   (interactive)
-  (make-frame)
-  (let ((frame (selected-frame)))
-    (set-frame-size frame 1256 747 t)))
+  (cond ((eq system-type 'darwin)
+	 (make-frame)
+	 (let ((frame (selected-frame)))
+	   (set-frame-size frame 1256 747 t)))
+	((eq system-type 'gnu/linux)
+	 (make-frame)
+	 (set-frame-size frame 1910 970 t))))
 
-(when (eq system-type 'darwin)
-  (defun jag/maximize-frame ()
-    "Maximize frame."
-    (interactive)
-    (if my-default-font
-	(let ((frame-size (nth 3 (assoc 2 my-fonts))))
-	  (eval-expression frame-size))
-      (let ((frame-size (nth 3 (assoc 1 my-fonts))))
-	(eval-expression frame-size))))
+(defun jag/maximize-frame ()
+  "Maximize frame."
+  (interactive)
+  (cond ((eq system-type 'darwin)
+	 (if my-default-font
+	     (let ((frame-size (nth 3 (assoc 2 my-fonts))))
+	       (eval-expression frame-size))
+	   (let ((frame-size (nth 3 (assoc 1 my-fonts))))
+	     (eval-expression frame-size))))
+	((eq system-type 'gnu/linux)
+	 (set-frame-size (selected-frame) 1910 970 t))))
 
-  (defun jag/shrink-frame ()
-    "Shrink frame up."
-    (interactive)
-    (let ((frame (selected-frame)))
-      (if my-default-font
-	  (set-frame-size frame 1260 200 t)
-	(set-frame-size frame 1260 200 t))))
+(defun jag/shrink-frame ()
+  "Shrink frame up."
+  (interactive)
+  (cond ((eq system-type 'darwin)
+	 (let ((frame (selected-frame)))
+	   (if my-default-font
+	       (set-frame-size frame 1260 200 t)
+	     (set-frame-size frame 1260 200 t))))
+	((eq system-type 'gnu/linux)
+	 (set-frame-size (selected-frame) 1910 300 t))))
 
-  (defun jag/toggle-fullscreen ()
-    "Toggle full screen, time and battery mode."
-    (interactive)
-    (toggle-frame-fullscreen)
-    (if (frame-parameter nil 'fullscreen)
-	(progn
-	  (display-time-mode 1)
-	  (display-battery-mode 1))
-      (display-time-mode 0)
-      (display-battery-mode 0))))
+(defun jag/toggle-fullscreen ()
+  "Toggle full screen, time and battery mode."
+  (interactive)
+  (toggle-frame-fullscreen)
+  (if (frame-parameter nil 'fullscreen)
+      (progn
+	(display-time-mode 1)
+	(display-battery-mode 1))
+    (display-time-mode 0)
+    (display-battery-mode 0)))
 
 (use-package test)
