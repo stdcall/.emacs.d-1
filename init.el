@@ -258,6 +258,7 @@ With a prefix ARG, cycle randomly through a list of available themes."
 ;; remember point position
 
 (save-place-mode 1)
+(setq save-place-file "~/places")
 
 ;; scratch buffer mode and message
 
@@ -365,6 +366,8 @@ string."
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
   (projectile-global-mode)
+  (setq projectile-cache-file "~/projectile.cache"
+	projectile-known-projects-file "~/projectile-bookmarks.eld")
   (setq projectile-completion-system 'helm)
   (setq projectile-mode-line
         '(:eval
@@ -1254,6 +1257,7 @@ The maximum frame height is defined by the variable
   (ac-config-default)
   (global-auto-complete-mode t)
   :config
+  (setq ac-comphist-file "~/ac-comphist.dat")
   (bind-keys :map ac-complete-mode-map
 	     ("C-n" . ac-next)
 	     ("C-p" . ac-previous)))
